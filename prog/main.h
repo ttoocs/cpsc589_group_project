@@ -22,7 +22,10 @@
 #include "gl_helpers.h"
 #include "shapes.h"
 #include "input.h"
+#include "camera.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+//Used for perspective matrix.
 
 
 //#define WIREFRAME

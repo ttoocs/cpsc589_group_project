@@ -5,6 +5,7 @@
 
 #include "main.h"
 
+Camera cam;
 
 float speed = 1;
 
@@ -93,24 +94,25 @@ void initalize_GL(){
 }
 
 void Update_Perspective(){
-/*	glm::mat4 perspectiveMatrix = glm::perspective(torad(80.f), 1.f, 0.1f, 20.f);
+//  mat4 perspectiveMatrix = glm::perspective(glm::radians(45.f), 1.33f, 0.1f, 10.f);
+	glm::mat4 perspectiveMatrix = glm::perspective(torad(80.f), 1.f, 0.1f, 20.f);
   glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "perspectiveMatrix"),
             1,
             false,
             &perspectiveMatrix[0][0]);
-*/
+
 }
 
 void Update_GPU_data(){
 //		glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);	//Setup data-copy (points)
 //		glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*s->positions.size(),s->positions.data(),GL_DYNAMIC_DRAW);
-/*
+
 	glm::mat4 camMatrix = cam.getMatrix();
   glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "cameraMatrix"),
             1,
             false,
             &camMatrix[0][0]);
-*/
+
 }
 
 Object sphere;
@@ -124,8 +126,8 @@ void Render(){
  	glBindVertexArray(glstuff.vertexarray);
  	glUseProgram(glstuff.prog);
 
-//	  Update_Perspective();	//updates perspective uniform, as it's never changed.
-//    Update_GPU_data();
+  Update_Perspective();	//updates perspective uniform, as it's never changed.
+  Update_GPU_data();
 
   glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);
   glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*sphere.positions.size(),sphere.positions.data(),GL_DYNAMIC_DRAW); 
