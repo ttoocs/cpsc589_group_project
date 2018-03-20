@@ -64,13 +64,13 @@ void check_compile(GLuint vertexShader){
         std::cout << infoLog << std::endl;
         return;
         }
-	
+
 }
 
 GLFWwindow * glfw_init(int X, int Y, char const * Title){  //Initalizes and returns a GLFW window.
-  
+
   glfwSetErrorCallback(ErrorCallback);
-	
+
 	glfwInit();
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -79,7 +79,7 @@ GLFWwindow * glfw_init(int X, int Y, char const * Title){  //Initalizes and retu
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 	//glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-	
+
 	GLFWwindow * window = glfwCreateWindow(X,Y, Title, nullptr, nullptr);
 
 	glfwMakeContextCurrent(window); //Sets up a OpenGL context
@@ -87,11 +87,11 @@ GLFWwindow * glfw_init(int X, int Y, char const * Title){  //Initalizes and retu
   //Requires OpenGL > 4.3
   glDebugMessageCallback(GL_error_callback, NULL);
 	glEnable(GL_DEBUG_OUTPUT);								//DEBUG :D
-	glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS);	
+	glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
 	return( window); // Windowed
 //	GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", glfwGetPrimaryMonitor(), nullptr); // Fullscreen
-	
+
 }
 
 
@@ -209,7 +209,7 @@ void GL_error_callback(GLenum source, GLenum type, GLuint id,
 		lcase(GL_DEBUG_SOURCE_THIRD_PARTY)
 		lcase(GL_DEBUG_SOURCE_APPLICATION)
 		lcase(GL_DEBUG_SOURCE_OTHER)				//THESE ARN'T DEFINED?
-	}  
+	}
 
 	std::cout << "Type: " <<  type << " : ";
 	switch (type){
@@ -223,7 +223,7 @@ void GL_error_callback(GLenum source, GLenum type, GLuint id,
 		lcase(GL_DEBUG_TYPE_POP_GROUP)
 		lcase(GL_DEBUG_TYPE_OTHER)
 	}
-		
+
 	std::cout << "ID: " << id << std::endl;
 	std::cout << "Serverity: " << severity << " : ";
 	switch (severity){

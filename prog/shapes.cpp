@@ -24,9 +24,9 @@ void loadTexture(Object *obj, const char* filename){
 }
 
 void moveObj(Object *obj, vec3 pos){
-  obj->modelview[3][0] += pos[0]; 
-  obj->modelview[3][1] += pos[1]; 
-  obj->modelview[3][2] += pos[2]; 
+  obj->modelview[3][0] += pos[0];
+  obj->modelview[3][1] += pos[1];
+  obj->modelview[3][2] += pos[2];
 }
 
 void rotateObj(Object *obj,vec3 axis, float radians){
@@ -34,9 +34,9 @@ void rotateObj(Object *obj,vec3 axis, float radians){
 
 	//Via altering modelview
 	//obj->modelview = trans* obj->modelview;
-	
+
 //	//via changing positions.
-//	for(int i=0; i< obj->positions.size(); i++){ //Does 
+//	for(int i=0; i< obj->positions.size(); i++){ //Does
 //		obj->positions.data()[i] = trans*vec4(obj->positions.data()[i],1);
 //	}
 }
@@ -46,9 +46,9 @@ void rotateObjPos(Object *obj,vec3 axis, float radians){
 	//Via altering modelview
 //	obj->modelview = trans* obj->modelview;
 	//via changing positions.
-	
+
   //TODO FIX
-	//for(int i=0; i< obj->positions.size(); i++){ //Does 
+	//for(int i=0; i< obj->positions.size(); i++){ //Does
   //    obj->positions.data()[i] = trans*vec4(obj->positions.data()[i],1);
 	//}
 }
@@ -58,7 +58,7 @@ void generateTri(Object *obj){	//Currently used just for debugging.
 	V_PUSH(obj->positions,0,0,0);
 	V_PUSH(obj->positions,0,1,0);
 	V_PUSH(obj->positions,1,1,0);
-	
+
 	V_PUSH(obj->normals,1,0,0);
 	V_PUSH(obj->normals,0,1,0);
 	V_PUSH(obj->normals,0,0,1);
@@ -68,7 +68,7 @@ void generateTri(Object *obj){	//Currently used just for debugging.
 	obj->indices.push_back(2);
 
 
-}	
+}
 
 
 //u parameterizes in the big circle, v parameterizes in the little circle
@@ -112,7 +112,7 @@ void generateTorus(Object * obj, float c_r, float t_r, int uDivisions, int vDivi
 
       v += vStep;
     }
-  
+
     u += uStep;
   }
 
@@ -124,7 +124,7 @@ void generateTorus(Object * obj, float c_r, float t_r, int uDivisions, int vDivi
       unsigned int p01 = i*vDivisions+j+1;
       unsigned int p10 = (i+1)*vDivisions + j;
       unsigned int p11 = (i+1)*vDivisions + j + 1;
-    
+
       obj->indices.push_back(p00);
       obj->indices.push_back(p10);
       obj->indices.push_back(p01);
@@ -134,12 +134,12 @@ void generateTorus(Object * obj, float c_r, float t_r, int uDivisions, int vDivi
       obj->indices.push_back(p11);
     }
   }
-}   
+}
 
 
 void generateSphere(Object * obj, float radius, int udiv, int vdiv){
 	nukeshape(obj);
-	
+
 	//Generate Positions:
 	float uStep = 1.f/(float)(udiv-1);
 	float vStep = 1.f/(float)(vdiv-1);
@@ -156,12 +156,12 @@ void generateSphere(Object * obj, float radius, int udiv, int vdiv){
 											radius*sin(uScale)*cos(vScale),
 											radius*sin(uScale)*sin(vScale),
 											radius*cos(uScale)
-											);			
+											);
 
 			obj->positions.push_back(pos);
 			obj->normals.push_back(pos);		//Normal of a sphere at origin is just the pos.
 			obj->uvs.push_back(vec2(v,u));
-			
+
 			v+=vStep;
 		}
 		u+=uStep;
@@ -169,7 +169,7 @@ void generateSphere(Object * obj, float radius, int udiv, int vdiv){
 
 	#undef uScale
 	#undef vScale
-	
+
 	//Put indicies
 	for(int i=0; i < udiv-1; i++){ //u
 		for(int j=0; j < vdiv-1; j++){ //v
@@ -181,9 +181,9 @@ void generateSphere(Object * obj, float radius, int udiv, int vdiv){
 					//p01 = "right"
 					//p10 = "down"
 					//p11 = "right+down"
-				
-					P_indices(obj->indices,p00,p01,p11);					
-					P_indices(obj->indices,p00,p10,p11);					
+
+					P_indices(obj->indices,p00,p01,p11);
+					P_indices(obj->indices,p00,p10,p11);
 
 
 		}

@@ -10,19 +10,19 @@
 #define P_indices(X,a,b,c)	      X.push_back(a); X.push_back(b); X.push_back(c);
 
 struct TextureStuff{
-	int components;	
+	int components;
 	int tWidth;
 	int tHeight;
 	unsigned char* data;
 };
 //typedef struct TextureStuff;
 
-typedef struct Object Object; 
-struct Object{ 
-  std::vector<vec3> positions; 
-  std::vector<vec3> normals;     //What are these used for? -- Lighting. 
-  std::vector<vec2> uvs;     //My guess this is for textures? 
-  std::vector<unsigned int> indices; 
+typedef struct Object Object;
+struct Object{
+  std::vector<vec3> positions;
+  std::vector<vec3> normals;     //What are these used for? -- Lighting.
+  std::vector<vec2> uvs;     //My guess this is for textures?
+  std::vector<unsigned int> indices;
 	TextureStuff texture;
 	mat4 modelview;
 };

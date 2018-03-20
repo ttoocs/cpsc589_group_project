@@ -33,7 +33,7 @@
 
 #ifdef DEBUG
 	#define DEBUGMSG	printf("\n\n\t\t DEBUG MESSAGE AT LINE:\t%d\t In file:\t%s\n\n",__LINE__,__FILE__);
-#else 
+#else
 	#define DEBUGMSG	;
 #endif
 

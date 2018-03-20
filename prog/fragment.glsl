@@ -31,7 +31,7 @@ void main(void)
 
 //	colour = texture(image,uv);
 //	colour = texture(image,FragUV);
-	
+
 //	colour = vec4(FragNormal,0);
 
 //	colour = vec4(vec3(gl_FragCoord.z),1.0f);

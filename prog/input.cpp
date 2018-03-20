@@ -12,7 +12,7 @@ namespace input{
 void setup(GLFWwindow * window){
 	glfwSetKeyCallback(window, KeyCallback);
 	glfwSetCursorPosCallback(window, mousePosCallback);
-	glfwSetMouseButtonCallback(window, mouseButtonCallback);	
+	glfwSetMouseButtonCallback(window, mouseButtonCallback);
 }
 
 // handles keyboard input events

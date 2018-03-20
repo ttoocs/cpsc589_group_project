@@ -1,6 +1,6 @@
 //Scott Saunders
 //10163541
-//Cpsc 453 template 
+//Cpsc 453 template
 //October 1st, 2016.
 
 #include "main.h"
@@ -25,14 +25,14 @@ GLSTUFF glstuff;
 int WIDTH = 512;
 int HEIGHT = 512;
 
-void initalize_GL(){	
+void initalize_GL(){
 		glEnable(GL_DEPTH_TEST); 		//Turn on depth testing
 		glDepthFunc(GL_LEQUAL); 			//Configure depth testing
 
 		#ifdef WIREFRAME
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		#endif
-	
+
 		//OpenGL programs
 		glstuff.prog = glCreateProgram();
 		glstuff.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSource("vertex.glsl"));
@@ -48,7 +48,7 @@ void initalize_GL(){
 		glLinkProgram(glstuff.prog);	//Link to full program.
 		check_gllink(glstuff.prog);
 
-			
+
 		//Vertex stuffs
 
 		glUseProgram(glstuff.prog);
@@ -58,7 +58,7 @@ void initalize_GL(){
 //		glGenBuffers(1, &glstuff.normalbuffer);
 //		glGenBuffers(1, &glstuff.uvsbuffer);
 		glGenBuffers(1, &glstuff.indiciesbuffer);
-	
+
 		glBindVertexArray(glstuff.vertexarray);
 		glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);	//Points
@@ -73,7 +73,7 @@ void initalize_GL(){
 //		glBindBuffer(GL_ARRAY_BUFFER,glstuff.uvsbuffer);
 //		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vec2), 0); //UVS
 //		glEnableVertexAttribArray(2);
-//		
+//
 		glBindVertexArray(glstuff.vertexarray);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuff.indiciesbuffer);	//Indices
 
@@ -84,7 +84,7 @@ void initalize_GL(){
 /*
 		glGenTextures(1,&glstuff.texture);
 		glBindTexture(GL_TEXTURE_2D, glstuff.texture);
-		
+
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT ); //GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT ); //GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -117,7 +117,7 @@ void Update_GPU_data(){
 
 Object sphere;
 
-	
+
 void Render(){
 	glClearColor(0.5,0,0,0);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -130,7 +130,7 @@ void Render(){
   Update_GPU_data();
 
   glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);
-  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*sphere.positions.size(),sphere.positions.data(),GL_DYNAMIC_DRAW); 
+  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*sphere.positions.size(),sphere.positions.data(),GL_DYNAMIC_DRAW);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuff.indiciesbuffer);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*sphere.indices.size(),sphere.indices.data(),GL_DYNAMIC_DRAW);
 
@@ -163,7 +163,7 @@ int main(int argc, char * argv[]){
 
 	while(!glfwWindowShouldClose(window))
 	{ //Main loop.
-    
+
     glfwGetFramebufferSize(window, &WIDTH, &HEIGHT);
 
 		Render();

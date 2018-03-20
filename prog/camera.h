@@ -16,7 +16,7 @@ class Camera{
 
 	vec3 pos;
 
-	Camera():	dir(vec3(0, 0, -1)), right(vec3(1, 0, 0)), up(vec3(0, 1, 0)), 
+	Camera():	dir(vec3(0, 0, -1)), right(vec3(1, 0, 0)), up(vec3(0, 1, 0)),
 				pos(vec3(0, 0, 1.f)){}
 
 	Camera(vec3 _dir, vec3 _pos):dir(_dir), pos(_pos){
@@ -32,7 +32,7 @@ class Camera{
 
   private:
 	  void zoom(float factor); //Marked private, as I've been told it's poor/broken.
-  
+
 };
 
 #endif
