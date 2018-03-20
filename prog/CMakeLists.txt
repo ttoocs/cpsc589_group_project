@@ -42,7 +42,7 @@ add_definitions(
 
 #Handles includes (via directories)
 include_directories(
-    ${CMAKE_HOME_DIRECTORY}/glm
+#    ${CMAKE_HOME_DIRECTORY}/glm
     )
 
 
