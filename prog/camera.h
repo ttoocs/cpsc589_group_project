@@ -2,10 +2,11 @@
 #define CAMERA_H
 
 
-#include "glm/glm.hpp"
+#include "types.h"
+//#include "glm/glm.hpp"
 #include <cstdio>
 
-using namespace glm;
+//using namespace glm;
 
 class Camera{
 public:
