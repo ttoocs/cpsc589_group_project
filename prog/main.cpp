@@ -5,7 +5,6 @@
 
 #include "main.h"
 
-using namespace std;
 
 float speed = 1;
 
