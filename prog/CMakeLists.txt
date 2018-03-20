@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(Template)
+project(Cpsc589_Project)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/" ${CMAKE_MODULE_PATH})
 
@@ -42,7 +42,7 @@ add_definitions(
 
 #Handles includes (via directories)
 include_directories(
-    ${CMAKE_HOME_DIRECTORY}/Eigen
+    ${CMAKE_HOME_DIRECTORY}/glm
     )
 
 
