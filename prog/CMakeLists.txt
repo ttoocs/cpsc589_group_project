@@ -62,4 +62,5 @@ add_executable(
     gl_helpers.cpp
     shapes.cpp
     input.cpp
+    camera.cpp
 )
