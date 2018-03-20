@@ -9,7 +9,7 @@
 //using namespace glm;
 
 class Camera{
-public:
+  public:
 	vec3 dir;
 	vec3 right;
 	vec3 up;
@@ -26,10 +26,13 @@ public:
 
 	void trackballUp(float radians);
 	void trackballRight(float radians);
-	void zoom(float factor);
 	mat4 getMatrix();
 	void translate(vec3 toTrans);
 	mat4 rotateAbout(vec3 axis, float radians);
+
+  private:
+	  void zoom(float factor); //Marked private, as I've been told it's poor/broken.
+  
 };
 
 #endif
