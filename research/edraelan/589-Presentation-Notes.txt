@@ -1,0 +1,19 @@
+============================== MAIN PAPER =====================================================
+Display of Clouds Taking into Account Multiple Anisotropic Scattering and Sky Light (Tomoyuki Nishita, Yoshinori Dobashi)
+
+============================== SUPPLEMENTARY PAPERS ===========================================
+*NOTE* The above paper needs knowledge of the following two papers:
+
+A Method for Displaying Metaballs by using Bézier Clipping (Tomoyuki Nishita, Eihachiro Nakamae)
+     - Gives the field function and defines an isosurface of a group of metaballs
+
+MARCHING CUBES: A HIGH RESOLUTION 3D SURFACE CONSTRUCTION ALGORITHM (William E. Lorenson, Harvey E. Cline)
+     - Gives the marching cube algorithm
+
+
+============================== BASIC IDEA =====================================================
+- The basic idea of the paper is to model clouds using structures called "metaballs"
+    - meta-balls are defined by 3 perameters: the center point, the radius, and the density at the center of the ball
+    - the surface of a collection of these metaballs is defined to be a sum of the densities multiplied their field function equating to 0 (this field function is defined by many different people, the one the main paper uses is a 6th degree polynomial).
+    - So, to loosely define a rough cloud and its surface, we provide a rough shape of the cloud using some metaballs
+    - From here, we create more metaballs on the surface of the cloud. We use the marching cube algorithm (supplementary paper). This creates triangles and then we create new metaballs within those triangles with random points and random radii. THIS WOULD BE THE HARDEST PART OF MODELLING A CLOUD.
