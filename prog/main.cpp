@@ -12,8 +12,8 @@ Camera cam;
 float speed = 1;
 
 //START: Metaball vars for testing
-vector<MetaBall> metaballs;
-vector<float> vertices;
+std::vector<MetaBall> metaballs;
+std::vector<float> vertices;
 int num_points;
 //END: Metaball vars for testing
 
