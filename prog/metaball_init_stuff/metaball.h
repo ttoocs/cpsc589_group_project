@@ -6,7 +6,7 @@ class MetaBall
 {
 public:
 	vec3 pos;
-	float radius;
+	float radius = -1;
 	//Must create functions to pass in to here.
     float (*m_surfaceFunction)(vec3, float);
     int id = -1;
@@ -17,5 +17,9 @@ public:
 		pos = newPos;
 		radius = radius;
 		m_surfaceFunction = f;
+	}
+	float valueAt(vec3 loc)
+	{
+		return (*m_surfaceFunction)(loc,radius);
 	}
 };
