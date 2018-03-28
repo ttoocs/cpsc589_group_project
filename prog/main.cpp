@@ -5,6 +5,7 @@
 
 #include "main.h"
 #include "./metaball_init_stuff/metaball.h"
+#include <vector>
 
 Camera cam;
 
@@ -12,6 +13,8 @@ float speed = 1;
 
 //START: Metaball vars for testing
 vector<MetaBall> metaballs;
+vector<float> vertices;
+int num_points;
 //END: Metaball vars for testing
 
 struct GLSTUFF{
@@ -158,11 +161,11 @@ float accumMetaBallFuncs(vec3 point)
 	float accum = 0.0;
 	for (int i = 0; i < metaballs.size(); i++)
 	{
-		accum += metaBalls[i].function(point);
+		accum += metaballs[i].function(point);
 	}
 	return accum;
 }
-
+/*
 //This should be the marching cube algorithm
 void loadPoints()
 {
@@ -203,6 +206,7 @@ void loadPoints()
 	// Clear vertices vector
 	vertices.clear();
 }
+*/
 //END: From Eds file
 
 int main(int argc, char * argv[]){
