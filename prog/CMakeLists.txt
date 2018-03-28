@@ -63,4 +63,5 @@ add_executable(
     shapes.cpp
     input.cpp
     camera.cpp
+    MarchingSource.cpp
 )
