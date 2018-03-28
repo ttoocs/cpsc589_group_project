@@ -12,7 +12,7 @@ public:
     int id = -1;
 	
 	virtual float function(vec3 v) = 0;
-	DefaultMetaBall(vec3 newPos, double radius, float(*f)(vec3, float))
+	MetaBall(vec3 newPos, double radius, float(*f)(vec3, float))
 	{
 		pos = newPos;
 		radius = radius;
