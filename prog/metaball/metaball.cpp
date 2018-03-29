@@ -14,6 +14,8 @@ MetaBall::MetaBall(vec3 newPos, double radius, float(*f)(vec3, vec3, float))
 		pos = newPos;
 		radius = radius;
 		m_surfaceFunction = f;
+		
+		metaballs.push_back(this);
 	}
 
 float MetaBall::valueAt(vec3 loc)
