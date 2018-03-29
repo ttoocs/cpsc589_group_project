@@ -64,5 +64,6 @@ add_executable(
     input.cpp
     camera.cpp
     marching_cube/MarchingSource.cpp
+    marching_cube/reMarch.cpp
     metaball/metaball.cpp
 )
