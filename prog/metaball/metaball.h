@@ -20,8 +20,8 @@ public:
   float (*m_surfaceFunction)(vec3, float);
   int id = -1;
 	
-  virtual float function(vec3 v) = 0;
-  virtual float function(double x, double y, double z) {return function(vec3(x,y,z));}
+//  virtual float function(vec3 v) = 0;
+//  virtual float function(double x, double y, double z) {return function(vec3(x,y,z));}
   MetaBall(vec3 newPos, double radius, float(*f)(vec3, float));
 	
   float valueAt(vec3 loc);

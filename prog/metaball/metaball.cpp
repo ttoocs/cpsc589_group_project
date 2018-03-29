@@ -27,7 +27,8 @@ float MetaBall::accumMetaBallFuncs(vec3 point)
 	float accum = 0.0;
 	for (int i = 0; i < metaballs.size(); i++)
 	{
-		accum += metaballs[i]->function(point);
+		//accum += metaballs[i]->function(point);
+		accum += metaballs[i]->valueAt(point);
 	}
 	return accum;
 }
