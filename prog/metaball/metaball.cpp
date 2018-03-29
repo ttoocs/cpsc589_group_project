@@ -33,13 +33,10 @@ float MetaBall::accumMetaBallFuncs(vec3 point)
 }
 
 
-void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::vector<MetaBall*> * mbs, vec3 * bound, double granularity){
+void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::vector<MetaBall*> * mbs, vec3 * lbound, vec3 * ubound, double granularity){
   
-  if(mbs == NULL){
-    std::cout << "No metaballs given, using all metaballs." << std::endl;
-    mbs = &metaballs;
-  }
-  
+//#define DUMMY
+#ifdef DUMMY
   verts->clear(); //Temporary only.
   verts->push_back(vec3(0,0,0));
   verts->push_back(vec3(1,1,1));
@@ -49,6 +46,39 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
   idx->push_back(1);
   idx->push_back(2);
   return;
+
+#undef DUMMY  
+#endif
+
+  if(mbs == NULL){
+    std::cout << "No metaballs given, using all metaballs." << std::endl;
+    mbs = &metaballs;
+  }
+
+  vec3 lb,ub; //Just some place to store data for abit, if needed. (SHOULD BE MORE/LESS UNUSED)
+
+  if(lbound == NULL){
+    //Find the bounding box: (take furthest metaball-pos's, and use that for a box.)
+    //TODO
+    lb = vec3(-10,-10,-10);
+    lbound = &lb;
+  }
+  if(ubound == NULL){
+    //Find the bounding box: (take furthest metaball-pos's, and use that for a box.)
+    //TODO
+    ub = vec3(10,10,10);
+    ubound = &ub;
+  }
+  
+  //TODO: Make it actually only use some meta-balls... lambda functions? 
+
+  March1((MetaBall::accumMetaBallFuncs),
+         *lbound,*ubound,
+          granularity,
+          verts,
+          idx
+        );
+
 }
 
 
