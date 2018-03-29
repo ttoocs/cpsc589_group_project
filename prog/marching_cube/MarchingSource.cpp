@@ -16,7 +16,9 @@
 #include <stdio.h>
 #include <math.h>
 
-#include <graphics/COpenGLHeaders.h>
+#include "GL/glut.h"
+//#include "../gl_helpers.h"
+//#include <graphics/COpenGLHeaders.h>
 
 struct GLvector
 {

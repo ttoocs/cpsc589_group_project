@@ -4,7 +4,7 @@
 //October 1st, 2016.
 
 #include "main.h"
-#include "./metaball_init_stuff/metaball.h"
+#include "./metaball/metaball.h"
 
 Camera cam;
 
@@ -110,9 +110,16 @@ void Update_Perspective(){
 
 }
 
+Object sphere;
 void Update_GPU_data(){
 //		glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);	//Setup data-copy (points)
 //		glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*s->positions.size(),s->positions.data(),GL_DYNAMIC_DRAW);
+  
+  //EX: a single sphere:
+  glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);
+  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*sphere.positions.size(),sphere.positions.data(),GL_DYNAMIC_DRAW);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuff.indiciesbuffer);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*sphere.indices.size(),sphere.indices.data(),GL_DYNAMIC_DRAW);
 
 	glm::mat4 camMatrix = cam.getMatrix();
   glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "cameraMatrix"),
@@ -121,8 +128,6 @@ void Update_GPU_data(){
             &camMatrix[0][0]);
 
 }
-
-Object sphere;
 
 
 void Render(){
@@ -136,10 +141,6 @@ void Render(){
   Update_Perspective();	//updates perspective uniform, as it's never changed.
   Update_GPU_data();
 
-  glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);
-  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*sphere.positions.size(),sphere.positions.data(),GL_DYNAMIC_DRAW);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuff.indiciesbuffer);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*sphere.indices.size(),sphere.indices.data(),GL_DYNAMIC_DRAW);
 
 //  glDrawArrays(GL_TRIANGLES,0,3);
 
@@ -154,59 +155,6 @@ void Render(){
 	return;
 }
 
-//START: From Eds file
-float accumMetaBallFuncs(vec3 point)
-{
-	float accum = 0.0;
-	for (int i = 0; i < metaballs.size(); i++)
-	{
-		accum += metaballs[i].function(point);
-	}
-	return accum;
-}
-/*
-//This should be the marching cube algorithm
-void loadPoints()
-{
-	float accumulator = 0.0;
-
-	for (float z = -2.0; z < 2.0; z += 0.05)
-	{
-		for (float y = -2.0; y < 2.0; y += 0.05)
-		{
-			for (float x = -2.0; x < 2.0; x += 0.05)
-			{
-				accumulator = accumMetaBallFuncs(vec3(x, y, z));
-				
-				if (accumulator >= threshold)
-				{
-					vertices.push_back(x);
-					if (y < 0.0)
-						vertices.push_back(0.0);
-					else
-						vertices.push_back(y);
-					vertices.push_back(z);
-				}
-				accumulator = 0.0;
-			}
-		}
-	}
-
-	glBindVertexArray(VAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STREAM_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	num_points = vertices.size() / 3;
-
-	// Clear vertices vector
-	vertices.clear();
-}
-*/
-//END: From Eds file
 
 int main(int argc, char * argv[]){
 
