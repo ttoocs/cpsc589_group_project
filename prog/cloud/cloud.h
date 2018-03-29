@@ -3,7 +3,11 @@
 
 #pragma once
 
+#include <vector>
+#include "../metaball/metaball.h"
+#include "../gl_helpers.h"
+
 class cloud{
   std::vector<MetaBall*> balls;
-
+  void create_cloud(std::vector<vec3> *points, std::vector<GLuint> *indices, int rounds);
 };
