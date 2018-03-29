@@ -8,6 +8,7 @@
 #pragma once
 
 #include "../types.h"
+#include <vector>
 
 class MetaBall
 {
@@ -22,8 +23,12 @@ public:
 	MetaBall(vec3 newPos, double radius, float(*f)(vec3, float));
 	
   float valueAt(vec3 loc);
+
+
+  //Static Stuff!
+  static std::vector<MetaBall*> metaballs;
+  static float accumMetaBallFuncs(vec3 point);
 };
 
 
-float accumMetaBallFuncs(vec3 point);
 // void loadPoints();

@@ -1,7 +1,7 @@
 #include <vector>
 #include "../types.h"
 
-#include "GL/glut.h"
+//#include "GL/glut.h"
 #include "../gl_helpers.h"
 //typedef uint GLuint;
 

@@ -7,6 +7,8 @@
 // Moved the meta-ball functs out of main and put here instead.
 #include "metaball.h"
 
+std::vector<MetaBall*> MetaBall::metaballs;
+
 MetaBall::MetaBall(vec3 newPos, double radius, float(*f)(vec3, float))
 	{
 		pos = newPos;
@@ -20,12 +22,12 @@ float MetaBall::valueAt(vec3 loc)
 	}
 
 //START: From Eds file
-float accumMetaBallFuncs(vec3 point)
+float MetaBall::accumMetaBallFuncs(vec3 point)
 {
 	float accum = 0.0;
 	for (int i = 0; i < metaballs.size(); i++)
 	{
-		accum += metaballs[i].function(point);
+		accum += metaballs[i]->function(point);
 	}
 	return accum;
 }
