@@ -8,6 +8,7 @@
 #pragma once
 
 #include "../types.h"
+#include "../marching_cube/reMarch.h"
 #include <vector>
 
 class MetaBall
@@ -20,6 +21,7 @@ public:
   int id = -1;
 	
 	virtual float function(vec3 v) = 0;
+  virtual float function(double x, double y, double z) {return function(vec3(x,y,z));}
 	MetaBall(vec3 newPos, double radius, float(*f)(vec3, float));
 	
   float valueAt(vec3 loc);
@@ -28,6 +30,8 @@ public:
   //Static Stuff!
   static std::vector<MetaBall*> metaballs;
   static float accumMetaBallFuncs(vec3 point);
+  static float accumMetaBallFuncs(double x, double y, double z) {return accumMetaBallFuncs(vec3(x,y,z));}
+  static void March(std::vector<vec3> * verts, std::vector<GLuint> * idx, vec3 * bound=NULL, double granularity=0.025);
 };
 
 

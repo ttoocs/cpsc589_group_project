@@ -2,7 +2,7 @@
 
 
 #define PI 3.1415926535897939
-
+#define deVec(X) X.x,X.y,X.z
 
 #include <glm/glm.hpp>
 //#include "glm/glm/glm.hpp"
