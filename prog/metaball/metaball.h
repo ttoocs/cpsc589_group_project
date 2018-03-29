@@ -30,8 +30,9 @@ public:
   //Static Stuff!
   static std::vector<MetaBall*> metaballs;
   static float accumMetaBallFuncs(vec3 point);
-  static float accumMetaBallFuncs(double x, double y, double z) {return accumMetaBallFuncs(vec3(x,y,z));}
-  static void March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::vector<MetaBall*> * mbs=&metaballs, vec3 * bound=NULL, double granularity=0.025);
+  static double accumMetaBallFuncs(double x, double y, double z) {return accumMetaBallFuncs(vec3(x,y,z));}
+  static void March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::vector<MetaBall*> * mbs, vec3 * lbound=NULL, vec3 * ubound=NULL, double granularity=0.025);
+  //static void March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::vector<MetaBall*> * mbs=&metaballs, vec3 * lbound=NULL, vec3 * ubound=NULL, double granularity=0.025);
 };
 
 
