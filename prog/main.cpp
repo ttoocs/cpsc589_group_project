@@ -110,9 +110,16 @@ void Update_Perspective(){
 
 }
 
+Object sphere;
 void Update_GPU_data(){
 //		glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);	//Setup data-copy (points)
 //		glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*s->positions.size(),s->positions.data(),GL_DYNAMIC_DRAW);
+  
+  //EX: a single sphere:
+  glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);
+  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*sphere.positions.size(),sphere.positions.data(),GL_DYNAMIC_DRAW);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuff.indiciesbuffer);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*sphere.indices.size(),sphere.indices.data(),GL_DYNAMIC_DRAW);
 
 	glm::mat4 camMatrix = cam.getMatrix();
   glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "cameraMatrix"),
@@ -121,8 +128,6 @@ void Update_GPU_data(){
             &camMatrix[0][0]);
 
 }
-
-Object sphere;
 
 
 void Render(){
@@ -136,10 +141,6 @@ void Render(){
   Update_Perspective();	//updates perspective uniform, as it's never changed.
   Update_GPU_data();
 
-  glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);
-  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*sphere.positions.size(),sphere.positions.data(),GL_DYNAMIC_DRAW);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuff.indiciesbuffer);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*sphere.indices.size(),sphere.indices.data(),GL_DYNAMIC_DRAW);
 
 //  glDrawArrays(GL_TRIANGLES,0,3);
 
