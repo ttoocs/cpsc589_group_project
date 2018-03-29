@@ -4,6 +4,6 @@
 #pragma once
 
 class cloud{
-  std::vector<metaball> balls;
+  std::vector<MetaBall*> balls;
 
 };
