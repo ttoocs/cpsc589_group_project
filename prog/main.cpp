@@ -4,7 +4,7 @@
 //October 1st, 2016.
 
 #include "main.h"
-#include "./metaball_init_stuff/metaball.h"
+#include "./metaball/metaball.h"
 
 Camera cam;
 
