@@ -33,7 +33,7 @@ float MetaBall::accumMetaBallFuncs(vec3 point)
 }
 
 
-void March(std::vector<vec3> * verts, std::vector<GLuint> * idx, vec3 * bound, double granularity){
+void March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::vector<MetaBall*> * mbs, vec3 * bound, double granularity){
   
   verts->clear(); //Temporary only.
   verts->push_back(vec3(0,0,0));
