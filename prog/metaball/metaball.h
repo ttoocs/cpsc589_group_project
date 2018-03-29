@@ -17,12 +17,12 @@ public:
   vec3 pos;
   float radius = -1;
 	//Must create functions to pass in to here.
-  float (*m_surfaceFunction)(vec3, float);
+  float (*m_surfaceFunction)(vec3, vec3, float);
   int id = -1;
 	
 //  virtual float function(vec3 v) = 0;
 //  virtual float function(double x, double y, double z) {return function(vec3(x,y,z));}
-  MetaBall(vec3 newPos, double radius, float(*f)(vec3, float));
+  MetaBall(vec3 newPos, double radius, float(*f)(vec3, vec3, float)); //Mbpos, TestPos, Rad
 	
   float valueAt(vec3 loc);
 
@@ -34,6 +34,9 @@ public:
   static void March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::vector<MetaBall*> * mbs, vec3 * lbound=NULL, vec3 * ubound=NULL, double granularity=0.025);
   //static void March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::vector<MetaBall*> * mbs=&metaballs, vec3 * lbound=NULL, vec3 * ubound=NULL, double granularity=0.025);
 };
+
+
+float WyvillMetaBall(vec3 mbpos,vec3 tpos, float radius);
 
 
 // void loadPoints();
