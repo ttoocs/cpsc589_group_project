@@ -31,6 +31,22 @@ float MetaBall::accumMetaBallFuncs(vec3 point)
 	}
 	return accum;
 }
+
+
+void March(std::vector<vec3> * verts, std::vector<GLuint> * idx, vec3 * bound, double granularity){
+  
+  verts->clear(); //Temporary only.
+  verts->push_back(vec3(0,0,0));
+  verts->push_back(vec3(1,1,1));
+  verts->push_back(vec3(1,-1,-1));
+  idx->clear();
+  idx->push_back(0);
+  idx->push_back(1);
+  idx->push_back(2);
+  return;
+}
+
+
 /*
 //This should be the marching cube algorithm
 void loadPoints()
