@@ -1,3 +1,6 @@
+//Original belonged to Jeremy Hartd
+//Modified by Cory Jensen
+
 #include "camera.h"
 
 mat4 Camera::rotateAbout(vec3 axis, float radians)
