@@ -3,7 +3,7 @@
 //Cpsc 453 template
 //October 1st, 2016.
 
-#include "../main.h"
+#include "../../main.h"
 #include "../metaball.h"
 
 Camera cam;
