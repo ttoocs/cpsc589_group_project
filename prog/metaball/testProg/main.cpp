@@ -3,15 +3,15 @@
 //Cpsc 453 template
 //October 1st, 2016.
 
-#include "main.h"
-#include "./metaball/metaball.h"
+#include "../../main.h"
+#include "../metaball.h"
 
 Camera cam;
 
 float speed = 1;
 
 //START: Metaball vars for testing
-std::vector<MetaBall> metaballs;
+std::vector<MetaBall*> metaballs;
 std::vector<float> vertices;
 int num_points;
 //END: Metaball vars for testing
@@ -110,16 +110,24 @@ void Update_Perspective(){
 
 }
 
-Object sphere;
+  std::vector<vec3> verts;
+  std::vector<GLuint> idx;
+
 void Update_GPU_data(){
 //		glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);	//Setup data-copy (points)
 //		glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*s->positions.size(),s->positions.data(),GL_DYNAMIC_DRAW);
+
+  //Calc verts/etc
+
+  verts.clear();
+  idx.clear();
+
+  MetaBall::March(&verts,&idx);
   
-  //EX: a single sphere:
   glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);
-  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*sphere.positions.size(),sphere.positions.data(),GL_DYNAMIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*verts.size(),verts.data(),GL_DYNAMIC_DRAW);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuff.indiciesbuffer);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*sphere.indices.size(),sphere.indices.data(),GL_DYNAMIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*idx.size(),verts.data(),GL_DYNAMIC_DRAW);
 
 	glm::mat4 camMatrix = cam.getMatrix();
   glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "cameraMatrix"),
@@ -131,22 +139,20 @@ void Update_GPU_data(){
 
 
 void Render(){
-	glClearColor(0,0.5,0,0);
+	glClearColor(0.5,0,0,0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glUseProgram(glstuff.prog);
  	glBindVertexArray(glstuff.vertexarray);
  	glUseProgram(glstuff.prog);
 
-  Update_Perspective();	//updates perspective uniform, as it's never changed.
-  Update_GPU_data();
 
 
 //  glDrawArrays(GL_TRIANGLES,0,3);
 
 	glDrawElements(
   	GL_TRIANGLES,   //What shape we're drawing  - GL_TRIANGLES, GL_LINES, GL_POINTS, GL_QUADS, GL_TRIANGLE_STRIP
-		sphere.indices.size(),    //How many indices
+		idx.size(),    //How many indices
 		GL_UNSIGNED_INT,  //Type
 		0
 	);
@@ -169,7 +175,10 @@ int main(int argc, char * argv[]){
 
 	speed =0.01;
 
-  generateSphere(&sphere,0.1,10,10);
+  metaballs.push_back(new MetaBall(vec3(0,0,0), 1, WyvillMetaBall));
+
+  Update_Perspective();	//updates perspective uniform, as it's never changed.
+  Update_GPU_data();
 
 	while(!glfwWindowShouldClose(window))
 	{ //Main loop.
