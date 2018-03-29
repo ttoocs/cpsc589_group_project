@@ -4,7 +4,7 @@
 
 //Scott Saunders
 // Moved the .cpp stuff out of the .h stuff.
-
+// Moved the meta-ball functions out of the main and into metaball .h/.cpp
 #pragma once
 
 #include "../types.h"
@@ -23,3 +23,7 @@ public:
 	
   float valueAt(vec3 loc);
 };
+
+
+float accumMetaBallFuncs(vec3 point);
+// void loadPoints();
