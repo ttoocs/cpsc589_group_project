@@ -31,7 +31,7 @@ public:
   static std::vector<MetaBall*> metaballs;
   static float accumMetaBallFuncs(vec3 point);
   static float accumMetaBallFuncs(double x, double y, double z) {return accumMetaBallFuncs(vec3(x,y,z));}
-  static void March(std::vector<vec3> * verts, std::vector<GLuint> * idx, vec3 * bound=NULL, double granularity=0.025);
+  static void March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::vector<MetaBall*> * mbs=&metaballs, vec3 * bound=NULL, double granularity=0.025);
 };
 
 
