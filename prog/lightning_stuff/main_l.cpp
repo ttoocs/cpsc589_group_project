@@ -6,7 +6,7 @@
 #include <ctime>
 #include <random>
 
-#define METER 0.001
+#define METER 0.002
 
 using namespace std;
 using namespace glm;
@@ -373,7 +373,8 @@ void trace_lightning(vec3 init_point, vec3 init_direction, vector<vec3> *storage
 	normal_distribution<double> norm_distribution(45.0, 20.0);
 	uniform_real_distribution<double> uni_distribution_length(METER, 10.0*METER);
 	uniform_real_distribution<double> uni_distribution_branch(0.0, 1.0);
-	uniform_int_distribution<int> uni_distribution_segs(1, 250);
+	uniform_real_distribution<double> uni_distribution_new_dir(0.0, 90.0);
+	uniform_int_distribution<int> uni_distribution_segs(1, 150);
 
 	vec3 rand_segment = vec3(0, 0, 0);
 	vec3 current_point = init_point;
@@ -400,7 +401,8 @@ void trace_lightning(vec3 init_point, vec3 init_direction, vector<vec3> *storage
 		
 		if (uni_distribution_branch(uni_gen) <= (0.1*pow(10, -(current_point.y/max_h))))
 		{
-			trace_lightning_recursion(current_point, normalize(rand_segment), storage, uni_distribution_segs(uni_gen));
+			vec3 new_dir = rotateAbout(T, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * rotateAbout(N, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * vec4(rand_segment, 0.0);
+			trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen));
 		}
 		storage->push_back(current_point);
 	}
