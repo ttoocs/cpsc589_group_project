@@ -149,6 +149,30 @@ float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
 		term3 = (22.0 / 9.0) * pow(R, 2.0);
 		float total = term1 + term2 - term3;
 		//float total = (float) term1 + (float) term2 - (float) term3 + (float) 1.0;
-		return term1 + term2 - term3;// + 1.0;
+		return (term1 + term2 - term3  + 1 );
+
 	}
+
+
+float sphereMB(vec3 mbpos, vec3 tpos, float radius){
+  float r = length(mbpos - tpos);
+  return (r-radius);
+  
+}
+
+
+float fanceyMB(vec3 mbpos, vec3 tpos, float radius){
+      #define EPSILON 0.0001
+      float x = tpos.x-mbpos.x;
+      float y = tpos.y-mbpos.y;
+      float z = tpos.z-mbpos.z;
+      x*=x;
+      y*=y;
+      z*=z;
+      float den = x+y+z;
+      if(den < EPSILON  && den > EPSILON )
+        return 0;
+      return radius/den;
+}
+
 

@@ -36,6 +36,7 @@ public:
 
 
 float WyvillMetaBall(vec3 mbpos,vec3 tpos, float radius);
-
+float fanceyMB(vec3 mbpos,vec3 tpos, float radius);
+float sphereMB(vec3 mbpos, vec3 tpos, float radius);
 
 // void loadPoints();
