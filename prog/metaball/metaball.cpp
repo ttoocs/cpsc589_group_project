@@ -171,8 +171,8 @@ float fanceyMB(vec3 mbpos, vec3 tpos, float radius){
       z*=z;
       float den = x+y+z;
       if(den < EPSILON  && den > EPSILON )
-        return 0;
-      return radius/den;
+        return -1;
+      return radius/den -1 ;
 }
 
 
