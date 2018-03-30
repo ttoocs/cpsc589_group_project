@@ -32,7 +32,8 @@ float MetaBall::accumMetaBallFuncs(vec3 point)
 		//accum += metaballs[i]->function(point);
 		accum += metaballs[i]->valueAt(point);
 	}
-	return accum;
+	return accum+1;
+//  return 100;
 }
 
 
@@ -135,8 +136,10 @@ float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
 	{
 		float r = length(mbpos - tpos);
 
-		if (r > radius)
-			return 0;
+//    return (r-1);
+
+//		if (r > radius)
+//			return 0;
 
 		float term1, term2, term3;
 		float R = r / radius;
@@ -146,6 +149,6 @@ float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
 		term3 = (22.0 / 9.0) * pow(R, 2.0);
 		float total = term1 + term2 - term3;
 		//float total = (float) term1 + (float) term2 - (float) term3 + (float) 1.0;
-		return term1 + term2 - term3 + 1.0;
+		return term1 + term2 - term3;// + 1.0;
 	}
 

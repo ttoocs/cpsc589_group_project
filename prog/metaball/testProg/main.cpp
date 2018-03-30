@@ -112,6 +112,8 @@ void Update_Perspective(){
 
   std::vector<vec3> verts;
   std::vector<GLuint> idx;
+Object sphere;
+
 
 void Update_GPU_data(){
 //		glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);	//Setup data-copy (points)
@@ -127,7 +129,7 @@ void Update_GPU_data(){
   glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);
   glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*verts.size(),verts.data(),GL_DYNAMIC_DRAW);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuff.indiciesbuffer);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*idx.size(),verts.data(),GL_DYNAMIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*idx.size(),idx.data(),GL_DYNAMIC_DRAW);
 
 	glm::mat4 camMatrix = cam.getMatrix();
   glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "cameraMatrix"),
@@ -175,7 +177,8 @@ int main(int argc, char * argv[]){
 
 	speed =0.01;
 
-  metaballs.push_back(new MetaBall(vec3(0,0,0), 1, WyvillMetaBall));
+  metaballs.push_back(new MetaBall(vec3(0,0,-5), 1, WyvillMetaBall));
+//  metaballs.push_back(new MetaBall(vec3(-0,0,-5), 1, WyvillMetaBall));
 
   Update_Perspective();	//updates perspective uniform, as it's never changed.
   Update_GPU_data();
