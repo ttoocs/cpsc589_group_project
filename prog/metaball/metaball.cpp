@@ -32,7 +32,10 @@ float MetaBall::accumMetaBallFuncs(vec3 point)
 		//accum += metaballs[i]->function(point);
 		accum += metaballs[i]->valueAt(point);
 	}
-	return accum+1;
+  
+
+//  std::cout << "\tpos:\t(" << point.x << ",\t"<< point.y << ",\t" << point.z << ")" << "\t\t" << "accum:" << accum << std::endl;
+	return accum;
 //  return 100;
 }
 
@@ -136,6 +139,8 @@ float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
 	{
 		float r = length(mbpos - tpos);
 
+//    if( r < )
+//      std::cout << "r-1\t" << r-1  << "\tpos:\t(" << tpos.x << ","<< tpos.y << "," << tpos.z << ")" << std::endl;
 //    return (r-1);
 
 //		if (r > radius)
