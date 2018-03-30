@@ -35,7 +35,7 @@ float MetaBall::accumMetaBallFuncs(vec3 point)
   
 
 //  std::cout << "\tpos:\t(" << point.x << ",\t"<< point.y << ",\t" << point.z << ")" << "\t\t" << "accum:" << accum << std::endl;
-	return accum;
+	return accum-1;
 //  return 100;
 }
 
@@ -177,7 +177,7 @@ float fanceyMB(vec3 mbpos, vec3 tpos, float radius){
       float den = x+y+z;
       if(den < EPSILON  && den > EPSILON )
         return -1;
-      return radius/den -1 ;
+      return radius/den;
 }
 
 
