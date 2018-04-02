@@ -67,4 +67,5 @@ add_executable(
     marching_cube/reMarch.cpp
     metaball/metaball.cpp
     cloud/cloud.cpp
+    center.cpp
 )
