@@ -6,7 +6,7 @@
 #include <ctime>
 #include <random>
 
-#define METER 0.002
+#define METER 0.003
 
 using namespace std;
 using namespace glm;
@@ -321,11 +321,14 @@ float random_50_50()
 }
 
 //This assumes ground is at z = 0
-void trace_lightning_recursion(vec3 init_point, vec3 init_direction, vector<vec3> *storage, int num_segs)
+void trace_lightning_recursion(vec3 init_point, vec3 init_direction, vector<vec3> *storage, int num_segs, float max_h)
 {
 	default_random_engine norm_gen, uni_gen;
 	normal_distribution<double> norm_distribution(45.0, 20.0);
 	uniform_real_distribution<double> uni_distribution_length(METER, 10.0*METER);
+	uniform_real_distribution<double> uni_distribution_branch(0.0, 1.0);
+	uniform_real_distribution<double> uni_distribution_new_dir(0.0, 45.0);
+	uniform_int_distribution<int> uni_distribution_segs(1, 150);
 
 	vec3 rand_segment = vec3(0, 0, 0);
 	vec3 current_point = init_point;
@@ -336,21 +339,9 @@ void trace_lightning_recursion(vec3 init_point, vec3 init_direction, vector<vec3
 	vec3 N = normalize(cross(init_direction, vec3(0.0, 1.0, 0.0)));
 	vec3 B = normalize(cross(T, N));
 
+	storage->push_back(current_point);
 	while ((current_point.y > 0.0) && (num_segs > 0))
 	{
-		storage->push_back(current_point);
-
-		/* This is for branching
-		if(Random check to branch)
-		{
-		//START: Get new direction for the branch
-
-		//END: Get new direction for the branch
-		trace_lightning_recursion(current_point, new direction, storage, init_direction);
-		storage->push_back(current_point);
-		}
-		*/
-
 		//START: Random angles, get rand segment
 		rand_angle = norm_distribution(norm_gen);
 		rand_segment = rotateAbout(T, radians(random_50_50() * rand_angle)) * rotateAbout(N, radians(random_50_50() * rand_angle)) * vec4(init_direction, 0.0);
@@ -361,10 +352,28 @@ void trace_lightning_recursion(vec3 init_point, vec3 init_direction, vector<vec3
 
 		current_point += rand_segment;
 		storage->push_back(current_point);
+		
+		if (uni_distribution_branch(uni_gen) <= (0.1*pow(10, -(current_point.y/max_h))))
+		{
+			vec3 new_dir = rotateAbout(T, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * rotateAbout(N, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * vec4(rand_segment, 0.0);
+			trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen), current_point.y);
+		}
+		
+		storage->push_back(current_point);
 		num_segs--;
 	}
+	storage->push_back(current_point);
+
 }
 
+
+float uni_distribution(float min, float max, unsigned seed)
+{
+	default_random_engine uni_gen(seed);
+	uniform_real_distribution<double> uni_distribution(min, max);
+
+	return uni_distribution(uni_gen);
+}
 
 void trace_lightning(vec3 init_point, vec3 init_direction, vector<vec3> *storage, float max_h)
 {
@@ -373,7 +382,7 @@ void trace_lightning(vec3 init_point, vec3 init_direction, vector<vec3> *storage
 	normal_distribution<double> norm_distribution(45.0, 20.0);
 	uniform_real_distribution<double> uni_distribution_length(METER, 10.0*METER);
 	uniform_real_distribution<double> uni_distribution_branch(0.0, 1.0);
-	uniform_real_distribution<double> uni_distribution_new_dir(0.0, 90.0);
+	uniform_real_distribution<double> uni_distribution_new_dir(0.0, 45.0);
 	uniform_int_distribution<int> uni_distribution_segs(1, 150);
 
 	vec3 rand_segment = vec3(0, 0, 0);
@@ -402,7 +411,7 @@ void trace_lightning(vec3 init_point, vec3 init_direction, vector<vec3> *storage
 		if (uni_distribution_branch(uni_gen) <= (0.1*pow(10, -(current_point.y/max_h))))
 		{
 			vec3 new_dir = rotateAbout(T, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * rotateAbout(N, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * vec4(rand_segment, 0.0);
-			trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen));
+			trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen), current_point.y);
 		}
 		storage->push_back(current_point);
 	}
