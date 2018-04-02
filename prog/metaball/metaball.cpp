@@ -83,7 +83,8 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
          *lbound,*ubound,
           granularity,
           verts,
-          idx
+          idx,
+	  norms
         );
 
 }
