@@ -7,7 +7,7 @@
 
 
 using namespace std;
-void cloud::create_cloud(vector<vec3> *points, vector<GLuint> *indices, int rounds)
+void cloud::create_cloud(vector<vec3> *points, vector<GLuint> *indices,vector<vec3> *norms, int rounds)
 {
 	vec3 p0 = vec3(0,0,0);
 	vec3 p1 = vec3(0,0,0);
@@ -18,7 +18,7 @@ void cloud::create_cloud(vector<vec3> *points, vector<GLuint> *indices, int roun
 	float radius = 1.0f;
 	
 	//balls;
-	MetaBall::March(points,indices, &balls);
+	MetaBall::March(points,indices,norms, &balls);
 	
 	for(int j = 0; j < rounds; j++)
 	{
@@ -43,7 +43,7 @@ void cloud::create_cloud(vector<vec3> *points, vector<GLuint> *indices, int roun
 			
 			balls.push_back((new MetaBall(p0,radius,balls[0]->m_surfaceFunction)));
 		}
-		MetaBall::March(points,indices, &balls);
+		MetaBall::March(points,indices,norms, &balls);
 	}
 	
 	
