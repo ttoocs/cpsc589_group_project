@@ -40,7 +40,7 @@ float MetaBall::accumMetaBallFuncs(vec3 point)
 }
 
 
-void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::vector<MetaBall*> * mbs, vec3 * lbound, vec3 * ubound, double granularity){
+void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::vector<vec3> * norms, std::vector<MetaBall*> * mbs, vec3 * lbound, vec3 * ubound, double granularity){
   
 //#define DUMMY
 #ifdef DUMMY

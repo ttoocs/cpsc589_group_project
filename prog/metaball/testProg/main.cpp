@@ -62,7 +62,7 @@ void initalize_GL(){
 		glGenVertexArrays(1, &glstuff.vertexarray);
 		glGenBuffers(1, &glstuff.vertexbuffer);
 
-//		glGenBuffers(1, &glstuff.normalbuffer);
+		glGenBuffers(1, &glstuff.normalbuffer);
 //		glGenBuffers(1, &glstuff.uvsbuffer);
 		glGenBuffers(1, &glstuff.indiciesbuffer);
 
@@ -71,10 +71,10 @@ void initalize_GL(){
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);	//Points
 		glEnableVertexAttribArray(0);
 
-//		glBindVertexArray(glstuff.vertexarray);
-//		glBindBuffer(GL_ARRAY_BUFFER,glstuff.normalbuffer);
-//		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0); //Normals
-//		glEnableVertexAttribArray(1);
+		glBindVertexArray(glstuff.vertexarray);
+		glBindBuffer(GL_ARRAY_BUFFER,glstuff.normalbuffer);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0); //Normals
+		glEnableVertexAttribArray(1);
 //
 //		glBindVertexArray(glstuff.vertexarray);
 //		glBindBuffer(GL_ARRAY_BUFFER,glstuff.uvsbuffer);
@@ -111,6 +111,7 @@ void Update_Perspective(){
 }
 
   std::vector<vec3> verts;
+  std::vector<vec3> norms;
   std::vector<GLuint> idx;
 Object sphere;
 
@@ -123,11 +124,16 @@ void Update_GPU_data(){
 
   verts.clear();
   idx.clear();
+  norms.clear();
 
-  MetaBall::March(&verts,&idx);
+  MetaBall::March(&verts,&idx,&norms);
   
   glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);
   glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*verts.size(),verts.data(),GL_DYNAMIC_DRAW);
+
+  glBindBuffer(GL_ARRAY_BUFFER,glstuff.normalbuffer);
+  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*norms.size(),norms.data(),GL_DYNAMIC_DRAW);
+
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuff.indiciesbuffer);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*idx.size(),idx.data(),GL_DYNAMIC_DRAW);
 
