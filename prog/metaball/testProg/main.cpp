@@ -5,9 +5,11 @@
 
 #include "../../main.h"
 #include "../metaball.h"
-#include "../../clouds/cloud.h"
+// #include "../../clouds/cloud.h"
 
-Camera cam;
+Camera activeCamera;
+
+#define cam activeCamera
 
 float speed = 1;
 
