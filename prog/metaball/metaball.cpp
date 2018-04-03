@@ -6,6 +6,8 @@
 // Moved the .cpp stuff out of the .h stuff.
 // Moved the meta-ball functs out of main and put here instead.
 #include "metaball.h"
+#include "math.h"
+
 
 std::vector<MetaBall*> MetaBall::metaballs;
 std::vector<MetaBall*> * MetaBall::accumData;
@@ -76,17 +78,27 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
     //TODO
     bool first = true;
     for(auto i = mbs->begin(); i != mbs->end(); i++){
+
+      vec3 tpos = (*i)->pos;
+      float rad = (*i)->radius;
+      
+      rad = std::min(rad,1.f);
+      rad*=2;     
+      
       if(first){
-        lb = (*i)->pos * (*i)->radius;
+        lb = tpos;
+        first = false;
       }else{
-        if((*i)->pos.x * (*i)->radius < lb.x)
-          lb.x = (*i)->pos.x * (*i)->radius; 
-        if((*i)->pos.y * (*i)->radius < lb.y)
-          lb.y = (*i)->pos.y * (*i)->radius;
-        if((*i)->pos.z * (*i)->radius < lb.z)
-          lb.z = (*i)->pos.z * (*i)->radius;
+        if(tpos.x - rad < lb.x)
+          lb.x = tpos.x - rad; 
+        if(tpos.y - rad < lb.y)
+          lb.y = tpos.y - rad; 
+        if(tpos.z - rad < lb.z)
+          lb.z = tpos.z - rad; 
       }
+      std::cout << "lb: " << sVec(lb) << std::endl;
     }
+//    lb *= 10;
 //    lb = vec3(-10,-10,-10);
     lbound = &lb;
   }
@@ -95,18 +107,28 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
     //TODO
     bool first = true;
     for(auto i = mbs->begin(); i != mbs->end(); i++){
+
+      vec3 tpos = (*i)->pos;
+      float rad = (*i)->radius;
+      
+      rad = std::min(rad,1.f);
+      rad*=2;
+ 
       if(first){
-        ub = (*i)->pos * (*i)->radius;
+        ub = tpos;
+        first = false;
       }else{
-        if((*i)->pos.x * (*i)->radius > lb.x)
-          ub.x = (*i)->pos.x * (*i)->radius; 
-        if((*i)->pos.y * (*i)->radius > lb.y)
-          ub.y = (*i)->pos.y * (*i)->radius;
-        if((*i)->pos.z * (*i)->radius> lb.z)
-          ub.z = (*i)->pos.z * (*i)->radius;
+        if(tpos.x + rad > ub.x)
+          ub.x = tpos.x + rad; 
+        if(tpos.y + rad > ub.y)
+          ub.y = tpos.y + rad; 
+        if(tpos.z + rad > ub.z)
+          ub.z = tpos.z + rad; 
       }
-    }
+      std::cout << "ub: " << sVec(ub) << std::endl;
+   
     ubound = &ub;
+    }
   }
    
   //Setup accumMetaBallFuncs pnter,

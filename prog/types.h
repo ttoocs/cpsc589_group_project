@@ -14,6 +14,10 @@ typedef glm::vec2 vec2;
 typedef glm::mat2 mat2;
 typedef glm::mat3 mat3;
 typedef glm::mat4 mat4;
+
+
+#define sVec(A) "(" << A.x << "," << A.y << "," << A.z << ")"
+
 /*
 #include <Eigen/Dense>
 
