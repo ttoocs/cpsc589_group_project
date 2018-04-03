@@ -5,6 +5,7 @@
 
 #include "../../main.h"
 #include "../metaball.h"
+#include "../../clouds/cloud.h"
 
 Camera cam;
 

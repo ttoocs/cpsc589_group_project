@@ -121,12 +121,6 @@ void Update_GPU_data(){
 //		glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*s->positions.size(),s->positions.data(),GL_DYNAMIC_DRAW);
 
   //Calc verts/etc
-
-  verts.clear();
-  idx.clear();
-  norms.clear();
-
-  MetaBall::March(&verts,&idx,&norms);
   
   glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);
   glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*verts.size(),verts.data(),GL_DYNAMIC_DRAW);
@@ -184,12 +178,22 @@ int main(int argc, char * argv[]){
 	speed =0.01;
 
   //metaballs.push_back(new MetaBall(vec3(0,0,-5), 1, fanceyMB));
-  metaballs.push_back(new MetaBall(vec3(0,0,-5), 3, fanceyMB));
-  metaballs.push_back(new MetaBall(vec3(-3,0,-5), 1, fanceyMB));
+  metaballs.push_back(new MetaBall(vec3(0,0,-5), 0.1, fanceyMB));
+/*  metaballs.push_back(new MetaBall(vec3(-3,0,-5), 1, fanceyMB));
   metaballs.push_back(new MetaBall(vec3(3,0,-5), 1, fanceyMB));
   metaballs.push_back(new MetaBall(vec3(0,3,-5), 1, fanceyMB));
-  metaballs.push_back(new MetaBall(vec3(0,-3,-5), 1, fanceyMB));
+  metaballs.push_back(new MetaBall(vec3(0,-3,-5), 1, fanceyMB));*/
 
+  cloud aCloud;
+  aCloud.balls = metaballs;
+
+
+  verts.clear();
+  idx.clear();
+  norms.clear();
+  
+  aCloud.create_cloud(&verts, &idx,&norms, 1);
+  
   Update_Perspective();	//updates perspective uniform, as it's never changed.
   Update_GPU_data();
 
