@@ -67,13 +67,38 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
   if(lbound == NULL){
     //Find the bounding box: (take furthest metaball-pos's, and use that for a box.)
     //TODO
-    lb = vec3(-10,-10,-10);
+    bool first = true;
+    for(auto i = mbs->begin(); i != mbs->end(); i++){
+      if(first){
+        lb = (*i)->pos * (*i)->radius;
+      }else{
+        if((*i)->pos.x * (*i)->radius < lb.x)
+          lb.x = (*i)->pos.x * (*i)->radius; 
+        if((*i)->pos.y * (*i)->radius < lb.y)
+          lb.y = (*i)->pos.y * (*i)->radius;
+        if((*i)->pos.z * (*i)->radius < lb.z)
+          lb.z = (*i)->pos.z * (*i)->radius;
+      }
+    }
+//    lb = vec3(-10,-10,-10);
     lbound = &lb;
   }
   if(ubound == NULL){
     //Find the bounding box: (take furthest metaball-pos's, and use that for a box.)
     //TODO
-    ub = vec3(10,10,10);
+    bool first = true;
+    for(auto i = mbs->begin(); i != mbs->end(); i++){
+      if(first){
+        ub = (*i)->pos * (*i)->radius;
+      }else{
+        if((*i)->pos.x * (*i)->radius > lb.x)
+          ub.x = (*i)->pos.x * (*i)->radius; 
+        if((*i)->pos.y * (*i)->radius > lb.y)
+          ub.y = (*i)->pos.y * (*i)->radius;
+        if((*i)->pos.z * (*i)->radius> lb.z)
+          ub.z = (*i)->pos.z * (*i)->radius;
+      }
+    }
     ubound = &ub;
   }
   
