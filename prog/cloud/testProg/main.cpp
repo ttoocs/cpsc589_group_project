@@ -5,8 +5,9 @@
 
 #include "../../main.h"
 #include "../../metaball/metaball.h"
+#include "../cloud.h"
 
-Camera cam;
+Camera activeCamera;
 
 float speed = 1;
 
@@ -131,7 +132,7 @@ void Update_GPU_data(){
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuff.indiciesbuffer);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*idx.size(),idx.data(),GL_DYNAMIC_DRAW);
 
-	glm::mat4 camMatrix = cam.getMatrix();
+  glm::mat4 camMatrix = activeCamera.getMatrix();
   glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "cameraMatrix"),
             1,
             false,
@@ -142,6 +143,16 @@ void Update_GPU_data(){
 
 void Render(){
 	glClearColor(0.5,0,0,0);
+  
+  
+  glm::mat4 camMatrix = activeCamera.getMatrix();
+  glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "cameraMatrix"),
+            1,
+            false,
+            &camMatrix[0][0]);
+
+  
+  
 	glClear(GL_COLOR_BUFFER_BIT);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glUseProgram(glstuff.prog);
@@ -163,6 +174,10 @@ void Render(){
 	return;
 }
 
+void printVec(vec3 v)
+{
+  std::cout <<"aVec: (x,y,z) = (" << v.x << ", " << v.y << ", " << v.z << ")\n";
+}
 
 int main(int argc, char * argv[]){
 
@@ -196,6 +211,11 @@ int main(int argc, char * argv[]){
   
   Update_Perspective();	//updates perspective uniform, as it's never changed.
   Update_GPU_data();
+  
+  printVec(activeCamera.pos);
+  printVec(activeCamera.dir);
+  printVec(activeCamera.up);
+  printVec(activeCamera.right);
 
 	while(!glfwWindowShouldClose(window))
 	{ //Main loop.
