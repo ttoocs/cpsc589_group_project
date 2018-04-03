@@ -8,6 +8,7 @@
 #include "metaball.h"
 
 std::vector<MetaBall*> MetaBall::metaballs;
+std::vector<MetaBall*> * MetaBall::accumData;
 
 MetaBall::MetaBall(vec3 newPos, double radius, float(*f)(vec3, vec3, float))
 	{
@@ -27,10 +28,16 @@ float MetaBall::valueAt(vec3 loc)
 float MetaBall::accumMetaBallFuncs(vec3 point)
 {
 	float accum = 0.0;
-	for (int i = 0; i < metaballs.size(); i++)
+  if(accumData == NULL){
+    std::cout << "No metaballs given, using all metaballs." << std::endl;
+    accumData = &metaballs;
+  }
+
+  for( auto i = accumData->begin(); i != accumData->end(); i++) //Now uses accumData state-like system.
+//	for (int i = 0; i < metaballs.size(); i++)
 	{
 		//accum += metaballs[i]->function(point);
-		accum += metaballs[i]->valueAt(point);
+		accum += (*i)->valueAt(point);
 	}
   
 
@@ -101,8 +108,9 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
     }
     ubound = &ub;
   }
-  
-  //TODO: Make it actually only use some meta-balls... lambda functions? 
+   
+  //Setup accumMetaBallFuncs pnter,
+  MetaBall::setAccumData(mbs);
 
   March1((MetaBall::accumMetaBallFuncs),
          *lbound,*ubound,
@@ -112,6 +120,14 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
 	  norms
         );
 
+}
+
+void MetaBall::setAccumData(std::vector<MetaBall*> * mbs){
+  if(mbs == NULL){
+    std::cout << "No metaballs given, using all metaballs." << std::endl;
+    mbs = &metaballs;
+  }
+  MetaBall::accumData = mbs;
 }
 
 

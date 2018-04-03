@@ -29,9 +29,12 @@ public:
 
   //Static Stuff!
   static std::vector<MetaBall*> metaballs;
+  static std::vector<MetaBall*> *accumData; //State-like data for accumtMetaBallFuncs..
   static float accumMetaBallFuncs(vec3 point);
   static double accumMetaBallFuncs(double x, double y, double z) {return accumMetaBallFuncs(vec3(x,y,z));}
   static void March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::vector<vec3> * norms=NULL, std::vector<MetaBall*> * mbs=NULL, vec3 * lbound=NULL, vec3 * ubound=NULL, double granularity=0.25);
+
+  static void setAccumData(std::vector<MetaBall*> * mbs=NULL);
 };
 
 
