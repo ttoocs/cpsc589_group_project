@@ -5,9 +5,6 @@
 #include <vector>
 #include <ctime>
 #include <random>
-
-#define METER 0.003
-
 using namespace std;
 using namespace glm;
 
@@ -21,6 +18,8 @@ int num_points;
 unsigned int vertexShader;
 unsigned int fragmentShader;
 unsigned int program;
+
+float meter = 0.004;
 
 /*
 	CAMERA CLASS TAKEN FROM: learnopengl.com
@@ -321,14 +320,14 @@ float random_50_50()
 }
 
 //This assumes ground is at z = 0
-void trace_lightning_recursion(vec3 init_point, vec3 init_direction, vector<vec3> *storage, int num_segs, float max_h)
+void trace_lightning_recursion(vec3 init_point, vec3 init_direction, vector<vec3> *storage, int num_segs, float max_h, int recursion_depth)
 {
 	default_random_engine norm_gen, uni_gen;
 	normal_distribution<double> norm_distribution(45.0, 20.0);
-	uniform_real_distribution<double> uni_distribution_length(METER, 10.0*METER);
+	uniform_real_distribution<double> uni_distribution_length(meter, 10.0*meter);
 	uniform_real_distribution<double> uni_distribution_branch(0.0, 1.0);
 	uniform_real_distribution<double> uni_distribution_new_dir(0.0, 45.0);
-	uniform_int_distribution<int> uni_distribution_segs(1, 150);
+	uniform_int_distribution<int> uni_distribution_segs(10, 150);
 
 	vec3 rand_segment = vec3(0, 0, 0);
 	vec3 current_point = init_point;
@@ -353,10 +352,10 @@ void trace_lightning_recursion(vec3 init_point, vec3 init_direction, vector<vec3
 		current_point += rand_segment;
 		storage->push_back(current_point);
 		
-		if (uni_distribution_branch(uni_gen) <= (0.1*pow(10, -(current_point.y/max_h))))
+		if (uni_distribution_branch(uni_gen) <= ((0.1*pow(10, -(current_point.y/max_h))) / 100.0*recursion_depth))
 		{
 			vec3 new_dir = rotateAbout(T, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * rotateAbout(N, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * vec4(rand_segment, 0.0);
-			trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen), current_point.y);
+			trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen), current_point.y, recursion_depth + 1);
 		}
 		
 		storage->push_back(current_point);
@@ -380,10 +379,10 @@ void trace_lightning(vec3 init_point, vec3 init_direction, vector<vec3> *storage
 	unsigned seed = glfwGetTime();
 	default_random_engine norm_gen(seed), uni_gen(seed);
 	normal_distribution<double> norm_distribution(45.0, 20.0);
-	uniform_real_distribution<double> uni_distribution_length(METER, 10.0*METER);
+	uniform_real_distribution<double> uni_distribution_length(meter, 10.0*meter);
 	uniform_real_distribution<double> uni_distribution_branch(0.0, 1.0);
 	uniform_real_distribution<double> uni_distribution_new_dir(0.0, 45.0);
-	uniform_int_distribution<int> uni_distribution_segs(1, 150);
+	uniform_int_distribution<int> uni_distribution_segs(10, 150);
 
 	vec3 rand_segment = vec3(0, 0, 0);
 	vec3 current_point = init_point;
@@ -411,7 +410,7 @@ void trace_lightning(vec3 init_point, vec3 init_direction, vector<vec3> *storage
 		if (uni_distribution_branch(uni_gen) <= (0.1*pow(10, -(current_point.y/max_h))))
 		{
 			vec3 new_dir = rotateAbout(T, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * rotateAbout(N, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * vec4(rand_segment, 0.0);
-			trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen), current_point.y);
+			trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen), current_point.y, 2);
 		}
 		storage->push_back(current_point);
 	}
