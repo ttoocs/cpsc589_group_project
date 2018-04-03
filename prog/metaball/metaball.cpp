@@ -72,6 +72,9 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
   }
 
   vec3 lb,ub; //Just some place to store data for abit, if needed. (SHOULD BE MORE/LESS UNUSED)
+  
+  #define boundFudge 10
+  //5 seemed to work, 2 makes sense (doesn't work), 10 gives a good boundry of safty.
 
   if(lbound == NULL){
     //Find the bounding box: (take furthest metaball-pos's, and use that for a box.)
@@ -83,10 +86,10 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
       float rad = (*i)->radius;
       
       rad = std::min(rad,1.f);
-      rad*=2;     
+      rad*=boundFudge; 
       
       if(first){
-        lb = tpos;
+        lb = tpos - vec3(rad,rad,rad);
         first = false;
       }else{
         if(tpos.x - rad < lb.x)
@@ -96,7 +99,7 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
         if(tpos.z - rad < lb.z)
           lb.z = tpos.z - rad; 
       }
-      std::cout << "lb: " << sVec(lb) << std::endl;
+//      std::cout << "lb: " << sVec(lb) << std::endl;
     }
 //    lb *= 10;
 //    lb = vec3(-10,-10,-10);
@@ -106,16 +109,16 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
     //Find the bounding box: (take furthest metaball-pos's, and use that for a box.)
     //TODO
     bool first = true;
-    for(auto i = mbs->begin(); i != mbs->end(); i++){
+   for(auto i = mbs->begin(); i != mbs->end(); i++){
 
       vec3 tpos = (*i)->pos;
       float rad = (*i)->radius;
       
       rad = std::min(rad,1.f);
-      rad*=2;
+      rad*=boundFudge;
  
       if(first){
-        ub = tpos;
+        ub = tpos + vec3(rad,rad,rad);
         first = false;
       }else{
         if(tpos.x + rad > ub.x)
@@ -125,8 +128,9 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
         if(tpos.z + rad > ub.z)
           ub.z = tpos.z + rad; 
       }
-      std::cout << "ub: " << sVec(ub) << std::endl;
-   
+//      std::cout << "ub: " << sVec(ub) << std::endl;
+  
+    //ub = vec3(10,10,10); 
     ubound = &ub;
     }
   }
