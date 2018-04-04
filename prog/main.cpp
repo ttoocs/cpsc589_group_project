@@ -42,8 +42,8 @@ void initalize_GL(){
 
 		//OpenGL programs
 		glstuff.prog = glCreateProgram();
-		glstuff.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSource("vertex.glsl"));
-		glstuff.fragShader = CompileShader(GL_FRAGMENT_SHADER,LoadSource("fragment.glsl"));
+		glstuff.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSource(VERTEXPATH));
+		glstuff.fragShader = CompileShader(GL_FRAGMENT_SHADER,LoadSource(FRAGMENTPATH));
 
     //Attaching to prog
 		glAttachShader(glstuff.prog, glstuff.vertexShader);

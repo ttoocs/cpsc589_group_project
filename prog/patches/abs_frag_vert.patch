@@ -1,0 +1,35 @@
+diff --git a/prog/CMakeLists.txt b/prog/CMakeLists.txt
+index 4943c8f..1600e86 100644
+--- a/prog/CMakeLists.txt
++++ b/prog/CMakeLists.txt
+@@ -27,6 +27,15 @@ find_package( glfw3 REQUIRED )
+ find_package( OpenGL REQUIRED )
+ 
+ 
++##Manually get full-path of shaders
++get_filename_component(fragmentPath fragment.glsl REALPATH)
++get_filename_component(vertexPath vertex.glsl REALPATH)
++
++##add #DEFINES for them.
++add_definitions (-DFRAGMENTPATH="${fragmentPath}")
++add_definitions (-DVERTEXPATH="${vertexPath}")
++
++
+ # Use PkgConfig to find glew...
+ #find_package( glew REQUIRED )
+ pkg_check_modules(glew REQUIRED glew)
+diff --git a/prog/main.cpp b/prog/main.cpp
+index 1bfdf8c..06f5917 100644
+--- a/prog/main.cpp
++++ b/prog/main.cpp
+@@ -42,8 +42,8 @@ void initalize_GL(){
+ 
+ 		//OpenGL programs
+ 		glstuff.prog = glCreateProgram();
+-		glstuff.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSource("vertex.glsl"));
+-		glstuff.fragShader = CompileShader(GL_FRAGMENT_SHADER,LoadSource("fragment.glsl"));
++		glstuff.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSource(VERTEXPATH));
++		glstuff.fragShader = CompileShader(GL_FRAGMENT_SHADER,LoadSource(FRAGMENTPATH));
+ 
+     //Attaching to prog
+ 		glAttachShader(glstuff.prog, glstuff.vertexShader);

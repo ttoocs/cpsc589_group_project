@@ -28,6 +28,15 @@ find_package( glfw3 REQUIRED )
 find_package( OpenGL REQUIRED )
 
 
+##Manually get full-path of shaders
+get_filename_component(fragmentPath fragment.glsl REALPATH)
+get_filename_component(vertexPath vertex.glsl REALPATH)
+
+##add #DEFINES for them.
+add_definitions (-DFRAGMENTPATH="${fragmentPath}")
+add_definitions (-DVERTEXPATH="${vertexPath}")
+
+
 # Use PkgConfig to find glew...
 #find_package( glew REQUIRED )
 pkg_check_modules(glew REQUIRED glew)
