@@ -145,7 +145,7 @@ void Render(){
 	glClearColor(0.5,0,0,0);
   
   
-  glm::mat4 camMatrix = perspectiveMatrix*activeCamera.getMatrix();
+  glm::mat4 camMatrix = activeCamera.getMatrix();
   glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "cameraMatrix"),
             1,
             false,

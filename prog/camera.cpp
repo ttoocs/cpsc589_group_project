@@ -25,7 +25,7 @@ mat4 Camera::rotateAbout(vec3 axis, float radians)
 
 void Camera::trackballUp(float radians)
 {
-    std::cout << "In trackUp Right dot up: " << dot(right,up) << std::endl;
+    //std::cout << "In trackUp Right dot up: " << dot(right,up) << std::endl;
 	mat4 rotation = rotateAbout(right, -radians);
 
 //	vec4 newPos = rotation*vec4(pos, 1);
@@ -35,7 +35,7 @@ void Camera::trackballUp(float radians)
 	up = normalize(vec3(newUp.x, newUp.y, newUp.z));
 
 	dir = normalize(-cross(right, up));
-    std::cout << "In trackUp Right dot up: " << dot(right,up) << std::endl;
+    //std::cout << "In trackUp Right dot up: " << dot(right,up) << std::endl;
 }
 
 void printVec(vec4 v)
