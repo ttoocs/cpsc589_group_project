@@ -73,8 +73,8 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
 
   vec3 lb,ub; //Just some place to store data for abit, if needed. (SHOULD BE MORE/LESS UNUSED)
   
-  #define boundFudge 10
-  //5 seemed to work, 2 makes sense (doesn't work), 10 gives a good boundry of safty.
+  #define boundFudge 2
+  //This isn't much fudge anymore, it seems std::min didn't work nicely, so now this being 2 works fine.
 
   if(lbound == NULL){
     //Find the bounding box: (take furthest metaball-pos's, and use that for a box.)
@@ -85,9 +85,13 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
       vec3 tpos = (*i)->pos;
       float rad = (*i)->radius;
       
-      rad = std::min(rad,1.f);
+      if (rad < 1)
+        rad=1;
+
       rad*=boundFudge; 
-      
+
+//      std::cout << rad << std::endl;
+
       if(first){
         lb = tpos - vec3(rad,rad,rad);
         first = false;
@@ -101,6 +105,7 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
       }
 //      std::cout << "lb: " << sVec(lb) << std::endl;
     }
+//      std::cout << "lb: " << sVec(lb) << std::endl;
 //    lb *= 10;
 //    lb = vec3(-10,-10,-10);
     lbound = &lb;
@@ -114,7 +119,8 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
       vec3 tpos = (*i)->pos;
       float rad = (*i)->radius;
       
-      rad = std::min(rad,1.f);
+      if (rad < 1)
+        rad=1;
       rad*=boundFudge;
  
       if(first){
@@ -133,6 +139,7 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
     //ub = vec3(10,10,10); 
     ubound = &ub;
     }
+//      std::cout << "ub: " << sVec(ub) << std::endl;
   }
    
   //Setup accumMetaBallFuncs pnter,
