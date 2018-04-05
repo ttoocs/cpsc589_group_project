@@ -15,6 +15,8 @@ float speed = 1;
 std::vector<MetaBall*> metaballs;
 std::vector<float> vertices;
 int num_points;
+
+  mat4 perspectiveMatrix = glm::perspective(glm::radians(45.f), 1.f, 0.1f, 400.f);
 //END: Metaball vars for testing
 
 struct GLSTUFF{
@@ -102,8 +104,6 @@ void initalize_GL(){
 }
 
 void Update_Perspective(){
-//  mat4 perspectiveMatrix = glm::perspective(glm::radians(45.f), 1.33f, 0.1f, 10.f);
-	glm::mat4 perspectiveMatrix = glm::perspective(torad(80.f), 1.f, 0.1f, 20.f);
   glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "perspectiveMatrix"),
             1,
             false,
@@ -145,7 +145,7 @@ void Render(){
 	glClearColor(0.5,0,0,0);
   
   
-  glm::mat4 camMatrix = activeCamera.getMatrix();
+  glm::mat4 camMatrix = perspectiveMatrix*activeCamera.getMatrix();
   glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "cameraMatrix"),
             1,
             false,

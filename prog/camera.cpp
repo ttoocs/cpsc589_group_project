@@ -2,6 +2,7 @@
 //Modified by Cory Jensen
 
 #include "camera.h"
+#include <iostream>
 
 mat4 Camera::rotateAbout(vec3 axis, float radians)
 {
@@ -24,6 +25,7 @@ mat4 Camera::rotateAbout(vec3 axis, float radians)
 
 void Camera::trackballUp(float radians)
 {
+    std::cout << "In trackUp Right dot up: " << dot(right,up) << std::endl;
 	mat4 rotation = rotateAbout(right, -radians);
 
 //	vec4 newPos = rotation*vec4(pos, 1);
@@ -33,20 +35,40 @@ void Camera::trackballUp(float radians)
 	up = normalize(vec3(newUp.x, newUp.y, newUp.z));
 
 	dir = normalize(-cross(right, up));
+    std::cout << "In trackUp Right dot up: " << dot(right,up) << std::endl;
 }
 
+void printVec(vec4 v)
+{
+  std::cout <<"aVec: (x,y,z) = (" << v.x << ", " << v.y << ", " << v.z <<")\n";
+}
 void Camera::trackballRight(float radians)
 {
-	mat4 rotation = rotateAbout(vec4(0,1,0,1), radians);
+    //std::cout << "In trackRight Right dot up: " << dot(right,up) << std::endl;
+	mat4 rotation = rotateAbout(vec3(0,1,0), radians);
 
 //	vec4 newPos = rotation*vec4(pos, 1);
 //	pos = vec3(newPos.x, newPos.y, newPos.z);
 
 	vec4 newRight = rotation*vec4(right, 1);
 	right = normalize(vec3(newRight.x, newRight.y, newRight.z));
+ // std::cout << "before rotation\n";
+ //   printVec(vec4(up,0));
 	up = rotation * vec4(up, 1);
+//    printVec(vec4(up,0));
 
 	dir = normalize(-cross(right, up));
+//	up = normalize(-cross(right, dir));
+  /*
+    std::cout << "uplength: " << up.length << std::endl;
+    printVec(vec4(up,0));
+    std::cout << "rightlength: " << right.length << std::endl;
+    printVec(vec4(right,0));
+    std::cout << "dirlength: " << dir.length << std::endl;
+    printVec(vec4(dir,0));
+    std::cout << "In trackRight Right dot up: " << dot(right,up) << std::endl;
+    * */
+   // std::cout << "In trackRight Right dot up: " << dot(right,up) << std::endl;
 }
 
 void Camera::zoom(float factor)
