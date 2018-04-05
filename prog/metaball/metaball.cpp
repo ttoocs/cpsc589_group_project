@@ -73,7 +73,7 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
 
   vec3 lb,ub; //Just some place to store data for abit, if needed. (SHOULD BE MORE/LESS UNUSED)
   
-  #define boundFudge 2
+  #define boundFudge 3
   //This isn't much fudge anymore, it seems std::min didn't work nicely, so now this being 2 works fine.
 
   if(lbound == NULL){
@@ -105,7 +105,7 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
       }
 //      std::cout << "lb: " << sVec(lb) << std::endl;
     }
-//      std::cout << "lb: " << sVec(lb) << std::endl;
+      std::cout << "lb: " << sVec(lb) << std::endl;
 //    lb *= 10;
 //    lb = vec3(-10,-10,-10);
     lbound = &lb;
@@ -139,7 +139,7 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
     //ub = vec3(10,10,10); 
     ubound = &ub;
     }
-//      std::cout << "ub: " << sVec(ub) << std::endl;
+      std::cout << "ub: " << sVec(ub) << std::endl;
   }
    
   //Setup accumMetaBallFuncs pnter,

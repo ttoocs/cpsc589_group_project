@@ -207,7 +207,7 @@ int main(int argc, char * argv[]){
   idx.clear();
   norms.clear();
   
-  aCloud.create_cloud(&verts, &idx,&norms, 1);
+  aCloud.create_cloud(&verts, &idx,&norms, 10);
   
   Update_Perspective();	//updates perspective uniform, as it's never changed.
   Update_GPU_data();
