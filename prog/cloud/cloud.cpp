@@ -35,29 +35,29 @@ void cloud::create_cloud(vector<vec3> *points, vector<GLuint> *indices,vector<ve
 	  MetaBall::March(points,indices,norms, &balls, NULL, NULL, 0.25);
 		for(int i = 0; i < indices->size()/3; i++)
 		{
-      float rng = (((float)rand())/((float)INT_MAX));
-      if(rng < ((float) AvgNew)/((float)(indices->size()/3)))
-      {
-        //START: Random position inside square for new metaball
-        p0 = (*points)[(*indices)[i*3]];
-        p1 = (*points)[(*indices)[i*3+1]];
-        p2 = (*points)[(*indices)[i*3+2]];
-        
-        r0 = ((float)rand())/((float)INT_MAX);
-        r1 = (1.0f-r0)*((float)rand())/((float)INT_MAX);
-        
-        
-        p0 = (1.0f-r1-r0)*p2 + r1*p1 + r0*p0;
-        
-        //END: Random position inside square for new metaball
-        //Random size:
-        float rad = 1*((float)rand())/((float)INT_MAX);
-        
-        balls.push_back((new MetaBall(p0,rad,balls[0]->m_surfaceFunction)));
-        std::cout << a++ << std::endl;
-      }
+		  float rng = (((float)rand())/((float)INT_MAX));
+		  if(rng < ((float) AvgNew)/((float)(indices->size()/3)))
+		  {
+			//START: Random position inside square for new metaball
+			p0 = (*points)[(*indices)[i*3]];
+			p1 = (*points)[(*indices)[i*3+1]];
+			p2 = (*points)[(*indices)[i*3+2]];
+			
+			r0 = ((float)rand())/((float)INT_MAX);
+			r1 = (1.0f-r0)*((float)rand())/((float)INT_MAX);
+			
+			
+			p0 = (1.0f-r1-r0)*p2 + r1*p1 + r0*p0;
+			
+			//END: Random position inside square for new metaball
+			//Random size:
+			float rad = 1*((float)rand())/((float)INT_MAX);
+			
+			balls.push_back((new MetaBall(p0,rad,balls[0]->m_surfaceFunction)));
+	//		std::cout << a++ << std::endl;
+		  }
 		}
-    std::cout << "cloud round done" << std::endl;
+   // std::cout << "cloud round done" << std::endl;
 	}
   points->clear();
   indices->clear();

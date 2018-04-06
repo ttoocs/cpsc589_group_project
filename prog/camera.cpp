@@ -44,21 +44,31 @@ void printVec(vec4 v)
 }
 void Camera::trackballRight(float radians)
 {
-    //std::cout << "In trackRight Right dot up: " << dot(right,up) << std::endl;
+ //   std::cout << "In trackRight Right dot up: " << dot(right,up) << std::endl;
 	mat4 rotation = rotateAbout(vec3(0,1,0), radians);
 
 //	vec4 newPos = rotation*vec4(pos, 1);
 //	pos = vec3(newPos.x, newPos.y, newPos.z);
 
+ //   std::cout << "before right rotation: " << dot(right,up) << std::endl;
 	vec4 newRight = rotation*vec4(right, 1);
 	right = normalize(vec3(newRight.x, newRight.y, newRight.z));
+  //  std::cout << "after right rotation: " << dot(right,up) << std::endl;
  // std::cout << "before rotation\n";
  //   printVec(vec4(up,0));
+//    std::cout << "before up rotation: " << dot(right,up) << std::endl;
 	up = rotation * vec4(up, 1);
+//    std::cout << "after up rotation: " << dot(right,up) << std::endl;
 //    printVec(vec4(up,0));
 
 	dir = normalize(-cross(right, up));
-//	up = normalize(-cross(right, dir));
+  if(up.x == NAN)
+  {
+    up = vec3(0,1,0);
+    right = vec3(1,0,0);
+    dir = vec3(0,0,-1);
+  }
+	//up = normalize(-cross(right, dir));
   /*
     std::cout << "uplength: " << up.length << std::endl;
     printVec(vec4(up,0));
