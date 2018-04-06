@@ -7,7 +7,7 @@ vec3 getNorm(double (*f)(double,double,double), vec3 pos)
 {
   double rx,ry,rz;
   numerical::numericalDeriv3D(pos.x,pos.y,pos.z,f,rx,ry,rz);
-  return vec3(rx,ry,rz);
+  return -vec3(rx,ry,rz);
 }
 
 void March1(double (*f)(double, double, double),
