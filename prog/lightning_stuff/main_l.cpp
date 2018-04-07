@@ -23,6 +23,10 @@ unsigned int vertexShader;
 unsigned int fragmentShader;
 unsigned int program;
 
+GLuint segBuffer;
+
+
+
 float meter = 0.004;
 
 vector<vec3> storage;
@@ -131,6 +135,10 @@ void genVBOsVAOs()
 
 	glGenBuffers(1, &VBO);
 	glGenVertexArrays(1, &VAO);
+
+
+  glGenBuffers(1, &segBuffer);
+  
 }
 
 string LoadSource(const string &filename)
