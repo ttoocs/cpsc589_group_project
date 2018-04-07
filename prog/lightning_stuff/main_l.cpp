@@ -138,7 +138,11 @@ void genVBOsVAOs()
 
 
   glGenBuffers(1, &segBuffer);
-  
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER,segBuffer);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);	//Points
+//		glEnableVertexAttribArray(0);
+
 }
 
 string LoadSource(const string &filename)
@@ -235,7 +239,7 @@ void updateCamera()
 
 	int mvpLoc = glGetUniformLocation(program, "mvp");
 	glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, value_ptr(mvp));
-		
+
 	int cameraPosLoc = glGetUniformLocation(program, "cameraPosition");
 	glUniform3f(cameraPosLoc, camera.cameraPos.x, camera.cameraPos.y, camera.cameraPos.z);
 }
@@ -377,13 +381,13 @@ void trace_lightning_recursion(vec3 init_point, vec3 init_direction, vector<vec3
 
 		current_point += rand_segment;
 		storage->push_back(current_point);
-		
+
 		if (uni_distribution_branch(uni_gen) <= ((0.1*pow(10, -(current_point.y/max_h))) / 100.0*recursion_depth))
 		{
 			vec3 new_dir = rotateAbout(T, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * rotateAbout(N, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * vec4(rand_segment, 0.0);
 			trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen), current_point.y, recursion_depth + 1);
 		}
-		
+
 		storage->push_back(current_point);
 		num_segs--;
 	}
@@ -432,7 +436,7 @@ void trace_lightning(vec3 init_point, vec3 init_direction, vector<vec3> *storage
 
 		current_point += rand_segment;
 		storage->push_back(current_point);
-		
+
 		if (uni_distribution_branch(uni_gen) <= (0.1*pow(10, -(current_point.y/max_h))))
 		{
 			vec3 new_dir = rotateAbout(T, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * rotateAbout(N, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * vec4(rand_segment, 0.0);
@@ -465,14 +469,15 @@ void loadPoints()
 	num_points = storage.size();
 
 	GLfloat temp[lightning_segs.size() * 3];
-	
+
 	for (int i = 0; i < lightning_segs.size(); i = i + 3)
 	{
 		temp[i] = lightning_segs[i].x;
 		temp[i + 1] = lightning_segs[i].y;
 		temp[i + 2] = lightning_segs[i].z;
-	}	
+	}
 
+  /*
 	int lightningLoc = glGetUniformLocation(program, "lightning_segs");
 	glUniform3fv(lightningLoc, lightning_segs.size(), temp);
 
@@ -480,6 +485,12 @@ void loadPoints()
 	glUniform1i(numSegsLoc, lightning_segs.size());
 
 	cout << lightning_segs.size() << endl;
+  */
+
+  //EX: a single sphere:
+  glBindBuffer(GL_ARRAY_BUFFER, segBuffer);
+  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)&lightning_segs.size(),lightning_segs.data(),GL_DYNAMIC_DRAW);
+
 
 	// Clear vertices vector
 	vertices.clear();
@@ -489,7 +500,7 @@ void render()
 {
 	glUseProgram(program);
 
-	
+
 	// Draw the pointMasses
 	glBindVertexArray(VAO);
 	//glDrawArrays(GL_LINES, 0, num_points);
