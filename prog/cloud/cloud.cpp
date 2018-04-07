@@ -9,6 +9,7 @@
 #include "cloud.h"
 #include "stdlib.h"
 #include <vector>
+#include <math.h>
 
 #include "../main.h"
 
@@ -51,7 +52,7 @@ void cloud::create_cloud(vector<vec3> *points, vector<GLuint> *indices,vector<ve
 			
 			//END: Random position inside square for new metaball
 			//Random size:
-			float rad = 1*((float)rand())/((float)INT_MAX);
+			float rad = ((float)rand())/((float)INT_MAX)*exp(1.0/(i+1));
 			
 			balls.push_back((new MetaBall(p0,rad,balls[0]->m_surfaceFunction)));
 	//		std::cout << a++ << std::endl;

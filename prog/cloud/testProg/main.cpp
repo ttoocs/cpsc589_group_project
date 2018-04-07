@@ -193,7 +193,8 @@ int main(int argc, char * argv[]){
 	speed =0.01;
 
   //metaballs.push_back(new MetaBall(vec3(0,0,-5), 1, fanceyMB));
-  metaballs.push_back(new MetaBall(vec3(0,0,-5), 0.1, fanceyMB));
+  metaballs.push_back(new MetaBall(vec3(-1,0,-5), 0.1, fanceyMB));
+  metaballs.push_back(new MetaBall(vec3(1,0,-5), 0.1, fanceyMB));
 /*  metaballs.push_back(new MetaBall(vec3(-3,0,-5), 1, fanceyMB));
   metaballs.push_back(new MetaBall(vec3(3,0,-5), 1, fanceyMB));
   metaballs.push_back(new MetaBall(vec3(0,3,-5), 1, fanceyMB));
