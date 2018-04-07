@@ -484,13 +484,15 @@ void loadPoints()
 	int numSegsLoc = glGetUniformLocation(program, "numSegs");
 	glUniform1i(numSegsLoc, lightning_segs.size());
 
-	cout << lightning_segs.size() << endl;
   */
+	cout << lightning_segs.size() << endl;
 
   //EX: a single sphere:
   glBindBuffer(GL_ARRAY_BUFFER, segBuffer);
   glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)&lightning_segs.size(),lightning_segs.data(),GL_DYNAMIC_DRAW);
 
+	int numSegsLoc = glGetUniformLocation(program, "numSegs");
+	glUniform1i(numSegsLoc, lightning_segs.size());
 
 	// Clear vertices vector
 	vertices.clear();
