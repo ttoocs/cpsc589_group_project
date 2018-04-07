@@ -471,9 +471,9 @@ void loadPoints()
 
 	num_points = storage.size();
 
-	GLfloat temp[lightning_segs.size() * 3];
+	GLfloat temp[lightning_segs.size() * 4];
   
-	for (int i = 0; i < lightning_segs.size(); i = i + 3)
+	for (int i = 0; i < lightning_segs.size(); i = i + 4)
 	{
 		temp[i] = lightning_segs[i].x;
 		temp[i + 1] = lightning_segs[i].y;
@@ -490,24 +490,32 @@ void loadPoints()
 
   */
 	cout << lightning_segs.size() << endl;
-// /*
+// /* //Working example via testing colors:
 temp[0] = 0;
 temp[1] = 1.0;
 temp[2] = -2.0;
+
+temp[3] = 0; //
+
 temp[4] = -1.0;
 temp[5] = 0;
 temp[6] = -2;
 
-temp[7] = 1;
-temp[8] = 0;
-temp[9] = -2;
-temp[10] = 0;
-temp[11] = -1;
-temp[12] = -2;
+temp[7] = 1; //??
+
+temp[8] = -1;
+temp[9] = 0;
+temp[10] = -2;
+
+temp[11] = 0;// ??
+
+temp[12] = -1;
+temp[13] = -2;
+temp[14] = 0;
 // */
   //EX: a single sphere:
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, segBuffer);
-  glBufferData(GL_SHADER_STORAGE_BUFFER,sizeof(GLfloat)*10* 3,&temp,GL_DYNAMIC_COPY);
+  glBufferData(GL_SHADER_STORAGE_BUFFER,sizeof(temp),&temp,GL_DYNAMIC_COPY);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER,0);
 	int numSegsLoc = glGetUniformLocation(program, "numSegs");
 	glUniform1i(numSegsLoc, lightning_segs.size());
