@@ -470,12 +470,15 @@ void loadPoints()
 
 	GLfloat temp[lightning_segs.size() * 3];
 
+  /*
 	for (int i = 0; i < lightning_segs.size(); i = i + 3)
 	{
 		temp[i] = lightning_segs[i].x;
 		temp[i + 1] = lightning_segs[i].y;
 		temp[i + 2] = lightning_segs[i].z;
-	}
+	}*/
+
+  std::cout << lightning_segs[10].x  << std::endl;
 
   /*
 	int lightningLoc = glGetUniformLocation(program, "lightning_segs");
