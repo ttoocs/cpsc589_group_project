@@ -35,9 +35,9 @@ struct Ray
 	vec3 dir;
 };
 
-#define NumSegs 10
+#define NumSegs 1
 struct Scene{
-	Segment segments[NumSegs];
+	Segment segments[NumSegs*2];
 };
 
 vec3 shader(Scene scene, vec3 cameraPosition, int obj, int objIndex, vec3 intersectPoint){
@@ -73,7 +73,7 @@ float calcShortestVector(Ray r, Segment s)
 		return length(point2 - point1);
 }
 
-vec3 calculateColor(float w, float n, Ray r, Segment[NumSegs] segs, int size)
+vec3 calculateColor(float w, float n, Ray r, Segment[NumSegs*2] segs, int size)
 {
 	float max_r = (float) 204.0/255.0;
 	float max_g = (float) 255.0/255.0;
@@ -89,7 +89,7 @@ vec3 calculateColor(float w, float n, Ray r, Segment[NumSegs] segs, int size)
 	return color;
 }
 
-vec3 calculateGlow(float w, float l, Ray r, Segment[NumSegs] segs, int size)
+vec3 calculateGlow(float w, float l, Ray r, Segment[NumSegs*2] segs, int size)
 {
 	float max_r = (float) 255.0/255.0;
 	float max_g = (float) 255.0/255.0;
@@ -151,13 +151,16 @@ void main(void)
 	vec3 color = vec3(1.0, 1.0, 1.0);
 
 
-	for (int i = 0; i < NumSegs; i++)
+	for (int i = 0; i < NumSegs*2; i++)
   {
-		color = color * (calculateColor(width_I, n, r, scene.segments, NumSegs)
-		                 + calculateGlow(width_G, l, r, scene.segments, NumSegs));
+		color = color * (calculateColor(width_I, n, r, scene.segments, NumSegs*2)
+		                 + calculateGlow(width_G, l, r, scene.segments, NumSegs*2));
 	}
 
-//  color = abs(lightning_segs[1]);
+  //color = abs(lightning_segs[0]);
+
+
+
 	FragmentColour = vec4(color, 1);
 }
 

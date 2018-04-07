@@ -490,18 +490,24 @@ void loadPoints()
 
   */
 	cout << lightning_segs.size() << endl;
-/*
-temp[0] = 1.0;
+// /*
+temp[0] = 0;
 temp[1] = 1.0;
-temp[2] = 1.0;
-temp[4] = 1.0;
+temp[2] = -2.0;
+temp[4] = -1.0;
 temp[5] = 0;
-temp[6] = 0;
-temp[7] = 0;
-*/
+temp[6] = -2;
+
+temp[7] = 1;
+temp[8] = 0;
+temp[9] = -2;
+temp[10] = 0;
+temp[11] = -1;
+temp[12] = -2;
+// */
   //EX: a single sphere:
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, segBuffer);
-  glBufferData(GL_SHADER_STORAGE_BUFFER,sizeof(GLfloat)*lightning_segs.size() * 3,&temp,GL_DYNAMIC_COPY);
+  glBufferData(GL_SHADER_STORAGE_BUFFER,sizeof(GLfloat)*10* 3,&temp,GL_DYNAMIC_COPY);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER,0);
 	int numSegsLoc = glGetUniformLocation(program, "numSegs");
 	glUniform1i(numSegsLoc, lightning_segs.size());
