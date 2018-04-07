@@ -4,7 +4,7 @@
 // Author:  Sonny Chan, University of Calgary
 // Date:    December 2015
 // ==========================================================================
-#version 410
+#version 430
 #define SPHERE 1
 #define TRIANGLE 2
 #define PLANE 3
@@ -17,7 +17,10 @@ out vec4 FragmentColour;
 
 uniform vec3 cameraPosition;
 //uniform vec3[737] lightning_segs;
-layout(location = 0) in vec3 lightning_segs;
+layout(std430, binding = 0) buffer ffs{
+  // lightning_segs;
+  vec3[] lightning_segs;
+};
 uniform vec3 numSegs;
 
 struct Segment
@@ -150,6 +153,7 @@ void main(void)
 		                 + calculateGlow(width_G, l, r, scene.segments, 2));
 	}
 
+  color = abs(lightning_segs[155]);
 	FragmentColour = vec4(color, 1);
 }
 

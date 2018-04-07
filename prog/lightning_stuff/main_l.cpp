@@ -1,5 +1,6 @@
 #include "include/glad/glad.h"
 #include "include/GLFW/glfw3.h"
+//#include <GLFW/glfw3.h>
 #include "include/glm/ext.hpp"
 #include <iostream>
 #include <vector>
@@ -8,6 +9,9 @@
 #include <string>
 #include <fstream>
 #include <iterator>
+
+
+#define GL_SHADER_STORAGE_BUFFER 0x90D2
 
 using namespace std;
 using namespace glm;
@@ -75,7 +79,7 @@ void render();
 int main()
 {
 	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -136,11 +140,10 @@ void genVBOsVAOs()
 	glGenBuffers(1, &VBO);
 	glGenVertexArrays(1, &VAO);
 
-
-  glGenBuffers(1, &segBuffer);
 	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER,segBuffer);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);	//Points
+	glGenBuffers(1, &segBuffer);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,segBuffer);
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);	//Points
 //		glEnableVertexAttribArray(0);
 
 }
@@ -469,16 +472,14 @@ void loadPoints()
 	num_points = storage.size();
 
 	GLfloat temp[lightning_segs.size() * 3];
-
-  /*
+  
 	for (int i = 0; i < lightning_segs.size(); i = i + 3)
 	{
 		temp[i] = lightning_segs[i].x;
 		temp[i + 1] = lightning_segs[i].y;
 		temp[i + 2] = lightning_segs[i].z;
-	}*/
+	}
 
-  std::cout << lightning_segs[10].x  << std::endl;
 
   /*
 	int lightningLoc = glGetUniformLocation(program, "lightning_segs");
@@ -489,11 +490,19 @@ void loadPoints()
 
   */
 	cout << lightning_segs.size() << endl;
-
+/*
+temp[0] = 1.0;
+temp[1] = 1.0;
+temp[2] = 1.0;
+temp[4] = 1.0;
+temp[5] = 0;
+temp[6] = 0;
+temp[7] = 0;
+*/
   //EX: a single sphere:
-  glBindBuffer(GL_ARRAY_BUFFER, segBuffer);
-  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)&lightning_segs.size(),lightning_segs.data(),GL_DYNAMIC_DRAW);
-
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, segBuffer);
+  glBufferData(GL_SHADER_STORAGE_BUFFER,sizeof(GLfloat)*lightning_segs.size() * 3,&temp,GL_DYNAMIC_COPY);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER,0);
 	int numSegsLoc = glGetUniformLocation(program, "numSegs");
 	glUniform1i(numSegsLoc, lightning_segs.size());
 
