@@ -5,17 +5,12 @@
 // Date:    December 2015
 // ==========================================================================
 #version 430
-#define SPHERE 1
-#define TRIANGLE 2
-#define PLANE 3
 
 #extension GL_NV_shader_buffer_load : enable
 // interpolated colour received from vertex stage
 in vec2 vp;
 // first output is mapped to the framebuffer's colour index by default
 out vec4 FragmentColour;
-
-uniform mat4 mvp;
 
 struct Segment
 {
@@ -32,12 +27,11 @@ struct Ray
 uniform vec3 cameraPosition;
 
 layout(std140, binding = 0) buffer ffs{
-  vec4 NumSegsVec;   //See define below for actual useage
+  // Segs;
+  vec4      NumSegs;
   Segment[] Segs;
 };
 
-//Make NumSegs variable exist
-#define NumSegs NumSegsVec.x 
 
 float calcShortestVector(Ray r, Segment s)
 
@@ -68,37 +62,6 @@ float calcShortestVector(Ray r, Segment s)
 		return length(point2 - point1);
 }
 
-vec3 calculateColor(float w, float n, Ray r)
-{
-	float max_r = (float) 204.0/255.0;
-	float max_g = (float) 255.0/255.0;
-	float max_b = (float) 255.0/255.0;
-
-	vec3 color = vec3(0.0, 0.0, 0.0);
-
-	for (int i = 0; i < NumSegs; i++){
-		color.x = color.x + max_r*exp(-pow((calcShortestVector(r, Segs[i]) / w),n));
-		color.y = color.y + max_g*exp(-pow((calcShortestVector(r, Segs[i]) / w),n));
-		color.z = color.z + max_b*exp(-pow((calcShortestVector(r, Segs[i]) / w),n));
-	}
-	return color;
-}
-
-vec3 calculateGlow(float w, float l, Ray r)
-{
-	float max_r = (float) 255.0/255.0;
-	float max_g = (float) 255.0/255.0;
-	float max_b = (float) 255.0/255.0;
-
-	vec3 color = vec3(0.0, 0.0, 0.0);
-
-	for (int i = 0; i < NumSegs; i++){
-		color.x = color.x + max_r * l * exp(-pow((calcShortestVector(r, Segs[i]) / w),2.0));
-		color.y = color.y + max_g * l * exp(-pow((calcShortestVector(r, Segs[i]) / w),2.0));
-		color.z = color.z + max_b * l * exp(-pow((calcShortestVector(r, Segs[i]) / w),2.0));
-	}
-	return color;
-}
 
 void main(void)
 {
@@ -116,17 +79,6 @@ void main(void)
 	r.origin = cameraPosition;
 	r.dir = directionVector;
 
-  //Transform ray for camera controls
-  bool Transform=false;
-  if(Transform)
-  {
-    //Make origin/ray temps
-    vec4 ot = mvp*vec4(r.origin,0);
-    vec4 rt = mvp*vec4(r.dir,1);
-    r.origin = vec3(ot.x,ot.y,ot.z);
-    r.dir = vec3(rt.x,rt.y,rt.z);
-  }
-
 // -------------MAIN CALCULATION------------------------
 	float width_I = 0.05;
 	float n = 0.5;
@@ -135,31 +87,14 @@ void main(void)
 	float width_G = 0.05;
 
 	vec3 color = vec3(1.0, 1.0, 1.0);
+  color = vec3(0,0,0);
 
-
-  //Togle paperRender/not via commenting/uncomenting below
-  //#define PaperRender
-  
-  #ifdef PaperRender
-    // Papers render:
-  	for (int i = 0; i < NumSegs; i++)
-    {
-  		color = color * (calculateColor(width_I, n, r)
-  		                 + calculateGlow(width_G, l, r));
-    }
-  #else
-
-    //Simple render
-    color = vec3(0,0,0);
-    for(int i=0; i < NumSegs ; i++){
-      float d;
-      d = calcShortestVector(r,Segs[i]);
-      if ( d <0.01)
-        color +=vec3(1);
-    
-    }
-  
-  #endif
+	for (int i = 0; i < NumSegs.x; i++){
+    float d;
+    d = calcShortestVector(r, Segs[i]);
+    if(d < 0.01)
+      color += vec3(0.1);  
+	}
 
 	FragmentColour = vec4(color, 1);
 }
