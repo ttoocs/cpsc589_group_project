@@ -191,7 +191,7 @@ void initShaders()
 
 	// Point Mass Fragment Shader
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	const GLchar *frag_source = LoadSource("scene1FragShader.glsl").c_str();
+	const GLchar *frag_source = LoadSource("cylinder.glsl").c_str();
 	glShaderSource(fragmentShader, 1, &frag_source, NULL);
 	glCompileShader(fragmentShader);
 
@@ -471,9 +471,9 @@ void loadPoints()
 
 	num_points = storage.size();
 
-	GLfloat temp[lightning_segs.size() * 4];
+	GLfloat temp[((lightning_segs.size() * 4) + 4)];
   
-	for (int i = 0; i < lightning_segs.size(); i = i + 4)
+	for (int i = 1; i < lightning_segs.size(); i = i + 4)
 	{
 		temp[i] = lightning_segs[i].x;
 		temp[i + 1] = lightning_segs[i].y;
@@ -481,6 +481,8 @@ void loadPoints()
 	}
 
 
+//  temp[0] = lightning_segs.size();
+  temp[0] = 3;
   /*
 	int lightningLoc = glGetUniformLocation(program, "lightning_segs");
 	glUniform3fv(lightningLoc, lightning_segs.size(), temp);
@@ -491,27 +493,28 @@ void loadPoints()
   */
 	cout << lightning_segs.size() << endl;
 // /* //Working example via testing colors:
-temp[0] = 0;
-temp[1] = 1.0;
-temp[2] = -2.0;
+int OFF=4;
+temp[OFF+0] = 0;
+temp[OFF+1] = 1.0;
+temp[OFF+2] = -2.0;
 
-temp[3] = 0; //
+temp[OFF+3] = 0; //
 
-temp[4] = -1.0;
-temp[5] = 0;
-temp[6] = -2;
+temp[OFF+4] = -1.0;
+temp[OFF+5] = 0;
+temp[OFF+6] = -2;
 
-temp[7] = 1; //??
+temp[OFF+7] = 1; //??
 
-temp[8] = -1;
-temp[9] = 0;
-temp[10] = -2;
+temp[OFF+8] = -1;
+temp[OFF+9] = 0;
+temp[OFF+10] = -2;
 
-temp[11] = 0;// ??
+temp[OFF+11] = 0;// ??
 
-temp[12] = 0;
-temp[13] = -1;
-temp[14] = -2;
+temp[OFF+12] = 0;
+temp[OFF+13] = -1;
+temp[OFF+14] = -2;
 // */
   //EX: a single sphere:
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, segBuffer);
