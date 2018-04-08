@@ -125,14 +125,14 @@ void main(void)
 
 
   //Togle paperRender/not via commenting/uncomenting below
-//  #define PaperRender
+  #define PaperRender
   
   #ifdef PaperRender
     // Papers render:
   	for (int i = 0; i < NumSegs; i++)
     {
-  		color = color * (calculateColor(width_I, n, r, Segs, NumSegs)
-  		                 + calculateGlow(width_G, l, r, Segs, NumSegs));
+  		color = color * (calculateColor(width_I, n, r)
+  		                 + calculateGlow(width_G, l, r));
     }
   #else
 
