@@ -101,8 +101,8 @@ int main()
 
 	glViewport(0, 0, screenWidth, screenHeight);
 
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	//glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetKeyCallback(window, keyboard_callback);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
@@ -238,7 +238,7 @@ void updateCamera()
 	view = camera.view();
 	projection = perspective(radians(45.0f), (float) screenWidth / screenHeight, 0.1f, 100.0f);
 
-	mvp = projection * view * model;
+	mvp = view; // projection * view * model;
 
 	glUseProgram(program);
 
@@ -255,7 +255,7 @@ void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, in
 		glfwSetWindowShouldClose(window, true);
 
 	/* CAMERA */
-/*
+// /*
 	else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
 		camera.cameraPos += camera.cameraSpeed * camera.cameraFront;
@@ -278,7 +278,7 @@ void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, in
 	}
 	else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 		loadPoints();
-	*/
+//	*/
 }
 
 /*
@@ -483,8 +483,8 @@ void loadPoints()
 	}
 
 
-//  temp[0] = lightning_segs.size();
-  temp[0] = 3;
+  temp[0] = lightning_segs.size();
+//  temp[0] = 3;
   /*
 	int lightningLoc = glGetUniformLocation(program, "lightning_segs");
 	glUniform3fv(lightningLoc, lightning_segs.size(), temp);
@@ -494,7 +494,7 @@ void loadPoints()
 
   */
 	cout << lightning_segs.size() << endl;
-// /* //Working example via testing colors:
+ /* //Working example via testing colors:
 int OFF=4;
 temp[OFF+0] = 0;
 temp[OFF+1] = 1.0;
