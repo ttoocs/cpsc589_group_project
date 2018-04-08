@@ -191,7 +191,8 @@ void initShaders()
 
 	// Point Mass Fragment Shader
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	const GLchar *frag_source = LoadSource("cylinder.glsl").c_str();
+	const GLchar *frag_source = LoadSource("scene1FragShader.glsl").c_str();
+//	const GLchar *frag_source = LoadSource("cylinder.glsl").c_str();
 	glShaderSource(fragmentShader, 1, &frag_source, NULL);
 	glCompileShader(fragmentShader);
 
