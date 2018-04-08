@@ -509,9 +509,9 @@ temp[10] = -2;
 
 temp[11] = 0;// ??
 
-temp[12] = -1;
-temp[13] = -2;
-temp[14] = 0;
+temp[12] = 0;
+temp[13] = -1;
+temp[14] = -2;
 // */
   //EX: a single sphere:
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, segBuffer);
