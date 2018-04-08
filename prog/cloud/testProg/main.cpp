@@ -123,7 +123,6 @@ void Update_Perspective(){
 
 }
 
-
 void Update_GPU_data(){
 //		glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);	//Setup data-copy (points)
 //		glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*s->positions.size(),s->positions.data(),GL_DYNAMIC_DRAW);
@@ -139,7 +138,7 @@ void Update_GPU_data(){
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuff.indiciesbuffer);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*idx.size(),idx.data(),GL_DYNAMIC_DRAW);
 
-  glm::mat4 camMatrix = activeCamera.getMatrix();
+  glm::mat4 camMatrix = activeCamera.view();
   glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "cameraMatrix"),
             1,
             false,
@@ -152,7 +151,7 @@ void Render(){
 	glClearColor(0.5,0,0,0);
   
   
-  glm::mat4 camMatrix = activeCamera.getMatrix();
+  glm::mat4 camMatrix = activeCamera.view();
   glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "cameraMatrix"),
             1,
             false,
@@ -211,7 +210,7 @@ int main(int argc, char * argv[]){
   metaballs.push_back(new MetaBall(vec3(0,3,-5), 1, fanceyMB));
   metaballs.push_back(new MetaBall(vec3(0,-3,-5), 1, fanceyMB));*/
 
-  int size = 10;
+  int size = 1;
   cloud aCloud;
   cloud clouds[size];
   aCloud.balls = metaballs;
@@ -221,9 +220,9 @@ std::vector<GLuint> idx_s;
 std::vector<vec3> norms_s;
   for(int i = 0; i < size;i++)
   {
-    float x = -1+3*i;
-    float y = 10 - 20*(((float)rand())/((float)INT_MAX));
-    float z = 10 - 20*(((float)rand())/((float)INT_MAX));
+    float x = 0;//-1+3*i;
+    float y = 0;//10 - 20*(((float)rand())/((float)INT_MAX));
+    float z = 0;//10 - 20*(((float)rand())/((float)INT_MAX));
     clouds[i].balls.push_back(new MetaBall(vec3(x,y,z), 1, fanceyMB));
     x = x+2 - 4*(((float)rand())/((float)INT_MAX));
     y = y+2 - 4*(((float)rand())/((float)INT_MAX));
@@ -261,10 +260,6 @@ std::vector<vec3> norms_s;
   Update_Perspective();	//updates perspective uniform, as it's never changed.
   Update_GPU_data();
   
-  printVec(activeCamera.pos);
-  printVec(activeCamera.dir);
-  printVec(activeCamera.up);
-  printVec(activeCamera.right);
 
 	while(!glfwWindowShouldClose(window))
 	{ //Main loop.
@@ -276,6 +271,7 @@ std::vector<vec3> norms_s;
      // aCloud.create_cloud_naive(&verts, &idx,&norms, 1);
       nextRound = 0;
     }
+    Update_Perspective();
 		Render();
     glfwSwapBuffers(window);
 		glfwPollEvents();
