@@ -9,7 +9,9 @@
 #include <string>
 #include <fstream>
 #include <iterator>
+#include <sstream>
 
+	#define vPrint(X)   "(" << X.x << "," <<  X.y << "," << X.z << ")"
 
 #define GL_SHADER_STORAGE_BUFFER 0x90D2
 
@@ -34,7 +36,6 @@ GLuint segBuffer;
 float meter = 0.004;
 
 vector<vec3> storage;
-vector<vec3> lightning_segs;
 
 /*
 	CAMERA CLASS TAKEN FROM: learnopengl.com
@@ -42,7 +43,7 @@ vector<vec3> lightning_segs;
 
 struct Camera
 {
-	float cameraSpeed = 0.05f;
+	float cameraSpeed = 0.01f;
 
 	float yaw = 270.0f;
 	float pitch = 0.0f;
@@ -59,10 +60,16 @@ struct Camera
 	}
 } camera;
 
+struct Segment{
+	vec3 p0;
+	vec3 p1;
+};
+
 bool firstMouse = true;
 float lastX = (float) screenWidth / 2.0;
 float lastY = (float) screenHeight / 2.0;
 
+vector<Segment> lightning_segs;
 vector<float> vertices;
 
 void genVBOsVAOs();
@@ -101,8 +108,8 @@ int main()
 
 	glViewport(0, 0, screenWidth, screenHeight);
 
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	//glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetKeyCallback(window, keyboard_callback);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
@@ -169,11 +176,41 @@ string LoadSource(const string &filename)
 
 void initShaders()
 {
+	// 1. retrieve the vertex/fragment source code from filePath
+    std::string vertexCode;
+    std::string fragmentCode;
+    std::ifstream vShaderFile;
+    std::ifstream fShaderFile;
+    // ensure ifstream objects can throw exceptions:
+    vShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+    fShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+    try 
+    {
+        // open files
+        vShaderFile.open("vertex_shader.glsl");
+        fShaderFile.open("fShader.glsl");
+        
+        std::stringstream vShaderStream, fShaderStream;
+        // read file's buffer contents into streams
+        vShaderStream << vShaderFile.rdbuf();
+        fShaderStream << fShaderFile.rdbuf();		
+        // close file handlers
+        vShaderFile.close();
+        fShaderFile.close();
+        // convert stream into string
+        vertexCode   = vShaderStream.str();
+        fragmentCode = fShaderStream.str();		
+    }
+    catch(std::ifstream::failure e)
+    {
+        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+    }
+    const char* vShaderCode = vertexCode.c_str();
+    const char* fShaderCode = fragmentCode.c_str();
+	
 	// Vertex Shader
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-//	const GLchar *vertex_source = LoadSource("vertex_shader.glsl").c_str();
-	const GLchar *vertex_source = LoadSource("vertex_raytrace.glsl").c_str();
-	glShaderSource(vertexShader, 1, &vertex_source, NULL);
+	glShaderSource(vertexShader, 1, &vShaderCode, NULL);
 	glCompileShader(vertexShader);
 
 	// Check if compilation is a success
@@ -192,9 +229,7 @@ void initShaders()
 
 	// Point Mass Fragment Shader
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	const GLchar *frag_source = LoadSource("scene1FragShader.glsl").c_str();
-//	const GLchar *frag_source = LoadSource("cylinder.glsl").c_str();
-	glShaderSource(fragmentShader, 1, &frag_source, NULL);
+	glShaderSource(fragmentShader, 1, &fShaderCode, NULL);
 	glCompileShader(fragmentShader);
 
 	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
@@ -255,7 +290,7 @@ void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, in
 		glfwSetWindowShouldClose(window, true);
 
 	/* CAMERA */
-/*
+
 	else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
 		camera.cameraPos += camera.cameraSpeed * camera.cameraFront;
@@ -278,7 +313,7 @@ void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, in
 	}
 	else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 		loadPoints();
-	*/
+
 }
 
 /*
@@ -409,7 +444,7 @@ float uni_distribution(float min, float max, unsigned seed)
 	return uni_distribution(uni_gen);
 }
 
-void trace_lightning(vec3 init_point, vec3 init_direction, vector<vec3> *storage, float max_h)
+void trace_lightning(vec3 init_point, vec3 init_direction, vector<Segment> *storage, float max_h)
 {
 	unsigned seed = 0;
 	default_random_engine norm_gen(seed), uni_gen(seed);
@@ -427,10 +462,13 @@ void trace_lightning(vec3 init_point, vec3 init_direction, vector<vec3> *storage
 	vec3 T = normalize(init_direction);
 	vec3 N = normalize(cross(init_direction, vec3(0.0, 1.0, 0.0)));
 	vec3 B = normalize(cross(T, N));
-
-	storage->push_back(init_point);
+	
+	
+	
 	while (current_point.y > 0.0)
 	{
+		Segment s;
+		s.p0 = current_point;
 		//START: Random angles, get rand segment
 		rand_angle = norm_distribution(norm_gen);
 		rand_segment = rotateAbout(T, radians(random_50_50() * rand_angle)) * rotateAbout(N, radians(random_50_50() * rand_angle)) * vec4(init_direction, 0.0);
@@ -438,22 +476,25 @@ void trace_lightning(vec3 init_point, vec3 init_direction, vector<vec3> *storage
 
 		//END: Random angles, get rand segment
 		//Here, we should have the new segment direction and length
-
-		current_point += rand_segment;
-		storage->push_back(current_point);
-
+		
+		s.p1 = current_point + rand_segment;
+		current_point = s.p1; //current_point + rand_segment;
+		
+		storage->push_back(s);
+		
+		std::cout << "s:\t" << vPrint(s.p0) << "\t" << vPrint(s.p1) << std::endl;
+/*
 		if (uni_distribution_branch(uni_gen) <= (0.1*pow(10, -(current_point.y/max_h))))
 		{
 			vec3 new_dir = rotateAbout(T, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * rotateAbout(N, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * vec4(rand_segment, 0.0);
 			trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen), current_point.y, 2);
-		}
-		storage->push_back(current_point);
+		}*/
 	}
 }
 
 void loadPoints()
 {
-	trace_lightning(vec3(0.0, 2.0, 10.0), vec3(-1.0, -1.0, 0.0), &lightning_segs, 2.0);
+	trace_lightning(vec3(0.0, 2.0, 0.0), vec3(-1.0, -1.0, 0.0), &lightning_segs, 2.0);
 
 	storage.push_back(vec3(-1.0, 1.0, 0.0));
 	storage.push_back(vec3(1.0, 1.0, 0.0));
@@ -462,6 +503,14 @@ void loadPoints()
 	storage.push_back(vec3(1.0, -1.0, 0.0));
 	storage.push_back(vec3(-1.0, -1.0, 0.0));
 	storage.push_back(vec3(-1.0, 1.0, 0.0));
+
+	storage.clear();
+
+	for (int i = 0; i < lightning_segs.size(); i++)
+	{
+		storage.push_back(lightning_segs[i].p0);
+		storage.push_back(lightning_segs[i].p1);
+	}
 
 	glBindVertexArray(VAO);
 
@@ -472,9 +521,8 @@ void loadPoints()
 	glEnableVertexAttribArray(0);
 
 	num_points = storage.size();
-
+/*
 	GLfloat temp[((lightning_segs.size() * 4) + 4)];
-  
 	for (int i = 1; i < lightning_segs.size(); i = i + 4)
 	{
 		temp[i] = lightning_segs[i].x;
@@ -482,10 +530,17 @@ void loadPoints()
 		temp[i + 2] = lightning_segs[i].z - 1.0;
 		temp[i + 3] = 0;
 	}
+*/
 
+
+	for (int i = 2; i < lightning_segs.size(); i++){
+//		if( lightning_segs[i] != lightning_segs[i-2] || lightning_segs[i] != lightning_segs[i-1] )
+//			std::cout << "Diff:\t" <<  vPrint(lightning_segs[i]) << "\t" << vPrint(lightning_segs[i-2]) << std::endl;
+		cout << vPrint(lightning_segs[i].p0) << "\t" << vPrint(lightning_segs[i].p1) << "\n" << endl;
+	}
 
 //  temp[0] = lightning_segs.size();
-  temp[0] = 10;
+  //temp[0] = 20;
   /*
 	int lightningLoc = glGetUniformLocation(program, "lightning_segs");
 	glUniform3fv(lightningLoc, lightning_segs.size(), temp);
@@ -520,9 +575,9 @@ temp[OFF+13] = -1;
 temp[OFF+14] = -2;
 // */
   //EX: a single sphere:
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, segBuffer);
-  glBufferData(GL_SHADER_STORAGE_BUFFER,sizeof(temp),&temp,GL_DYNAMIC_COPY);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER,0);
+  //glBindBuffer(GL_SHADER_STORAGE_BUFFER, segBuffer);
+  //glBufferData(GL_SHADER_STORAGE_BUFFER,sizeof(temp),&temp,GL_DYNAMIC_COPY);
+  //glBindBuffer(GL_SHADER_STORAGE_BUFFER,0);
 	int numSegsLoc = glGetUniformLocation(program, "numSegs");
 	glUniform1i(numSegsLoc, lightning_segs.size());
 
@@ -537,8 +592,8 @@ void render()
 
 	// Draw the pointMasses
 	glBindVertexArray(VAO);
-	//glDrawArrays(GL_LINES, 0, num_points);
-	glDrawArrays(GL_TRIANGLES, 0, num_points);
+	glDrawArrays(GL_LINES, 0, num_points);
+	//glDrawArrays(GL_TRIANGLES, 0, num_points);
 }
 
 /*
