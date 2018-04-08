@@ -210,53 +210,9 @@ int main(int argc, char * argv[]){
   metaballs.push_back(new MetaBall(vec3(0,3,-5), 1, fanceyMB));
   metaballs.push_back(new MetaBall(vec3(0,-3,-5), 1, fanceyMB));*/
 
-  int size = 1;
-  cloud aCloud;
-  cloud clouds[size];
-  aCloud.balls = metaballs;
-  
-std::vector<vec3> verts_s;
-std::vector<GLuint> idx_s;
-std::vector<vec3> norms_s;
-  for(int i = 0; i < size;i++)
-  {
-    float x = 0;//-1+3*i;
-    float y = 0;//10 - 20*(((float)rand())/((float)INT_MAX));
-    float z = 0;//10 - 20*(((float)rand())/((float)INT_MAX));
-    clouds[i].balls.push_back(new MetaBall(vec3(x,y,z), 1, fanceyMB));
-    x = x+2 - 4*(((float)rand())/((float)INT_MAX));
-    y = y+2 - 4*(((float)rand())/((float)INT_MAX));
-    z = z+2 - 4*(((float)rand())/((float)INT_MAX));
-    clouds[i].balls.push_back(new MetaBall(vec3(x,y,z), 1, fanceyMB));
-    x = x+2 - 4*(((float)rand())/((float)INT_MAX));
-    y = y+2 - 4*(((float)rand())/((float)INT_MAX));
-    z = z+2 - 4*(((float)rand())/((float)INT_MAX));
-    clouds[i].balls.push_back(new MetaBall(vec3(x,y,z), 1, fanceyMB));
-    x = x+2 - 4*(((float)rand())/((float)INT_MAX));
-    y = y+2 - 4*(((float)rand())/((float)INT_MAX));
-    z = z+2 - 4*(((float)rand())/((float)INT_MAX));
-    clouds[i].balls.push_back(new MetaBall(vec3(x,y,z), 1, fanceyMB));
-  }
-
-  verts.clear();
-  idx.clear();
-  norms.clear();
-  
-  //aCloud.create_cloud_paper(&verts, &idx,&norms, 3);
-  for(int i = 0; i < size;i++)
-  {
-    verts_s.clear();
-    norms_s.clear();
-    idx_s.clear();
-    clouds[i].create_cloud_paper(&verts_s, &idx_s,&norms_s, 6);
-    for(int j = 0; j < idx_s.size();j++)
-    {
-      verts.push_back(verts_s[j]);
-      norms.push_back(norms_s[j]);
-      idx.push_back(idx.size());
-    }
-  }
-  
+//num of clouds, how many metaballs in each cloud initial, number of rounds
+//of adding things for each cloud
+  cloud::create_cloud(&verts, &idx, &norms, 3, 6, 3);
   Update_Perspective();	//updates perspective uniform, as it's never changed.
   Update_GPU_data();
   
@@ -268,7 +224,7 @@ std::vector<vec3> norms_s;
 
     if(nextRound == 1)
     {
-     // aCloud.create_cloud_naive(&verts, &idx,&norms, 1);
+     // aCloud.process_cloud_naive(&verts, &idx,&norms, 1);
       nextRound = 0;
     }
     Update_Perspective();

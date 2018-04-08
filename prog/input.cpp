@@ -55,6 +55,14 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	if (key ==GLFW_KEY_D)
 	{
 		activeCamera.cameraPos += normalize(cross(activeCamera.cameraFront, activeCamera.cameraUp)) * activeCamera.cameraSpeed;
+	}
+	if (key ==GLFW_KEY_F)
+	{
+		activeCamera.cameraPos -= activeCamera.cameraUp * activeCamera.cameraSpeed;
+	}
+	if (key ==GLFW_KEY_R)
+	{
+		activeCamera.cameraPos += activeCamera.cameraUp * activeCamera.cameraSpeed;
 	}/*
 	else if (key == GLFW_KEY_R)
 	{
@@ -100,9 +108,8 @@ void mousePosCallback(GLFWwindow* window, double xpos, double ypos)
 
   if(left)
   {
-    float sensitivity = 0.05;
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
+    xoffset *= activeCamera.lookSpeed;
+    yoffset *= activeCamera.lookSpeed;
 
     activeCamera.yaw += xoffset;
     activeCamera.pitch += yoffset;

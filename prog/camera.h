@@ -10,7 +10,8 @@
 class Camera
 {
 public:
-	float cameraSpeed = 0.05f;
+	float cameraSpeed = 0.5f;
+  float lookSpeed = 0.5;
 
 	float yaw = 270.0f;
 	float pitch = 0.0f;
