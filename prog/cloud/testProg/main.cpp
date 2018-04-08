@@ -11,10 +11,16 @@ Camera activeCamera;
 
 float speed = 1;
 
-  std::vector<vec3> verts;
-  std::vector<vec3> norms;
-  std::vector<GLuint> idx;
+//START: Storage for stuff
+std::vector<vec3> verts;
+std::vector<vec3> norms;
+std::vector<GLuint> idx;
 Object sphere;
+//END: Storage for stuff
+
+//START: For window resize
+mat4 winRatio = mat4(1.f);
+//END: For window resize
 
 //START: Metaball vars for testing
 std::vector<MetaBall*> metaballs;
@@ -152,6 +158,10 @@ void Render(){
             false,
             &camMatrix[0][0]);
 
+  glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "windowRatio"),
+            1,
+            false,
+            &winRatio[0][0]);
   
   
 	glClear(GL_COLOR_BUFFER_BIT);

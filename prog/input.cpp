@@ -15,6 +15,7 @@ bool left = false;
 
 extern Camera activeCamera;
 extern int nextRound;
+extern mat4 winRatio;
 
 
 namespace input{
@@ -28,6 +29,7 @@ void setup(GLFWwindow * window){
 	glfwSetKeyCallback(window, KeyCallback);
 	glfwSetCursorPosCallback(window, mousePosCallback);
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
+  glfwSetWindowSizeCallback(window, resizeCallback);
 }
 
 // handles keyboard input events
@@ -117,6 +119,20 @@ void mousePosCallback(GLFWwindow* window, double xpos, double ypos)
     cam.rotateCamera(-diff.x, diff.y);
 */
  // mousePos = newPos;
+}
+void resizeCallback(GLFWwindow* window, int width, int height)
+{
+  
+	int vp[4];
+	glGetIntegerv(GL_VIEWPORT, vp);
+
+	glViewport(0, 0, width, height);
+
+	float minDim = float(std::min(width, height));
+
+	winRatio[0][0] = minDim/float(width);
+	winRatio[1][1] = minDim/float(height);
+  
 }
 
 }
