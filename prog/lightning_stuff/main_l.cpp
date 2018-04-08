@@ -1,5 +1,6 @@
 #include "include/glad/glad.h"
 #include "include/GLFW/glfw3.h"
+//#include <GLFW/glfw3.h>
 #include "include/glm/ext.hpp"
 #include <iostream>
 #include <vector>
@@ -8,6 +9,9 @@
 #include <string>
 #include <fstream>
 #include <iterator>
+
+
+#define GL_SHADER_STORAGE_BUFFER 0x90D2
 
 using namespace std;
 using namespace glm;
@@ -22,6 +26,10 @@ int num_points;
 unsigned int vertexShader;
 unsigned int fragmentShader;
 unsigned int program;
+
+GLuint segBuffer;
+
+
 
 float meter = 0.004;
 
@@ -71,7 +79,7 @@ void render();
 int main()
 {
 	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -131,6 +139,13 @@ void genVBOsVAOs()
 
 	glGenBuffers(1, &VBO);
 	glGenVertexArrays(1, &VAO);
+
+	glBindVertexArray(VAO);
+	glGenBuffers(1, &segBuffer);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,segBuffer);
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);	//Points
+//		glEnableVertexAttribArray(0);
+
 }
 
 string LoadSource(const string &filename)
@@ -227,7 +242,7 @@ void updateCamera()
 
 	int mvpLoc = glGetUniformLocation(program, "mvp");
 	glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, value_ptr(mvp));
-		
+
 	int cameraPosLoc = glGetUniformLocation(program, "cameraPosition");
 	glUniform3f(cameraPosLoc, camera.cameraPos.x, camera.cameraPos.y, camera.cameraPos.z);
 }
@@ -369,13 +384,13 @@ void trace_lightning_recursion(vec3 init_point, vec3 init_direction, vector<vec3
 
 		current_point += rand_segment;
 		storage->push_back(current_point);
-		
+
 		if (uni_distribution_branch(uni_gen) <= ((0.1*pow(10, -(current_point.y/max_h))) / 100.0*recursion_depth))
 		{
 			vec3 new_dir = rotateAbout(T, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * rotateAbout(N, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * vec4(rand_segment, 0.0);
 			trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen), current_point.y, recursion_depth + 1);
 		}
-		
+
 		storage->push_back(current_point);
 		num_segs--;
 	}
@@ -424,7 +439,7 @@ void trace_lightning(vec3 init_point, vec3 init_direction, vector<vec3> *storage
 
 		current_point += rand_segment;
 		storage->push_back(current_point);
-		
+
 		if (uni_distribution_branch(uni_gen) <= (0.1*pow(10, -(current_point.y/max_h))))
 		{
 			vec3 new_dir = rotateAbout(T, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * rotateAbout(N, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * vec4(rand_segment, 0.0);
@@ -456,22 +471,54 @@ void loadPoints()
 
 	num_points = storage.size();
 
-	GLfloat temp[lightning_segs.size() * 3];
-	
-	for (int i = 0; i < lightning_segs.size(); i = i + 3)
+	GLfloat temp[lightning_segs.size() * 4];
+  
+	for (int i = 0; i < lightning_segs.size(); i = i + 4)
 	{
 		temp[i] = lightning_segs[i].x;
 		temp[i + 1] = lightning_segs[i].y;
 		temp[i + 2] = lightning_segs[i].z;
-	}	
+	}
 
+
+  /*
 	int lightningLoc = glGetUniformLocation(program, "lightning_segs");
 	glUniform3fv(lightningLoc, lightning_segs.size(), temp);
 
 	int numSegsLoc = glGetUniformLocation(program, "numSegs");
 	glUniform1i(numSegsLoc, lightning_segs.size());
 
+  */
 	cout << lightning_segs.size() << endl;
+// /* //Working example via testing colors:
+temp[0] = 0;
+temp[1] = 1.0;
+temp[2] = -2.0;
+
+temp[3] = 0; //
+
+temp[4] = -1.0;
+temp[5] = 0;
+temp[6] = -2;
+
+temp[7] = 1; //??
+
+temp[8] = -1;
+temp[9] = 0;
+temp[10] = -2;
+
+temp[11] = 0;// ??
+
+temp[12] = 0;
+temp[13] = -1;
+temp[14] = -2;
+// */
+  //EX: a single sphere:
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, segBuffer);
+  glBufferData(GL_SHADER_STORAGE_BUFFER,sizeof(temp),&temp,GL_DYNAMIC_COPY);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER,0);
+	int numSegsLoc = glGetUniformLocation(program, "numSegs");
+	glUniform1i(numSegsLoc, lightning_segs.size());
 
 	// Clear vertices vector
 	vertices.clear();
@@ -481,7 +528,7 @@ void render()
 {
 	glUseProgram(program);
 
-	
+
 	// Draw the pointMasses
 	glBindVertexArray(VAO);
 	//glDrawArrays(GL_LINES, 0, num_points);
