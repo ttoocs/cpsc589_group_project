@@ -117,6 +117,8 @@ void main(void)
 	r.dir = directionVector;
 
   //Transform ray for camera controls
+  bool Transform=false;
+  if(Transform)
   {
     //Make origin/ray temps
     vec4 ot = mvp*vec4(r.origin,0);
