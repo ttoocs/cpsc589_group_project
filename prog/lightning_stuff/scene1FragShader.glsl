@@ -17,7 +17,7 @@ out vec4 FragmentColour;
 
 uniform vec3 cameraPosition;
 //uniform vec3[737] lightning_segs;
-layout(std430, binding = 0) buffer ffs{
+layout(std140, binding = 0) buffer ffs{
   // lightning_segs;
   vec3[] lightning_segs;
 };
@@ -35,9 +35,9 @@ struct Ray
 	vec3 dir;
 };
 
-#define NumSegs 1
+#define NumSegs 2
 struct Scene{
-	Segment segments[NumSegs*2];
+	Segment segments[NumSegs];
 };
 
 vec3 shader(Scene scene, vec3 cameraPosition, int obj, int objIndex, vec3 intersectPoint){
@@ -73,7 +73,7 @@ float calcShortestVector(Ray r, Segment s)
 		return length(point2 - point1);
 }
 
-vec3 calculateColor(float w, float n, Ray r, Segment[NumSegs*2] segs, int size)
+vec3 calculateColor(float w, float n, Ray r, Segment[NumSegs] segs, int size)
 {
 	float max_r = (float) 204.0/255.0;
 	float max_g = (float) 255.0/255.0;
@@ -89,7 +89,7 @@ vec3 calculateColor(float w, float n, Ray r, Segment[NumSegs*2] segs, int size)
 	return color;
 }
 
-vec3 calculateGlow(float w, float l, Ray r, Segment[NumSegs*2] segs, int size)
+vec3 calculateGlow(float w, float l, Ray r, Segment[NumSegs] segs, int size)
 {
 	float max_r = (float) 255.0/255.0;
 	float max_g = (float) 255.0/255.0;
@@ -108,18 +108,35 @@ vec3 calculateGlow(float w, float l, Ray r, Segment[NumSegs*2] segs, int size)
 Scene loadSceneOne(){
 	Scene sceneOne;
 
-
-  for(int i = 0; i < NumSegs ; i+=2){
-  
+//	#define testthing
+	#ifdef testthing
 	Segment s;
-	s.p0 = lightning_segs[i];
-	s.p1 = lightning_segs[i+1];
+	
+	
+	s.p0 = vec3(0,1,-2);
+	s.p1 = vec3(-1,0,-2);
+	
+  
+  Segment s2;
+  s2.p0 = vec3(-1,0,-2);
+  s2.p1 = vec3(0,-1,-2);
 
-	s.p0.z = s.p0.z-4.0;
-	s.p1.z = s.p1.z-4.0;
-	sceneOne.segments[i] = s;
+	sceneOne.segments[0] = s;
+	sceneOne.segments[1] = s2;
 
-  }
+	#else
+	for(int i = 0; i < NumSegs/2 ; i+=2){
+  
+//		Segment s;
+//		s.p0 = lightning_segs[i];
+//		s.p1 = lightning_segs[i+1];
+
+		sceneOne.segments[i].p0 = vec3(lightning_segs[i]);
+		sceneOne.segments[i].p1 = vec3(lightning_segs[i+1]);
+    
+
+	}
+	#endif
 	return sceneOne;
 }
 
@@ -151,16 +168,22 @@ void main(void)
 	vec3 color = vec3(1.0, 1.0, 1.0);
 
 
-	for (int i = 0; i < NumSegs*2; i++)
+	for (int i = 0; i < NumSegs; i++)
   {
-		color = color * (calculateColor(width_I, n, r, scene.segments, NumSegs*2)
-		                 + calculateGlow(width_G, l, r, scene.segments, NumSegs*2));
+		color = color * (calculateColor(width_I, n, r, scene.segments, NumSegs)
+		                 + calculateGlow(width_G, l, r, scene.segments, NumSegs));
 	}
 
-  //color = abs(lightning_segs[0]);
+  //color = abs(lightning_segs[2]);
 
-
-
+/*
+  if(lightning_segs[0] == vec3(0,1,-2)){
+  if(lightning_segs[1] == vec3(-1,0,-2)){
+  if(lightning_segs[2] == vec3(-1,0,-2)){
+  if(lightning_segs[3] == vec3(0,-1,-2)){
+    color = vec3(1,1,1);
+  }}}}
+*/
 	FragmentColour = vec4(color, 1);
 }
 
