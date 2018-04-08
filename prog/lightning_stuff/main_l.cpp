@@ -171,7 +171,8 @@ void initShaders()
 {
 	// Vertex Shader
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	const GLchar *vertex_source = LoadSource("vertex_shader.glsl").c_str();
+//	const GLchar *vertex_source = LoadSource("vertex_shader.glsl").c_str();
+	const GLchar *vertex_source = LoadSource("vertex_raytrace.glsl").c_str();
 	glShaderSource(vertexShader, 1, &vertex_source, NULL);
 	glCompileShader(vertexShader);
 
