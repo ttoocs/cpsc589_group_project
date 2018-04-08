@@ -105,7 +105,6 @@ int main()
 
 	loadPoints();
 
-
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwSwapBuffers(window);
@@ -115,6 +114,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		render();
+
 		glfwPollEvents();
 	}
 
@@ -176,7 +176,7 @@ void initShaders()
 
 	// Point Mass Fragment Shader
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	const GLchar *frag_source = LoadSource("scene1FragShader.glsl").c_str();
+	const GLchar *frag_source = LoadSource("fragment_shader.glsl").c_str();
 	glShaderSource(fragmentShader, 1, &frag_source, NULL);
 	glCompileShader(fragmentShader);
 
@@ -238,7 +238,7 @@ void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, in
 		glfwSetWindowShouldClose(window, true);
 
 	/* CAMERA */
-/*
+	/*
 	else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
 		camera.cameraPos += camera.cameraSpeed * camera.cameraFront;
@@ -436,6 +436,9 @@ void trace_lightning(vec3 init_point, vec3 init_direction, vector<vec3> *storage
 
 void loadPoints()
 {
+	// RAY TRACER
+	
+	
 	trace_lightning(vec3(0.0, 2.0, 10.0), vec3(0.0001, -0.1, 0.0), &lightning_segs, 2.0);
 
 	storage.push_back(vec3(-1.0, 1.0, 0.0));
@@ -449,12 +452,12 @@ void loadPoints()
 	glBindVertexArray(VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, storage.size() * sizeof(vec3), storage.data(), GL_STREAM_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, lightning_segs.size() * sizeof(vec3), lightning_segs.data(), GL_STREAM_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	num_points = storage.size();
+	num_points = lightning_segs.size();
 
 	GLfloat temp[lightning_segs.size() * 3];
 	
@@ -464,7 +467,7 @@ void loadPoints()
 		temp[i + 1] = lightning_segs[i].y;
 		temp[i + 2] = lightning_segs[i].z;
 	}	
-z
+
 	int lightningLoc = glGetUniformLocation(program, "lightning_segs");
 	glUniform3fv(lightningLoc, lightning_segs.size(), temp);
 
@@ -473,8 +476,8 @@ z
 
 	cout << lightning_segs.size() << endl;
 
+	
 	// Clear vertices vector
-	vertices.clear();
 }
 
 void render()
@@ -484,8 +487,8 @@ void render()
 	
 	// Draw the pointMasses
 	glBindVertexArray(VAO);
-	//glDrawArrays(GL_LINES, 0, num_points);
-	glDrawArrays(GL_TRIANGLES, 0, num_points);
+	glDrawArrays(GL_LINE, 0, num_points);
+	//glDrawArrays(GL_TRIANGLES, 0, num_points);
 }
 
 /*
@@ -505,7 +508,7 @@ while(current_point.z > 0 && Random end check)
 //END: Random angle, random vector
 
 //This
-if(/*Random check to branch)
+if(Random check to branch)
 {
 trace_lightning(current_point, new direction, storage);
 }
