@@ -15,6 +15,8 @@ in vec2 vp;
 // first output is mapped to the framebuffer's colour index by default
 out vec4 FragmentColour;
 
+uniform mat4 mvp;
+
 struct Segment
 {
 	vec3 p0;
@@ -114,6 +116,15 @@ void main(void)
 	r.origin = cameraPosition;
 	r.dir = directionVector;
 
+  //Transform ray for camera controls
+  {
+    //Make origin/ray temps
+    vec4 ot = mvp*vec4(r.origin,0);
+    vec4 rt = mvp*vec4(r.dir,1);
+    r.origin = vec3(ot.x,ot.y,ot.z);
+    r.dir = vec3(rt.x,rt.y,rt.z);
+  }
+
 // -------------MAIN CALCULATION------------------------
 	float width_I = 0.05;
 	float n = 0.5;
@@ -125,7 +136,7 @@ void main(void)
 
 
   //Togle paperRender/not via commenting/uncomenting below
-  #define PaperRender
+  //#define PaperRender
   
   #ifdef PaperRender
     // Papers render:
@@ -142,7 +153,7 @@ void main(void)
       float d;
       d = calcShortestVector(r,Segs[i]);
       if ( d <0.01)
-        color +=vec3(0.1);
+        color +=vec3(1);
     
     }
   
