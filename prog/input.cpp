@@ -14,6 +14,7 @@ bool left = false;
 #include <iostream>
 
 extern Camera activeCamera;
+extern int nextRound;
 
 
 namespace input{
@@ -58,6 +59,10 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	else if (key == GLFW_KEY_F)
 	{
 		activeCamera.translate(-TRNL*(activeCamera.up)/10.f);
+	}
+	else if (key == GLFW_KEY_Z)
+	{
+		nextRound =1;
 	}
 }
 

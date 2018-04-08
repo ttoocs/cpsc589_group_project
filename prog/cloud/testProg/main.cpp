@@ -11,12 +11,18 @@ Camera activeCamera;
 
 float speed = 1;
 
+  std::vector<vec3> verts;
+  std::vector<vec3> norms;
+  std::vector<GLuint> idx;
+Object sphere;
+
 //START: Metaball vars for testing
 std::vector<MetaBall*> metaballs;
 std::vector<float> vertices;
 int num_points;
 
-  mat4 perspectiveMatrix = glm::perspective(glm::radians(45.f), 1.f, 0.1f, 400.f);
+mat4 perspectiveMatrix = glm::perspective(glm::radians(45.f), 1.f, 0.1f, 400.f);
+int nextRound = 0;
 //END: Metaball vars for testing
 
 struct GLSTUFF{
@@ -111,11 +117,6 @@ void Update_Perspective(){
 
 }
 
-  std::vector<vec3> verts;
-  std::vector<vec3> norms;
-  std::vector<GLuint> idx;
-Object sphere;
-
 
 void Update_GPU_data(){
 //		glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);	//Setup data-copy (points)
@@ -193,22 +194,59 @@ int main(int argc, char * argv[]){
 	speed =0.01;
 
   //metaballs.push_back(new MetaBall(vec3(0,0,-5), 1, fanceyMB));
-  metaballs.push_back(new MetaBall(vec3(-1,0,-5), 0.1, fanceyMB));
-  metaballs.push_back(new MetaBall(vec3(1,0,-5), 0.1, fanceyMB));
+ // metaballs.push_back(new MetaBall(vec3(-1,0,-5), 1, fanceyMB));
+ // metaballs.push_back(new MetaBall(vec3(1,0,-5), 1, fanceyMB));
 /*  metaballs.push_back(new MetaBall(vec3(-3,0,-5), 1, fanceyMB));
   metaballs.push_back(new MetaBall(vec3(3,0,-5), 1, fanceyMB));
   metaballs.push_back(new MetaBall(vec3(0,3,-5), 1, fanceyMB));
   metaballs.push_back(new MetaBall(vec3(0,-3,-5), 1, fanceyMB));*/
 
+  int size = 10;
   cloud aCloud;
+  cloud clouds[size];
   aCloud.balls = metaballs;
-
+  
+std::vector<vec3> verts_s;
+std::vector<GLuint> idx_s;
+std::vector<vec3> norms_s;
+  for(int i = 0; i < size;i++)
+  {
+    float x = -1+3*i;
+    float y = 10 - 20*(((float)rand())/((float)INT_MAX));
+    float z = 10 - 20*(((float)rand())/((float)INT_MAX));
+    clouds[i].balls.push_back(new MetaBall(vec3(x,y,z), 1, fanceyMB));
+    x = x+2 - 4*(((float)rand())/((float)INT_MAX));
+    y = y+2 - 4*(((float)rand())/((float)INT_MAX));
+    z = z+2 - 4*(((float)rand())/((float)INT_MAX));
+    clouds[i].balls.push_back(new MetaBall(vec3(x,y,z), 1, fanceyMB));
+    x = x+2 - 4*(((float)rand())/((float)INT_MAX));
+    y = y+2 - 4*(((float)rand())/((float)INT_MAX));
+    z = z+2 - 4*(((float)rand())/((float)INT_MAX));
+    clouds[i].balls.push_back(new MetaBall(vec3(x,y,z), 1, fanceyMB));
+    x = x+2 - 4*(((float)rand())/((float)INT_MAX));
+    y = y+2 - 4*(((float)rand())/((float)INT_MAX));
+    z = z+2 - 4*(((float)rand())/((float)INT_MAX));
+    clouds[i].balls.push_back(new MetaBall(vec3(x,y,z), 1, fanceyMB));
+  }
 
   verts.clear();
   idx.clear();
   norms.clear();
   
-  aCloud.create_cloud(&verts, &idx,&norms, 10);
+  //aCloud.create_cloud_paper(&verts, &idx,&norms, 3);
+  for(int i = 0; i < size;i++)
+  {
+    verts_s.clear();
+    norms_s.clear();
+    idx_s.clear();
+    clouds[i].create_cloud_paper(&verts_s, &idx_s,&norms_s, 6);
+    for(int j = 0; j < idx_s.size();j++)
+    {
+      verts.push_back(verts_s[j]);
+      norms.push_back(norms_s[j]);
+      idx.push_back(idx.size());
+    }
+  }
   
   Update_Perspective();	//updates perspective uniform, as it's never changed.
   Update_GPU_data();
@@ -223,6 +261,11 @@ int main(int argc, char * argv[]){
 
     glfwGetFramebufferSize(window, &WIDTH, &HEIGHT);
 
+    if(nextRound == 1)
+    {
+     // aCloud.create_cloud_naive(&verts, &idx,&norms, 1);
+      nextRound = 0;
+    }
 		Render();
     glfwSwapBuffers(window);
 		glfwPollEvents();

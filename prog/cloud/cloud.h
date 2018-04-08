@@ -10,5 +10,6 @@
 class cloud{
   public:
     std::vector<MetaBall*> balls;
-    void create_cloud(std::vector<vec3> *points, std::vector<GLuint> *indices,std::vector<vec3> *norms, int rounds);
+    void create_cloud_paper(std::vector<vec3> *points, std::vector<GLuint> *indices,std::vector<vec3> *norms, int rounds);
+    void create_cloud_naive(std::vector<vec3> *points, std::vector<GLuint> *indices,std::vector<vec3> *norms, int rounds);
 };
