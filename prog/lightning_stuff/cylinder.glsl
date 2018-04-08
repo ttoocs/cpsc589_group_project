@@ -62,22 +62,6 @@ float calcShortestVector(Ray r, Segment s)
 		return length(point2 - point1);
 }
 
-vec3 calculateColor(float w, float n, Ray r)
-{
-	float max_r = (float) 204.0/255.0;
-	float max_g = (float) 255.0/255.0;
-	float max_b = (float) 255.0/255.0;
-
-	vec3 color = vec3(0.0, 0.0, 0.0);
-
-	for (int i = 0; i < NumSegs.x; i++){
-		color.x = color.x + max_r*exp(-pow((calcShortestVector(r, Segs[i]) / w),n));
-		color.y = color.y + max_g*exp(-pow((calcShortestVector(r, Segs[i]) / w),n));
-		color.z = color.z + max_b*exp(-pow((calcShortestVector(r, Segs[i]) / w),n));
-	}
-	return color;
-}
-
 
 void main(void)
 {
@@ -105,32 +89,12 @@ void main(void)
 	vec3 color = vec3(1.0, 1.0, 1.0);
   color = vec3(0,0,0);
 
-/*
-	for (int i = 0; i < NumSegs.x; i++)
-  {
-		color = color * (calculateColor(width_I, n, r));
-	}
-*/
-// /*
 	for (int i = 0; i < NumSegs.x; i++){
     float d;
     d = calcShortestVector(r, Segs[i]);
     if(d < 0.01)
       color += vec3(0.1);  
 	}
-// */
-//  color = abs(Segs[0].p0);
-
-  //color = vec3(NumSegs.x/2);
-
- /*
-  if(Segs[0].p0 == vec3(0,1,-2)){
-  if(Segs[0].p1 == vec3(-1,0,-2)){
-  if(Segs[1].p0 == vec3(-1,0,-2)){
-  if(Segs[1].p1 == vec3(0,-1,-2)){
-    color = vec3(1,1,1);
-  }}}}
-// */
 
 	FragmentColour = vec4(color, 1);
 }
