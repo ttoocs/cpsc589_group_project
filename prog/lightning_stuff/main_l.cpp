@@ -452,7 +452,7 @@ void trace_lightning(vec3 init_point, vec3 init_direction, vector<vec3> *storage
 
 void loadPoints()
 {
-	trace_lightning(vec3(0.0, 2.0, 10.0), vec3(0.0001, -0.1, 0.0), &lightning_segs, 2.0);
+	trace_lightning(vec3(0.0, 2.0, 10.0), vec3(-1.0, -1.0, 0.0), &lightning_segs, 2.0);
 
 	storage.push_back(vec3(-1.0, 1.0, 0.0));
 	storage.push_back(vec3(1.0, 1.0, 0.0));
@@ -478,12 +478,13 @@ void loadPoints()
 	{
 		temp[i] = lightning_segs[i].x;
 		temp[i + 1] = lightning_segs[i].y;
-		temp[i + 2] = lightning_segs[i].z;
+		temp[i + 2] = lightning_segs[i].z - 1.0;
+		temp[i + 3] = 0;
 	}
 
 
 //  temp[0] = lightning_segs.size();
-  temp[0] = 3;
+  temp[0] = 10;
   /*
 	int lightningLoc = glGetUniformLocation(program, "lightning_segs");
 	glUniform3fv(lightningLoc, lightning_segs.size(), temp);
@@ -493,7 +494,7 @@ void loadPoints()
 
   */
 	cout << lightning_segs.size() << endl;
-// /* //Working example via testing colors:
+ /* //Working example via testing colors:
 int OFF=4;
 temp[OFF+0] = 0;
 temp[OFF+1] = 1.0;

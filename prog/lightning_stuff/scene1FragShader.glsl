@@ -68,6 +68,7 @@ float calcShortestVector(Ray r, Segment s)
 
 vec3 calculateColor(float w, float n, Ray r)
 {
+	float dist;
 	float max_r = (float) 204.0/255.0;
 	float max_g = (float) 255.0/255.0;
 	float max_b = (float) 255.0/255.0;
@@ -75,15 +76,20 @@ vec3 calculateColor(float w, float n, Ray r)
 	vec3 color = vec3(0.0, 0.0, 0.0);
 
 	for (int i = 0; i < NumSegs; i++){
-		color.x = color.x + max_r*exp(-pow((calcShortestVector(r, Segs[i]) / w),n));
-		color.y = color.y + max_g*exp(-pow((calcShortestVector(r, Segs[i]) / w),n));
-		color.z = color.z + max_b*exp(-pow((calcShortestVector(r, Segs[i]) / w),n));
+		dist = calcShortestVector(r, Segs[i]);
+
+		if (dist < w + 1.0){
+			color.x = color.x + max_r*exp(-pow((dist / w),n));
+			color.y = color.y + max_g*exp(-pow((dist / w),n));
+			color.z = color.z + max_b*exp(-pow((dist / w),n));
+		}
 	}
 	return color;
 }
 
 vec3 calculateGlow(float w, float l, Ray r)
 {
+	float dist;
 	float max_r = (float) 255.0/255.0;
 	float max_g = (float) 255.0/255.0;
 	float max_b = (float) 255.0/255.0;
@@ -91,9 +97,13 @@ vec3 calculateGlow(float w, float l, Ray r)
 	vec3 color = vec3(0.0, 0.0, 0.0);
 
 	for (int i = 0; i < NumSegs; i++){
-		color.x = color.x + max_r * l * exp(-pow((calcShortestVector(r, Segs[i]) / w),2.0));
-		color.y = color.y + max_g * l * exp(-pow((calcShortestVector(r, Segs[i]) / w),2.0));
-		color.z = color.z + max_b * l * exp(-pow((calcShortestVector(r, Segs[i]) / w),2.0));
+		dist = calcShortestVector(r, Segs[i]);
+
+		if (dist < w + l){
+			color.x = color.x + max_r * l * exp(-pow((dist / w),2.0));
+			color.y = color.y + max_g * l * exp(-pow((dist / w),2.0));
+			color.z = color.z + max_b * l * exp(-pow((dist / w),2.0));
+		}
 	}
 	return color;
 }
@@ -115,11 +125,11 @@ void main(void)
 	r.dir = directionVector;
 
 // -------------MAIN CALCULATION------------------------
-	float width_I = 0.05;
+	float width_I = 0.005;
 	float n = 0.5;
 
-	float l = 0.3;
-	float width_G = 0.05;
+	float l = 0.001;
+	float width_G = 0.001;
 
 	vec3 color = vec3(1.0, 1.0, 1.0);
 
@@ -129,11 +139,8 @@ void main(void)
   
   #ifdef PaperRender
     // Papers render:
-  	for (int i = 0; i < NumSegs; i++)
-    {
-  		color = color * (calculateColor(width_I, n, r)
-  		                 + calculateGlow(width_G, l, r));
-    }
+  	color = color * (calculateColor(width_I, n, r)
+  		             + calculateGlow(width_G, l, r));
   #else
 
     //Simple render
