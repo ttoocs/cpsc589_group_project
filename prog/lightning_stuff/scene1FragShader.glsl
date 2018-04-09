@@ -148,6 +148,7 @@ void main(void)
 
 
   //Togle paperRender/not via commenting/uncomenting below
+  
   //#define PaperRender
   
   #ifdef PaperRender

@@ -188,7 +188,7 @@ void initShaders()
     {
         // open files
         vShaderFile.open("vertex_shader.glsl");
-        fShaderFile.open("fShader.glsl");
+        fShaderFile.open("scene1FragShader.glsl");
         
         std::stringstream vShaderStream, fShaderStream;
         // read file's buffer contents into streams
@@ -504,14 +504,6 @@ void loadPoints()
 	storage.push_back(vec3(-1.0, -1.0, 0.0));
 	storage.push_back(vec3(-1.0, 1.0, 0.0));
 
-	storage.clear();
-
-	for (int i = 0; i < lightning_segs.size(); i++)
-	{
-		storage.push_back(lightning_segs[i].p0);
-		storage.push_back(lightning_segs[i].p1);
-	}
-
 	glBindVertexArray(VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -521,16 +513,20 @@ void loadPoints()
 	glEnableVertexAttribArray(0);
 
 	num_points = storage.size();
-/*
-	GLfloat temp[((lightning_segs.size() * 4) + 4)];
-	for (int i = 1; i < lightning_segs.size(); i = i + 4)
+
+	GLfloat temp[((lightning_segs.size() * 2 * 4) + 4)];
+	for (int i = 1; i < lightning_segs.size(); i = i + 8)
 	{
-		temp[i] = lightning_segs[i].x;
-		temp[i + 1] = lightning_segs[i].y;
-		temp[i + 2] = lightning_segs[i].z - 1.0;
+		temp[i] = lightning_segs[i].p0.x;
+		temp[i + 1] = lightning_segs[i].p0.y;
+		temp[i + 2] = lightning_segs[i].p0.z - 1.0;
 		temp[i + 3] = 0;
+		
+		temp[i + 4] = lightning_segs[i].p1.x;
+		temp[i + 5] = lightning_segs[i].p1.y;
+		temp[i + 6] = lightning_segs[i].p1.z - 1.0;
+		temp[i + 7] = 0;
 	}
-*/
 
 
 	for (int i = 2; i < lightning_segs.size(); i++){
@@ -540,7 +536,7 @@ void loadPoints()
 	}
 
 //  temp[0] = lightning_segs.size();
-  //temp[0] = 20;
+	temp[0] = 20;
   /*
 	int lightningLoc = glGetUniformLocation(program, "lightning_segs");
 	glUniform3fv(lightningLoc, lightning_segs.size(), temp);
@@ -575,9 +571,9 @@ temp[OFF+13] = -1;
 temp[OFF+14] = -2;
 // */
   //EX: a single sphere:
-  //glBindBuffer(GL_SHADER_STORAGE_BUFFER, segBuffer);
-  //glBufferData(GL_SHADER_STORAGE_BUFFER,sizeof(temp),&temp,GL_DYNAMIC_COPY);
-  //glBindBuffer(GL_SHADER_STORAGE_BUFFER,0);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, segBuffer);
+  glBufferData(GL_SHADER_STORAGE_BUFFER,sizeof(temp),&temp,GL_DYNAMIC_COPY);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER,0);
 	int numSegsLoc = glGetUniformLocation(program, "numSegs");
 	glUniform1i(numSegsLoc, lightning_segs.size());
 
@@ -592,8 +588,8 @@ void render()
 
 	// Draw the pointMasses
 	glBindVertexArray(VAO);
-	glDrawArrays(GL_LINES, 0, num_points);
-	//glDrawArrays(GL_TRIANGLES, 0, num_points);
+	//glDrawArrays(GL_LINES, 0, num_points);
+	glDrawArrays(GL_TRIANGLES, 0, num_points);
 }
 
 /*
