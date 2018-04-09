@@ -123,7 +123,7 @@ void main(void)
 	// DIFFERENT CAMERA ANGLES* (Use a Uniform)
 
 	Ray r;
-	r.origin = vec3(-0.5, 0, 0);
+	r.origin = vec3(-0.5, 0, -10.0);
 	r.dir = directionVector;
 
   //Transform ray for camera controls

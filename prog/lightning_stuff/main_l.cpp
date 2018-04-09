@@ -515,17 +515,17 @@ void loadPoints()
 	num_points = storage.size();
 
 	GLfloat temp[((lightning_segs.size() * 2 * 4) + 4)];
-	for (int i = 1; i < lightning_segs.size(); i = i + 8)
+	for (int i = 0; i < lightning_segs.size(); i++)
 	{
-		temp[i] = lightning_segs[i].p0.x;
-		temp[i + 1] = lightning_segs[i].p0.y;
-		temp[i + 2] = lightning_segs[i].p0.z - 1.0;
-		temp[i + 3] = 0;
+		temp[i * 8 + 4] = lightning_segs[i].p0.x;
+		temp[i * 8 + 4 + 1] = lightning_segs[i].p0.y;
+		temp[i * 8 + 4 + 2] = lightning_segs[i].p0.z - 1.0;
+		temp[i * 8 + 4 + 3] = 0;
 		
-		temp[i + 4] = lightning_segs[i].p1.x;
-		temp[i + 5] = lightning_segs[i].p1.y;
-		temp[i + 6] = lightning_segs[i].p1.z - 1.0;
-		temp[i + 7] = 0;
+		temp[i * 8 + 4 + 4] = lightning_segs[i].p1.x;
+		temp[i * 8 + 4 + 5] = lightning_segs[i].p1.y;
+		temp[i * 8 + 4 + 6] = lightning_segs[i].p1.z - 1.0;
+		temp[i * 8 + 4 + 7] = 0;
 	}
 
 
@@ -536,7 +536,7 @@ void loadPoints()
 	}
 
 //  temp[0] = lightning_segs.size();
-	temp[0] = 20;
+	temp[0] = 500;
   /*
 	int lightningLoc = glGetUniformLocation(program, "lightning_segs");
 	glUniform3fv(lightningLoc, lightning_segs.size(), temp);
