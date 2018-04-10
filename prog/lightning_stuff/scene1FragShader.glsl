@@ -39,7 +39,7 @@ layout(std140, binding = 0) buffer ffs{
 //Make NumSegs variable exist
 #define NumSegs NumSegsVec.x 
 
-float calcShortestVector(Ray r, Segment s)
+float calcShortestVector(Ray r, Segment s, bool cylinder)
 
 {
        vec3 u = r.dir;
@@ -58,12 +58,26 @@ float calcShortestVector(Ray r, Segment s)
        vec3 point1, point2;
        point1 = r.origin + rc * u;
 
-       if (tc < 0)
-              point2 = s.p0;
-       else if (tc > 1.0)
-              point2 = s.p1;
-       else
+       if (cylinder)
+       {
+		   if (tc < 0)
+               point2 = s.p0;
+	       else if (tc > 1.0)
+               point2 = s.p1;
+           else
+               point2 = s.p0 + tc * v;
+	   }
+	   else
+	   {
+		   if (tc < 0)
+              return 100000;
+           else if (tc > 1.0)
+              return 100000;
+           else
               point2 = s.p0 + tc * v;
+
+		return length(point2 - point1);
+	   }
 
 		return length(point2 - point1);
 }
@@ -72,13 +86,13 @@ vec3 calculateColor(float w, float n, Ray r)
 {
 	float dist;
 	float max_r = (float) 204.0/255.0;
-	float max_g = (float) 255.0/255.0;
+	float max_g = (float) 204.0/255.0;
 	float max_b = (float) 255.0/255.0;
 
 	vec3 color = vec3(0.0, 0.0, 0.0);
 
 	for (int i = 0; i < NumSegs; i++){
-		dist = calcShortestVector(r, Segs[i]);
+		dist = calcShortestVector(r, Segs[i], false);
 
 		if (dist < w + 1.0){
 			color.x = color.x + max_r*exp(-pow((dist / w),n));
@@ -99,7 +113,7 @@ vec3 calculateGlow(float w, float l, Ray r)
 	vec3 color = vec3(0.0, 0.0, 0.0);
 
 	for (int i = 0; i < NumSegs; i++){
-		dist = calcShortestVector(r, Segs[i]);
+		dist = calcShortestVector(r, Segs[i], true);
 
 		if (dist < w + l){
 			color.x = color.x + max_r * l * exp(-pow((dist / w),2.0));
@@ -138,18 +152,18 @@ void main(void)
   }
 
 // -------------MAIN CALCULATION------------------------
-	float width_I = 0.005;
-	float n = 0.5;
+	float width_I = 0.002;
+	float n = 0.7;
 
-	float l = 0.001;
-	float width_G = 0.001;
+	float l = 0.008;
+	float width_G = 0.008;
 
 	vec3 color = vec3(1.0, 1.0, 1.0);
 
 
   //Togle paperRender/not via commenting/uncomenting below
   
-  //#define PaperRender
+  #define PaperRender
   
   #ifdef PaperRender
     // Papers render:
@@ -161,8 +175,8 @@ void main(void)
     color = vec3(0,0,0);
     for(int i=0; i < NumSegs ; i++){
       float d;
-      d = calcShortestVector(r,Segs[i]);
-      if ( d <0.01)
+      d = calcShortestVector(r,Segs[i], false);
+      if ( d <0.001)
         color +=vec3(1);
     
     }

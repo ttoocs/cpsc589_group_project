@@ -390,13 +390,13 @@ float random_50_50()
 }
 
 //This assumes ground is at z = 0
-void trace_lightning_recursion(vec3 init_point, vec3 init_direction, vector<vec3> *storage, int num_segs, float max_h, int recursion_depth)
+void trace_lightning_recursion(vec3 init_point, vec3 init_direction, vector<Segment> *storage, int num_segs, float max_h, int recursion_depth)
 {
 	default_random_engine norm_gen, uni_gen;
 	normal_distribution<double> norm_distribution(45.0, 20.0);
 	uniform_real_distribution<double> uni_distribution_length(meter, 10.0*meter);
 	uniform_real_distribution<double> uni_distribution_branch(0.0, 1.0);
-	uniform_real_distribution<double> uni_distribution_new_dir(0.0, 45.0);
+	uniform_real_distribution<double> uni_distribution_new_dir(0.0, 60.0);
 	uniform_int_distribution<int> uni_distribution_segs(10, 150);
 
 	vec3 rand_segment = vec3(0, 0, 0);
@@ -408,9 +408,10 @@ void trace_lightning_recursion(vec3 init_point, vec3 init_direction, vector<vec3
 	vec3 N = normalize(cross(init_direction, vec3(0.0, 1.0, 0.0)));
 	vec3 B = normalize(cross(T, N));
 
-	storage->push_back(current_point);
 	while ((current_point.y > 0.0) && (num_segs > 0))
 	{
+		Segment s;
+		s.p0 = current_point;
 		//START: Random angles, get rand segment
 		rand_angle = norm_distribution(norm_gen);
 		rand_segment = rotateAbout(T, radians(random_50_50() * rand_angle)) * rotateAbout(N, radians(random_50_50() * rand_angle)) * vec4(init_direction, 0.0);
@@ -419,20 +420,21 @@ void trace_lightning_recursion(vec3 init_point, vec3 init_direction, vector<vec3
 		//END: Random angles, get rand segment
 		//Here, we should have the new segment direction and length
 
-		current_point += rand_segment;
-		storage->push_back(current_point);
-
+		s.p1 = current_point + rand_segment;
+		current_point = s.p1; //current_point + rand_segment;
+		
+		storage->push_back(s);
+		
 		if (uni_distribution_branch(uni_gen) <= ((0.1*pow(10, -(current_point.y/max_h))) / 100.0*recursion_depth))
 		{
-			vec3 new_dir = rotateAbout(T, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * rotateAbout(N, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * vec4(rand_segment, 0.0);
+			vec3 new_dir = rotateAbout(T, radians(random_50_50() * uni_distribution_new_dir(uni_gen)))
+							* rotateAbout(N, radians(random_50_50() * uni_distribution_new_dir(uni_gen)))
+							* rotateAbout(B, radians(random_50_50() * uni_distribution_new_dir(uni_gen)))
+							* vec4(rand_segment, 0.0);
 			trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen), current_point.y, recursion_depth + 1);
 		}
-
-		storage->push_back(current_point);
 		num_segs--;
 	}
-	storage->push_back(current_point);
-
 }
 
 
@@ -446,7 +448,7 @@ float uni_distribution(float min, float max, unsigned seed)
 
 void trace_lightning(vec3 init_point, vec3 init_direction, vector<Segment> *storage, float max_h)
 {
-	unsigned seed = 0;
+	unsigned seed = glfwGetTime();
 	default_random_engine norm_gen(seed), uni_gen(seed);
 	normal_distribution<double> norm_distribution(45.0, 20.0);
 	uniform_real_distribution<double> uni_distribution_length(meter, 10.0*meter);
@@ -482,19 +484,20 @@ void trace_lightning(vec3 init_point, vec3 init_direction, vector<Segment> *stor
 		
 		storage->push_back(s);
 		
-		std::cout << "s:\t" << vPrint(s.p0) << "\t" << vPrint(s.p1) << std::endl;
-/*
+		//std::cout << "s:\t" << vPrint(s.p0) << "\t" << vPrint(s.p1) << std::endl;
+
 		if (uni_distribution_branch(uni_gen) <= (0.1*pow(10, -(current_point.y/max_h))))
 		{
 			vec3 new_dir = rotateAbout(T, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * rotateAbout(N, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * vec4(rand_segment, 0.0);
-			trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen), current_point.y, 2);
-		}*/
+			trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen), current_point.y, init_point.y);
+		}
 	}
 }
 
 void loadPoints()
 {
-	trace_lightning(vec3(0.0, 2.0, 0.0), vec3(-1.0, -1.0, 0.0), &lightning_segs, 2.0);
+	lightning_segs.clear();
+	trace_lightning(vec3(0.0, 2.0, 0.0), vec3(-0.5, -1.0, -0.5), &lightning_segs, 2.0);
 
 	storage.push_back(vec3(-1.0, 1.0, 0.0));
 	storage.push_back(vec3(1.0, 1.0, 0.0));
@@ -518,25 +521,24 @@ void loadPoints()
 	for (int i = 0; i < lightning_segs.size(); i++)
 	{
 		temp[i * 8 + 4] = lightning_segs[i].p0.x;
-		temp[i * 8 + 4 + 1] = lightning_segs[i].p0.y;
-		temp[i * 8 + 4 + 2] = lightning_segs[i].p0.z - 1.0;
+		temp[i * 8 + 4 + 1] = -lightning_segs[i].p0.y;
+		temp[i * 8 + 4 + 2] = lightning_segs[i].p0.z;
 		temp[i * 8 + 4 + 3] = 0;
 		
 		temp[i * 8 + 4 + 4] = lightning_segs[i].p1.x;
-		temp[i * 8 + 4 + 5] = lightning_segs[i].p1.y;
-		temp[i * 8 + 4 + 6] = lightning_segs[i].p1.z - 1.0;
+		temp[i * 8 + 4 + 5] = -lightning_segs[i].p1.y;
+		temp[i * 8 + 4 + 6] = lightning_segs[i].p1.z;
 		temp[i * 8 + 4 + 7] = 0;
 	}
 
 
-	for (int i = 2; i < lightning_segs.size(); i++){
+	//for (int i = 2; i < lightning_segs.size(); i++){
 //		if( lightning_segs[i] != lightning_segs[i-2] || lightning_segs[i] != lightning_segs[i-1] )
 //			std::cout << "Diff:\t" <<  vPrint(lightning_segs[i]) << "\t" << vPrint(lightning_segs[i-2]) << std::endl;
-		cout << vPrint(lightning_segs[i].p0) << "\t" << vPrint(lightning_segs[i].p1) << "\n" << endl;
-	}
+		//cout << vPrint(lightning_segs[i].p0) << "\t" << vPrint(lightning_segs[i].p1) << "\n" << endl;
+	//}
 
-//  temp[0] = lightning_segs.size();
-	temp[0] = 500;
+    temp[0] = lightning_segs.size() * 2;
   /*
 	int lightningLoc = glGetUniformLocation(program, "lightning_segs");
 	glUniform3fv(lightningLoc, lightning_segs.size(), temp);
@@ -545,7 +547,7 @@ void loadPoints()
 	glUniform1i(numSegsLoc, lightning_segs.size());
 
   */
-	cout << lightning_segs.size() << endl;
+	//cout << lightning_segs.size() << endl;
  /* //Working example via testing colors:
 int OFF=4;
 temp[OFF+0] = 0;
@@ -577,8 +579,6 @@ temp[OFF+14] = -2;
 	int numSegsLoc = glGetUniformLocation(program, "numSegs");
 	glUniform1i(numSegsLoc, lightning_segs.size());
 
-	// Clear vertices vector
-	vertices.clear();
 }
 
 void render()
