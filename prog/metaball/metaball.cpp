@@ -226,10 +226,10 @@ float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
 
 		term1 = (-4.0 / 9.0) * pow(R, 6.0);
 		term2 = (17.0 / 9.0) * pow(R, 4.0);
-		term3 = (22.0 / 9.0) * pow(R, 2.0);
+		term3 = (-22.0 / 9.0) * pow(R, 2.0);
 		float total = term1 + term2 - term3;
 		//float total = (float) term1 + (float) term2 - (float) term3 + (float) 1.0;
-		return (term1 + term2 - term3  + 1 );
+		return radius / -(term1 + term2 + term3 + 1);
 
 	}
 
