@@ -2,7 +2,7 @@
 // 1: The most basic of basic cloud, a meta-ball.
 // 3: Place them randomly in the 5x5 box
 // 4: Remove 5x5 box-thing, make it randomly select X
-// 5: Make it's granularity 0.25, -> faster (lower res march).
+// 5: Make it's granularity Q_GRAN, -> faster (lower res march).
 
 //Cory Jenson
 // 2: Create_cloud
@@ -12,6 +12,10 @@
 #include <math.h>
 
 #include "../main.h"
+
+
+#define Q_GRAN 0.25
+#define F_GRAN 0.125
 
 float AvgNew = 10;
 float AvgPer = 0.5;
@@ -33,8 +37,8 @@ void cloud::process_cloud_naive(vector<vec3> *points, vector<GLuint> *indices,ve
     points->clear();
     indices->clear();
     norms->clear();
-  //March getting points/indexs/norms, on balls, unknown bounding boxes, granularity =0.25 (half-res of new default)
-	  MetaBall::March(points,indices,norms, &balls, NULL, NULL, 0.25);
+  //March getting points/indexs/norms, on balls, unknown bounding boxes, granularity =Q_GRAN (half-res of new default)
+	  MetaBall::March(points,indices,norms, &balls, NULL, NULL, Q_GRAN);
 		for(int i = 0; i < indices->size()/3; i++)
 		{
 		  float rng = (((float)rand())/((float)INT_MAX));
@@ -64,7 +68,7 @@ void cloud::process_cloud_naive(vector<vec3> *points, vector<GLuint> *indices,ve
   points->clear();
   indices->clear();
   norms->clear();
-	MetaBall::March(points,indices,norms, &balls, NULL, NULL, 0.25);
+	MetaBall::March(points,indices,norms, &balls, NULL, NULL, F_GRAN);
   cout <<"Done making a cloud\n";
 }
 
@@ -84,8 +88,8 @@ void cloud::process_cloud_paper(vector<vec3> *points, vector<GLuint> *indices,ve
 		points->clear();
 		indices->clear();
 		norms->clear();
-		//March getting points/indexs/norms, on balls, unknown bounding boxes, granularity =0.25 (half-res of new default)
-		MetaBall::March(points,indices,norms, &balls, NULL, NULL, 0.25);
+		//March getting points/indexs/norms, on balls, unknown bounding boxes, granularity =Q_GRAN (half-res of new default)
+		MetaBall::March(points,indices,norms, &balls, NULL, NULL, Q_GRAN);
 		for(int i = 0; i < indices->size()/3; i++)
 		{
 		  float rng = (((float)rand())/((float)INT_MAX));
@@ -115,7 +119,7 @@ void cloud::process_cloud_paper(vector<vec3> *points, vector<GLuint> *indices,ve
 	points->clear();
 	indices->clear();
 	norms->clear();
-	MetaBall::March(points,indices,norms, &balls, NULL, NULL, 0.25);
+	MetaBall::March(points,indices,norms, &balls, NULL, NULL, F_GRAN);
 	cout <<"Done making a cloud\n";
 }
 void cloud::create_cloud(vector<vec3> *verts, vector<GLuint> *idx,vector<vec3> *norms, int numOfClouds, int m_in_cloud, int rounds)
@@ -135,7 +139,8 @@ void cloud::create_cloud(vector<vec3> *verts, vector<GLuint> *idx,vector<vec3> *
       x = x+2 - 4*(((float)rand())/((float)INT_MAX));
       y = y+2 - 4*(((float)rand())/((float)INT_MAX));
       z = z+2 - 4*(((float)rand())/((float)INT_MAX));
-      clouds[i].balls.push_back(new MetaBall(vec3(x,y,z), 1, fanceyMB));
+   //   clouds[i].balls.push_back(new MetaBall(vec3(x,y,z), 1, fanceyMB));
+      clouds[i].balls.push_back(new MetaBall(vec3(x,y,z), 1, WyvillMetaBall));
     }
   }
 
