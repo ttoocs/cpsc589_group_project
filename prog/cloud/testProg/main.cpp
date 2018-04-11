@@ -11,12 +11,24 @@ Camera activeCamera;
 
 float speed = 1;
 
+//START: Storage for stuff
+std::vector<vec3> verts;
+std::vector<vec3> norms;
+std::vector<GLuint> idx;
+Object sphere;
+//END: Storage for stuff
+
+//START: For window resize
+mat4 winRatio = mat4(1.f);
+//END: For window resize
+
 //START: Metaball vars for testing
 std::vector<MetaBall*> metaballs;
 std::vector<float> vertices;
 int num_points;
 
-  mat4 perspectiveMatrix = glm::perspective(glm::radians(45.f), 1.f, 0.1f, 400.f);
+mat4 perspectiveMatrix = glm::perspective(glm::radians(45.f), 1.f, 0.1f, 400.f);
+int nextRound = 0;
 //END: Metaball vars for testing
 
 struct GLSTUFF{
@@ -111,12 +123,6 @@ void Update_Perspective(){
 
 }
 
-  std::vector<vec3> verts;
-  std::vector<vec3> norms;
-  std::vector<GLuint> idx;
-Object sphere;
-
-
 void Update_GPU_data(){
 //		glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);	//Setup data-copy (points)
 //		glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*s->positions.size(),s->positions.data(),GL_DYNAMIC_DRAW);
@@ -132,7 +138,7 @@ void Update_GPU_data(){
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuff.indiciesbuffer);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*idx.size(),idx.data(),GL_DYNAMIC_DRAW);
 
-  glm::mat4 camMatrix = activeCamera.getMatrix();
+  glm::mat4 camMatrix = activeCamera.view();
   glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "cameraMatrix"),
             1,
             false,
@@ -145,12 +151,16 @@ void Render(){
 	glClearColor(0.5,0,0,0);
   
   
-  glm::mat4 camMatrix = activeCamera.getMatrix();
+  glm::mat4 camMatrix = activeCamera.view();
   glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "cameraMatrix"),
             1,
             false,
             &camMatrix[0][0]);
 
+  glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "windowRatio"),
+            1,
+            false,
+            &winRatio[0][0]);
   
   
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -193,36 +203,31 @@ int main(int argc, char * argv[]){
 	speed =0.01;
 
   //metaballs.push_back(new MetaBall(vec3(0,0,-5), 1, fanceyMB));
-  metaballs.push_back(new MetaBall(vec3(-1,0,-5), 0.1, fanceyMB));
-  metaballs.push_back(new MetaBall(vec3(1,0,-5), 0.1, fanceyMB));
+ // metaballs.push_back(new MetaBall(vec3(-1,0,-5), 1, fanceyMB));
+ // metaballs.push_back(new MetaBall(vec3(1,0,-5), 1, fanceyMB));
 /*  metaballs.push_back(new MetaBall(vec3(-3,0,-5), 1, fanceyMB));
   metaballs.push_back(new MetaBall(vec3(3,0,-5), 1, fanceyMB));
   metaballs.push_back(new MetaBall(vec3(0,3,-5), 1, fanceyMB));
   metaballs.push_back(new MetaBall(vec3(0,-3,-5), 1, fanceyMB));*/
 
-  cloud aCloud;
-  aCloud.balls = metaballs;
-
-
-  verts.clear();
-  idx.clear();
-  norms.clear();
-  
-  aCloud.create_cloud(&verts, &idx,&norms, 10);
-  
+//num of clouds, how many metaballs in each cloud initial, number of rounds
+//of adding things for each cloud
+  cloud::create_cloud(&verts, &idx, &norms, 3, 6, 3);
   Update_Perspective();	//updates perspective uniform, as it's never changed.
   Update_GPU_data();
   
-  printVec(activeCamera.pos);
-  printVec(activeCamera.dir);
-  printVec(activeCamera.up);
-  printVec(activeCamera.right);
 
 	while(!glfwWindowShouldClose(window))
 	{ //Main loop.
 
     glfwGetFramebufferSize(window, &WIDTH, &HEIGHT);
 
+    if(nextRound == 1)
+    {
+     // aCloud.process_cloud_naive(&verts, &idx,&norms, 1);
+      nextRound = 0;
+    }
+    Update_Perspective();
 		Render();
     glfwSwapBuffers(window);
 		glfwPollEvents();

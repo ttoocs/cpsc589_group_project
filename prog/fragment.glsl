@@ -38,7 +38,11 @@ void main(void)
 	coord.x /= 2;
 	coord.y /= 2;
 
-	
+//  #define rendType1  // Simple white->dark transition  
+  #define rendType2  // N- color mixing based on a normal
+//  #define rendType3  
+
+  #ifdef rendType1
 	if(n_proj.y > 0)
 	{
 		colour = vec4(white*((n_proj.y+1)/2),0);
@@ -48,7 +52,45 @@ void main(void)
 		colour = vec4(white*((n_proj.y+1)/2),0);
 		//colour = vec4(0,0,0,0);
 	}
+	#endif
 	
+  #ifdef rendType2
+  
+  const int numColors = 3;
+  vec3 norms[numColors];
+  vec3 colors[numColors];
+  vec3 ambient = vec3(0);
+ 
+  //Note: the following are + / -
+  //Note: X: R/L 
+  //Note: Y: Up/down,
+  //Note: Z: Into/Outof (screen)
+
+  //Sunlite air:
+    colors[0] = vec3(.8);  //White
+    norms[0]  = vec3(0,1,0);   //Up
+  
+  //Under-side:
+    colors[1] = vec3(0.3,0.3,0.5);
+    norms[1]  = vec3(0,-1,0);
+  
+  //left-sunglowyness
+    colors[2] = vec3(.7,0.5,0.25);
+    norms[2]  = vec3(-1,0.5,-0.2);
+
+  colour = vec4(ambient,0);
+  for(int i = 0; i < numColors; i++){
+    float p = dot(FragNormal,norms[i]);
+    if(p > 0)
+      colour += vec4( p* colors[i], 0);
+  }
+
+  #endif
+ 
+  #ifdef rendType3
+
+
+  #endif
 	
 	//colour = vec4(FragNormal,0);
 

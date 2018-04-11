@@ -22,6 +22,7 @@ out vec2 FragUV;
 uniform mat4 cameraMatrix=IDENTITY4;
 uniform mat4 perspectiveMatrix=IDENTITY4;
 uniform mat4 modelviewMatrix = IDENTITY4;
+uniform mat4 windowRatio = IDENTITY4;
 
 // output to be interpolated between vertices and passed to the fragment stage
 
@@ -33,5 +34,5 @@ void main()
 
 	FragUV = UV;
 
-	gl_Position = perspectiveMatrix*cameraMatrix*modelviewMatrix*(vec4(VertexPosition, 1.0));
+	gl_Position = windowRatio*perspectiveMatrix*cameraMatrix*modelviewMatrix*(vec4(VertexPosition, 1.0));
 }
