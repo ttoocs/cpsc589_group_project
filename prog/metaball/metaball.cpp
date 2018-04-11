@@ -257,14 +257,14 @@ float fanceyMB(vec3 mbpos, vec3 tpos, float radius){
 
 float inclass(vec3 mbpos, vec3 tpos, float radius){
   //No idea what r,a,b is.
-  float r=0 //?
-  float a=0 //?
-  float b=0 //?
+  float r=0; //?
+  float a=0; //?
+  float b=0; //?
 
   if( r >= a && r <= b/3 )
-    return a(1-(3r*r)/(b*b);
+    return a*(1-(3*r*r)/(b*b));
   if( (b/3) <= r && r <= b)
-    return (3a)/2.0 *  (1 - r/b) * (1 - r/b)
+    return (3*a)/2.0 *  (1 - r/b) * (1 - r/b);
   
   return 0;
 }
