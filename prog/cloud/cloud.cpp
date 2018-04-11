@@ -17,7 +17,7 @@ float AvgNew = 10;
 float AvgPer = 0.5;
 
 using namespace std;
-void cloud::create_cloud_naive(vector<vec3> *points, vector<GLuint> *indices,vector<vec3> *norms, int rounds)
+void cloud::process_cloud_naive(vector<vec3> *points, vector<GLuint> *indices,vector<vec3> *norms, int rounds)
 {
 	vec3 p0 = vec3(0,0,0);
 	vec3 p1 = vec3(0,0,0);
@@ -68,7 +68,7 @@ void cloud::create_cloud_naive(vector<vec3> *points, vector<GLuint> *indices,vec
   cout <<"Done making a cloud\n";
 }
 
-void cloud::create_cloud_paper(vector<vec3> *points, vector<GLuint> *indices,vector<vec3> *norms, int rounds)
+void cloud::process_cloud_paper(vector<vec3> *points, vector<GLuint> *indices,vector<vec3> *norms, int rounds)
 {
 	vec3 p0 = vec3(0,0,0);
 	vec3 p1 = vec3(0,0,0);
@@ -117,4 +117,44 @@ void cloud::create_cloud_paper(vector<vec3> *points, vector<GLuint> *indices,vec
 	norms->clear();
 	MetaBall::March(points,indices,norms, &balls, NULL, NULL, 0.25);
 	cout <<"Done making a cloud\n";
+}
+void cloud::create_cloud(vector<vec3> *verts, vector<GLuint> *idx,vector<vec3> *norms, int numOfClouds, int m_in_cloud, int rounds)
+{
+  cloud clouds[numOfClouds];
+  
+  std::vector<vec3> verts_s;
+  std::vector<GLuint> idx_s;
+  std::vector<vec3> norms_s;
+  for(int i = 0; i < numOfClouds;i++)
+  {
+    float x = -1+3*i;
+    float y = 10 - 20*(((float)rand())/((float)INT_MAX));
+    float z = 10 - 20*(((float)rand())/((float)INT_MAX));
+    for(int j = 0; j < m_in_cloud;j++)
+    {
+      x = x+2 - 4*(((float)rand())/((float)INT_MAX));
+      y = y+2 - 4*(((float)rand())/((float)INT_MAX));
+      z = z+2 - 4*(((float)rand())/((float)INT_MAX));
+      clouds[i].balls.push_back(new MetaBall(vec3(x,y,z), 1, fanceyMB));
+    }
+  }
+
+  verts->clear();
+  idx->clear();
+  norms->clear();
+  
+  //aCloud.process_cloud_paper(&verts, &idx,&norms, 3);
+  for(int i = 0; i < numOfClouds;i++)
+  {
+    verts_s.clear();
+    norms_s.clear();
+    idx_s.clear();
+    clouds[i].process_cloud_paper(&verts_s, &idx_s,&norms_s, rounds);
+    for(int j = 0; j < idx_s.size();j++)
+    {
+      verts->push_back(verts_s[j]);
+      norms->push_back(norms_s[j]);
+      idx->push_back(idx->size());
+    }
+  }
 }
