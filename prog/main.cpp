@@ -214,12 +214,19 @@ int main(int argc, char * argv[]){
 
 	initalize_GL();
 
+ 
+  for(int i=0; i < 1; i++){
+    new cloud(); //Create cloud with defaults.
+  }
+
+
 	while(!glfwWindowShouldClose(window))
 	{ //Main loop.
 
     glfwGetFramebufferSize(window, &WIDTH, &HEIGHT);
 
-		Render(renderTris);
+    Tris t = cloud::getAllTris();
+		Render(t);
     glfwSwapBuffers(window);
 		glfwPollEvents();
 

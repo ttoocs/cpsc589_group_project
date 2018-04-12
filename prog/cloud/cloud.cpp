@@ -20,6 +20,9 @@
 float AvgNew = 10;
 float AvgPer = 0.5;
 
+
+std::vector<cloud*> cloud::allClouds;
+
 using namespace std;
 void cloud::process_cloud_naive(vector<vec3> *points, vector<GLuint> *indices,vector<vec3> *norms, int rounds)
 {
@@ -72,7 +75,8 @@ void cloud::process_cloud_naive(vector<vec3> *points, vector<GLuint> *indices,ve
   cout <<"Done making a cloud\n";
 }
 
-void cloud::process_cloud_paper(vector<vec3> *points, vector<GLuint> *indices,vector<vec3> *norms, int rounds)
+//void cloud::process_cloud_paper(vector<vec3> *points, vector<GLuint> *indices,vector<vec3> *norms, int rounds)
+void cloud::process_cloud_paper(Tris& t, int rounds)
 {
 	vec3 p0 = vec3(0,0,0);
 	vec3 p1 = vec3(0,0,0);
@@ -82,6 +86,10 @@ void cloud::process_cloud_paper(vector<vec3> *points, vector<GLuint> *indices,ve
 	float r1 = 0.0f;
 	float radius = ((float)rand())/((float)INT_MAX);
 	
+  vector<vec3>* points = new vector<vec3>;
+  vector<vec3>* norms = new vector<vec3>;
+  vector<GLuint>* indices = new vector<GLuint>;
+
 	int a=0;
 	for(int j = 0; j < rounds; j++)
 	{
@@ -120,14 +128,24 @@ void cloud::process_cloud_paper(vector<vec3> *points, vector<GLuint> *indices,ve
 	indices->clear();
 	norms->clear();
 	MetaBall::March(points,indices,norms, &balls, NULL, NULL, F_GRAN);
-	cout <<"Done making a cloud\n";
+	cout <<"Done processing a cloud\n";
+  
+  t = mergeTris(t,toTris(points,norms,indices));
+
 }
 
 
 
 void cloud::create_cloud(vector<vec3> *verts, vector<GLuint> *idx,vector<vec3> *norms, int numOfClouds, int m_in_cloud, int rounds)
 {
-  cloud clouds[numOfClouds];
+
+  std::cout << "Despite my efforts, this seems to have issues now." << std::endl;
+  std::cout << "You have been warned." << std::endl;
+//  cloud clouds[numOfClouds];  //This caused issues with new cosntructor, hence:
+  std::vector<cloud> clouds;
+  for(int i = 0; i < numOfClouds ; i++){
+    clouds.push_back(cloud(NULL,NULL,0,0,0,true)); //All but last ignored, the skip.
+  }
   
   std::vector<vec3> verts_s;
   std::vector<GLuint> idx_s;
@@ -158,17 +176,27 @@ void cloud::create_cloud(vector<vec3> *verts, vector<GLuint> *idx,vector<vec3> *
     norms_s.clear();
     idx_s.clear();
     clouds[i].process_cloud_paper(&verts_s, &idx_s,&norms_s, rounds);
-    for(int j = 0; j < idx_s.size();j++)
+
+    Tris ms = mergeTris(toTris(verts,norms,idx),toTris(&verts_s,&norms_s,&idx_s));
+    verts = ms.verts;
+    norms = ms.norms;
+    idx = ms.idx;
+/*
+    for(int j = 0; j < idx_s.size();j++) // J is rediculously large here, probably the issue. (Some compression does happen now.)
     {
       verts->push_back(verts_s[j]);
-      norms->push_back(norms_s[j]);
+      norms->push_back(norms_s[j]); //Seems to segfault?q
       idx->push_back(idx->size());
     }
+*/
+
   }
+ 
 }
 
 
-cloud::cloud(float(*f)(vec3, vec3, float) , vec3 * pos, int initBalls, int rounds, int rad){
+cloud::cloud(float(*f)(vec3, vec3, float) , vec3 * pos, int initBalls, int rounds, int rad, bool skip){
+  if(! skip){
   //Default pos/etc.
   vec3 npos;
   if(pos == NULL){ //Make a position if there isn't one given.
@@ -197,4 +225,29 @@ cloud::cloud(float(*f)(vec3, vec3, float) , vec3 * pos, int initBalls, int round
     }
   }  
 
+  process_cloud_paper(tris, rounds);
+  
+  std::cout << "New cloud made." << std::endl;
+  }
+  allClouds.push_back(this);
+}
+
+/* The above is a default constructor as all args optional.
+cloud::cloud(){
+  std::cout << "Improperly(?) initalized cloud, fun may insue." << std::endl;
+  allClouds.push_back(*this);
+}
+*/
+
+Tris cloud::getAllTris(){
+  Tris t;
+  for(auto it = allClouds.begin(); it != allClouds.end(); it++){
+    t = mergeTris(t, (*it)->getTris());
+  }
+  return t;
+}
+
+Tris cloud::getTris(){
+//  return  toTris(&verts,&norms,&idx);
+  return tris;
 }
