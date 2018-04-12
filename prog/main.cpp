@@ -170,8 +170,8 @@ void Update_GPU_data(Tris t){
 
 
 void Render(Tris t){
-	glClearColor(0.5,0,0,0);
-
+	glClearColor(40/255.0,56/255.0,81/255.0,0);
+  //rgb(40, 56, 81)
 
   Update_Perspective();	//updates perspective uniform, as it's never changed.
   if(t.verts != NULL && t.norms != NULL && t.idx != NULL){

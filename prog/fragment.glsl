@@ -71,7 +71,8 @@ void main(void)
     norms[0]  = vec3(0,1,0);   //Up
   
   //Under-side:
-    colors[1] = vec3(0.3,0.3,0.5);
+//    rgb(35, 41, 51)
+    colors[1] = vec3(0.13,0.16,0.20);
     norms[1]  = vec3(0,-1,0);
   
   //left-sunglowyness
