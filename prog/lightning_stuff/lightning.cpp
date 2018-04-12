@@ -155,7 +155,12 @@ void lightning::trace_lightning(vec3 init_point, vec3 init_direction, vector<Seg
 void lightning::loadPoints()
 {
   if(lightning::segmentBuffer == 0){
-    std::cout << "Note: Lightening SSBO buffer is 0, not goging to generate anything." << std::endl;
+    std::cout << "Note: Lightening SSBO buffer is 0.. Attempting to auto-generate it." << std::endl;
+    std::cout << "May not work, assumes VAO is already bounded. If blank this is why." << std::endl;    
+//	  glBindVertexArray(VAO);
+  	glGenBuffers(1, &lightning::segmentBuffer);
+  	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,lightning::segmentBuffer);
+
   }
 
 

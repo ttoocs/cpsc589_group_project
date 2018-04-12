@@ -147,8 +147,9 @@ void genVBOsVAOs()
 	glGenVertexArrays(1, &VAO);
 
 	glBindVertexArray(VAO);
-	glGenBuffers(1, &lightning::segmentBuffer);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,lightning::segmentBuffer);
+//	glGenBuffers(1, &lightning::segmentBuffer);
+//	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,lightning::segmentBuffer);
+
 	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);	//Points
 //		glEnableVertexAttribArray(0);
 
