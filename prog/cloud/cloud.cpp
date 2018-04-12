@@ -122,6 +122,9 @@ void cloud::process_cloud_paper(vector<vec3> *points, vector<GLuint> *indices,ve
 	MetaBall::March(points,indices,norms, &balls, NULL, NULL, F_GRAN);
 	cout <<"Done making a cloud\n";
 }
+
+
+
 void cloud::create_cloud(vector<vec3> *verts, vector<GLuint> *idx,vector<vec3> *norms, int numOfClouds, int m_in_cloud, int rounds)
 {
   cloud clouds[numOfClouds];
@@ -162,4 +165,36 @@ void cloud::create_cloud(vector<vec3> *verts, vector<GLuint> *idx,vector<vec3> *
       idx->push_back(idx->size());
     }
   }
+}
+
+
+cloud::cloud(float(*f)(vec3, vec3, float) , vec3 * pos, int initBalls, int rounds, int rad){
+  //Default pos/etc.
+  vec3 npos;
+  if(pos == NULL){ //Make a position if there isn't one given.
+    float x = -1+3;
+    float y = 10 - 20*(((float)rand())/((float)INT_MAX));
+    float z = 10 - 20*(((float)rand())/((float)INT_MAX));
+    npos = vec3(x,y,z);
+    pos = &npos; 
+  }
+  //Default func
+  if(f == NULL){
+    f=WyvillMetaBall;
+  }
+
+  { //Gen balls
+    balls.push_back(new MetaBall(*pos, rad, f));
+    float x = (*pos).x;
+    float y = (*pos).y;
+    float z = (*pos).z;
+    for(int j = 0; j < initBalls;j++)
+    {
+      x = x+2 - 4*(((float)rand())/((float)INT_MAX));
+      y = y+2 - 4*(((float)rand())/((float)INT_MAX));
+      z = z+2 - 4*(((float)rand())/((float)INT_MAX));
+      balls.push_back(new MetaBall(vec3(x,y,z), rad, f));
+    }
+  }  
+
 }
