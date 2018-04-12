@@ -20,7 +20,6 @@
 
 using namespace std;
 using namespace glm;
-using namespace lightning;
 
 int screenWidth = 1000;
 int screenHeight = 1000;
@@ -359,7 +358,7 @@ void framebuffer_size_callback(GLFWwindow * window, int width, int height)
 void loadPoints()
 {
 	lightning_segs.clear();
-	trace_lightning(vec3(0.0, 2.0, 0.0), vec3(-0.5, -1.0, -0.5), &lightning_segs, 2.0);
+	lightning::trace_lightning(vec3(0.0, 2.0, 0.0), vec3(-0.5, -1.0, -0.5), &lightning_segs, 2.0);
 
 	storage.push_back(vec3(-1.0, 1.0, 0.0));
 	storage.push_back(vec3(1.0, 1.0, 0.0));

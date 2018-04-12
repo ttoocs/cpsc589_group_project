@@ -3,15 +3,14 @@
 
 #include <random>
 
-namespace lightning{
 
 using namespace std;
 using namespace glm;
 
 
-float meter = 0.004;
+float lightning::meter = 0.004;
 
-float random_50_50()
+float lightning::random_50_50()
 {
 	default_random_engine uni_gen;
 	uniform_real_distribution<double> uni_distribution_50_50(0.0, 1.0);
@@ -23,7 +22,7 @@ float random_50_50()
 }
 
 
-mat4 rotateAbout(vec3 axis, float radians)
+mat4 lightning::rotateAbout(vec3 axis, float radians)
 {
 	mat4 matrix;
 
@@ -44,7 +43,7 @@ mat4 rotateAbout(vec3 axis, float radians)
 
 
 //This assumes ground is at z = 0
-void trace_lightning_recursion(vec3 init_point, vec3 init_direction, vector<Segment> *storage, int num_segs, float max_h, int recursion_depth)
+void lightning::trace_lightning_recursion(vec3 init_point, vec3 init_direction, vector<Segment> *storage, int num_segs, float max_h, int recursion_depth)
 {
 	default_random_engine norm_gen, uni_gen;
 	normal_distribution<double> norm_distribution(45.0, 20.0);
@@ -92,7 +91,7 @@ void trace_lightning_recursion(vec3 init_point, vec3 init_direction, vector<Segm
 }
 
 
-float uni_distribution(float min, float max, unsigned seed)
+float lightning::uni_distribution(float min, float max, unsigned seed)
 {
 	default_random_engine uni_gen(seed);
 	uniform_real_distribution<double> uni_distribution(min, max);
@@ -100,7 +99,7 @@ float uni_distribution(float min, float max, unsigned seed)
 	return uni_distribution(uni_gen);
 }
 
-void trace_lightning(vec3 init_point, vec3 init_direction, vector<Segment> *storage, float max_h)
+void lightning::trace_lightning(vec3 init_point, vec3 init_direction, vector<Segment> *storage, float max_h)
 {
   std::random_device rd; 
 	unsigned seed = rd();//glfwGetTime();
@@ -149,4 +148,3 @@ void trace_lightning(vec3 init_point, vec3 init_direction, vector<Segment> *stor
 	}
 }
 
-};
