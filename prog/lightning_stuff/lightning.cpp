@@ -1,6 +1,7 @@
 
 #include "lightning.h"
 
+#include <iostream>
 #include <random>
 
 #define GL_SHADER_STORAGE_BUFFER 0x90D2

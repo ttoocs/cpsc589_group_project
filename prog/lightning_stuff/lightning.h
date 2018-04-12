@@ -4,7 +4,15 @@
 #include "glm/ext.hpp"
 //#include <GL/gl3w.h>
 //#include <GLFW/glfw3.h>
-#include "../gl_helpers.h"
+//#include "../gl_helpers.h"
+
+#define GLFW_INCLUDE_GLCOREARB
+#define GL_GLEXT_PROTOTYPES
+
+#include <GLFW/glfw3.h>
+#define MYGLUEMARK
+
+
 
 struct Segment{
 	glm::vec3 p0;

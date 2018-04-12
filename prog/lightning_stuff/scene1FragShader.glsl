@@ -123,8 +123,11 @@ vec3 calculateGlow(float w, float l, Ray r)
 	}
 	return color;
 }
-
+#ifndef LIGHT_SUBSHADER
 void main(void)
+#else
+vec4 main_l()
+#endif
 {
 	//vec3 cameraPosition = vec3(0,0,0);
 	float z = -(1.f/tan(90.0/2.f));	// Calculating z coord
@@ -183,6 +186,10 @@ void main(void)
   
   #endif
 
+  #ifndef LIGHT_SUBSHADER
 	FragmentColour = vec4(color, 1);
+  #else
+	return vec4(color, 1);
+  #endif
 }
 
