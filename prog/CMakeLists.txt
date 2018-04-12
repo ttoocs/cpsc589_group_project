@@ -83,4 +83,6 @@ add_executable(
     metaball/metaball.cpp
     cloud/cloud.cpp
     center.cpp
+    lightning_stuff/lightning.cpp
+    lightning_stuff/lightningObj.cpp
 )

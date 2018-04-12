@@ -7,7 +7,14 @@
 #include <vector>
 #include <glm/glm.hpp>
 //#include "glm/glm/glm.hpp"
-#include "gl_helpers.h"
+
+
+#define GLFW_INCLUDE_GLCOREARB
+#define GL_GLEXT_PROTOTYPES
+
+#include <GLFW/glfw3.h>
+#define MYGLUEMARK
+
 
 typedef glm::vec4 vec4;
 typedef glm::vec3 vec3;

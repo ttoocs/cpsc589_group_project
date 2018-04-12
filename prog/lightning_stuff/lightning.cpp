@@ -72,7 +72,7 @@ void lightning::trace_lightning_recursion(vec3 init_point, vec3 init_direction, 
 		//START: Random angles, get rand segment
 		rand_angle = norm_distribution(norm_gen);
 		rand_segment = rotateAbout(T, radians(random_50_50() * rand_angle)) * rotateAbout(N, radians(random_50_50() * rand_angle)) * vec4(init_direction, 0.0);
-		rand_segment = uni_distribution_length(uni_gen) * rand_segment;
+		rand_segment *= ( uni_distribution_length(uni_gen));
 
 		//END: Random angles, get rand segment
 		//Here, we should have the new segment direction and length
@@ -132,7 +132,9 @@ void lightning::trace_lightning(vec3 init_point, vec3 init_direction, vector<Seg
 		//START: Random angles, get rand segment
 		rand_angle = norm_distribution(norm_gen);
 		rand_segment = rotateAbout(T, radians(random_50_50() * rand_angle)) * rotateAbout(N, radians(random_50_50() * rand_angle)) * vec4(init_direction, 0.0);
-		rand_segment = uni_distribution_length(uni_gen) * normalize(rand_segment);
+		//rand_segment = uni_distribution_length(uni_gen) * normalize(rand_segment);
+		rand_segment = normalize(rand_segment);
+		rand_segment *= ( uni_distribution_length(uni_gen));
 
 		//END: Random angles, get rand segment
 		//Here, we should have the new segment direction and length
@@ -151,6 +153,7 @@ void lightning::trace_lightning(vec3 init_point, vec3 init_direction, vector<Seg
 		}
 	}
 }
+
 
 
 void lightning::loadPoints()
