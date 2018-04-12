@@ -76,8 +76,20 @@ void initalize_GL(){
 
 		//OpenGL programs
 		glstuff.prog = glCreateProgram();
+    std::vector<std::string> vs;
+    std::vector<std::string> fs;
+    vs.push_back(VERTEXPATH);
+    
+    fs.push_back(FRAGMENTPATH);
+    fs.push_back(FRAGMENTPATH1);
+    fs.push_back(FRAGMENTPATH2);
+    fs.push_back(FRAGMENTPATH3);
 		glstuff.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSource(VERTEXPATH));
-		glstuff.fragShader = CompileShader(GL_FRAGMENT_SHADER,LoadSource(FRAGMENTPATH));
+//		glstuff.fragShader = CompileShader(GL_FRAGMENT_SHADER,LoadSource(FRAGMENTPATH));
+//    glstuff.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSourceM(vs));
+    glstuff.fragShader = CompileShader(GL_FRAGMENT_SHADER,LoadSourceM(fs));
+  
+
 
     //Attaching to prog
 		glAttachShader(glstuff.prog, glstuff.vertexShader);

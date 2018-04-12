@@ -11,6 +11,8 @@
 #include <GLFW/glfw3.h>
 #define MYGLUEMARK
 
+#include <vector>
+#include <string>
 
 #define lcase(X)	case(X): std::cout << #X << std::endl; break;
 
@@ -30,17 +32,19 @@ GLFWwindow * glfw_init(int X, int Y, char const * Title);
 // OpenGL shader support functions
 
 // reads a text file with the given name into a string
-std::string LoadSource(const std::string &filename);
+extern std::string LoadSourceM(std::vector<std::string> & filenames);
+//extern std::string LoadSource(const std::string &filename) { std::cout <<  "todo" << std::endl; }
+inline std::string LoadSource(const std::string &filename) { std::vector<std::string> f; f.push_back(filename); return LoadSourceM(f);}
 
 // creates and returns a shader object compiled from the given source
-GLuint CompileShader(GLenum shaderType, const std::string &source);
+extern GLuint CompileShader(GLenum shaderType, const std::string &source);
 
 //  linked from vertex and fragment shaders
-GLuint LinkProgram(GLuint programObject);
+extern GLuint LinkProgram(GLuint programObject);
 
-void check_gllink(GLuint programObject);
+extern void check_gllink(GLuint programObject);
 
 // https://www.opengl.org/wiki/Debug_Output#Getting_messages //
 
-void GL_error_callback(GLenum source, GLenum type, GLuint id,
+extern void GL_error_callback(GLenum source, GLenum type, GLuint id,
    GLenum severity, GLsizei length, const GLchar* message, const void* userParam);

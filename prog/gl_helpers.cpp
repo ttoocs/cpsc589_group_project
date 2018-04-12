@@ -100,25 +100,32 @@ GLFWwindow * glfw_init(int X, int Y, char const * Title){  //Initalizes and retu
 // OpenGL shader support functions
 
 // reads a text file with the given name into a string
-std::string LoadSource(const std::string &filename)
+// /*
+std::string LoadSourceM(std::vector<std::string> &filenames)
 {
+
+    
     std::string source;
 
-    std::ifstream input(filename.c_str());
-    if (input) {
-        copy(std::istreambuf_iterator<char>(input),
-            std::istreambuf_iterator<char>(),
-            back_inserter(source));
-        input.close();
-    }
-    else {
-        std::cout << "ERROR: Could not load shader source from file "
-            << filename << std::endl;
+    for(auto it= filenames.begin(); it != filenames.end(); it++){
+      
+      std::string filename = (*it);
+      std::ifstream input(filename.c_str());
+      if (input) {
+          copy(std::istreambuf_iterator<char>(input),
+              std::istreambuf_iterator<char>(),
+              back_inserter(source));
+          input.close();
+          std::cout << "loaded shader source from file: "  << filename << std::endl;
+      }
+      else {
+          std::cout << "ERROR: Could not load shader source from file "  << filename << std::endl;
+      }
     }
 //	std::cout << "RAW READ: " << source << " : END READ" << std::endl;
     return source;
 }
-
+// */
 // creates and returns a shader object compiled from the given source
 GLuint CompileShader(GLenum shaderType, const std::string &source)
 {
