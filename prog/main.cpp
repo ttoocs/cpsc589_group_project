@@ -4,8 +4,42 @@
 //October 1st, 2016.
 
 #include "main.h"
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <string>
+#include <vector>
+#include <iterator>
+#include <sstream>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#include "types.h"
+#include "gl_helpers.h"
+#include "shapes.h"
+#include "input.h"
+#include "camera.h"
+
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "metaball/metaball.h"
 #include "cloud/cloud.h"
+
+//#define WIREFRAME
+#define DEBUG
+
+#ifdef DEBUG
+	#define DEBUGMSG	printf("\n\n\t\t DEBUG MESSAGE AT LINE:\t%d\t In file:\t%s\n\n",__LINE__,__FILE__);
+#else
+	#define DEBUGMSG	;
+#endif
+
+
+#define torad(X)	((float)(X*PI/180.f))
+
+
 
 Camera activeCamera;
 
@@ -29,6 +63,8 @@ struct GLSTUFF{
 };
 GLSTUFF glstuff;
 
+
+Tris renderTris;
 
 void initalize_GL(){
 		glEnable(GL_DEPTH_TEST); 		//Turn on depth testing
@@ -118,26 +154,32 @@ void Update_Perspective(){
 
 }
 
-void Update_GPU_data(){
+void Update_GPU_data(Tris t){
 
   //Calc verts/etc
-  
   glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);
-  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*verts.size(),verts.data(),GL_DYNAMIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*t.verts->size(),t.verts->data(),GL_DYNAMIC_DRAW);
 
   glBindBuffer(GL_ARRAY_BUFFER,glstuff.normalbuffer);
-  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*norms.size(),norms.data(),GL_DYNAMIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*t.norms->size(),t.norms->data(),GL_DYNAMIC_DRAW);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuff.indiciesbuffer);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*idx.size(),idx.data(),GL_DYNAMIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*t.idx->size(),t.idx->data(),GL_DYNAMIC_DRAW);
 
 }
 
 
-void Render(){
+void Render(Tris t){
 	glClearColor(0.5,0,0,0);
-  
+
+
   Update_Perspective();	//updates perspective uniform, as it's never changed.
+  if(t.verts != NULL && t.norms != NULL && t.idx != NULL){
+    Update_GPU_data(t);
+  }else{
+    std::cout << "Not updating data, some of it is null." << std::endl;
+    return;
+  }
   
 	glClear(GL_COLOR_BUFFER_BIT);
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -148,7 +190,7 @@ void Render(){
 
 	glDrawElements(
   	GL_TRIANGLES,   //What shape we're drawing  - GL_TRIANGLES, GL_LINES, GL_POINTS, GL_QUADS, GL_TRIANGLE_STRIP
-		idx.size(),    //How many indices
+		t.idx->size(),    //How many indices
 		GL_UNSIGNED_INT,  //Type
 		0
 	);
@@ -172,22 +214,12 @@ int main(int argc, char * argv[]){
 
 	initalize_GL();
 
-
-  Update_GPU_data();
-  
-
 	while(!glfwWindowShouldClose(window))
 	{ //Main loop.
 
     glfwGetFramebufferSize(window, &WIDTH, &HEIGHT);
 
-    if(nextRound == 1)
-    {
-     // aCloud.process_cloud_naive(&verts, &idx,&norms, 1);
-      nextRound = 0;
-    }
-    Update_Perspective();
-		Render();
+		Render(renderTris);
     glfwSwapBuffers(window);
 		glfwPollEvents();
 
