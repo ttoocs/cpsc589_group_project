@@ -3,12 +3,15 @@
 
 #include <random>
 
+#define GL_SHADER_STORAGE_BUFFER 0x90D2
 
 using namespace std;
 using namespace glm;
 
 
 float lightning::meter = 0.004;
+GLuint lightning::segmentBuffer =0;
+
 
 float lightning::random_50_50()
 {
@@ -146,5 +149,81 @@ void lightning::trace_lightning(vec3 init_point, vec3 init_direction, vector<Seg
 			trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen), current_point.y, init_point.y);
 		}
 	}
+}
+
+
+void lightning::loadPoints()
+{
+  if(lightning::segmentBuffer == 0){
+    std::cout << "Note: Lightening SSBO buffer is 0, not goging to generate anything." << std::endl;
+  }
+
+
+  std::vector<Segment> lightning_segs;
+	lightning_segs.clear();
+	lightning::trace_lightning(vec3(0.0, 2.0, 0.0), vec3(-0.5, -1.0, -0.5), &lightning_segs, 2.0);
+
+
+	float temp[((lightning_segs.size() * 2 * 4) + 4)];
+	for (int i = 0; i < lightning_segs.size(); i++)
+	{
+		temp[i * 8 + 4] = lightning_segs[i].p0.x;
+		temp[i * 8 + 4 + 1] = -lightning_segs[i].p0.y;
+		temp[i * 8 + 4 + 2] = lightning_segs[i].p0.z;
+		temp[i * 8 + 4 + 3] = 0;
+		
+		temp[i * 8 + 4 + 4] = lightning_segs[i].p1.x;
+		temp[i * 8 + 4 + 5] = -lightning_segs[i].p1.y;
+		temp[i * 8 + 4 + 6] = lightning_segs[i].p1.z;
+		temp[i * 8 + 4 + 7] = 0;
+	}
+
+
+	//for (int i = 2; i < lightning_segs.size(); i++){
+//		if( lightning_segs[i] != lightning_segs[i-2] || lightning_segs[i] != lightning_segs[i-1] )
+//			std::cout << "Diff:\t" <<  vPrint(lightning_segs[i]) << "\t" << vPrint(lightning_segs[i-2]) << std::endl;
+		//cout << vPrint(lightning_segs[i].p0) << "\t" << vPrint(lightning_segs[i].p1) << "\n" << endl;
+	//}
+
+    temp[0] = lightning_segs.size() * 2;
+  /*
+	int lightningLoc = glGetUniformLocation(program, "lightning_segs");
+	glUniform3fv(lightningLoc, lightning_segs.size(), temp);
+
+	int numSegsLoc = glGetUniformLocation(program, "numSegs");
+	glUniform1i(numSegsLoc, lightning_segs.size());
+
+  */
+	//cout << lightning_segs.size() << endl;
+ /* //Working example via testing colors:
+int OFF=4;
+temp[OFF+0] = 0;
+temp[OFF+1] = 1.0;
+temp[OFF+2] = -2.0;
+
+temp[OFF+3] = 0; //
+
+temp[OFF+4] = -1.0;
+temp[OFF+5] = 0;
+temp[OFF+6] = -2;
+
+temp[OFF+7] = 1; //??
+
+temp[OFF+8] = -1;
+temp[OFF+9] = 0;
+temp[OFF+10] = -2;
+
+temp[OFF+11] = 0;// ??
+
+temp[OFF+12] = 0;
+temp[OFF+13] = -1;
+temp[OFF+14] = -2;
+// */
+  //EX: a single sphere:
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, lightning::segmentBuffer);
+  glBufferData(GL_SHADER_STORAGE_BUFFER,sizeof(temp),&temp,GL_DYNAMIC_COPY);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER,0);
+	
+
 }
 

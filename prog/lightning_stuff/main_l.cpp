@@ -76,8 +76,10 @@ void updateCamera();
 void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void loadPoints();
+//void loadPoints();
 void render();
+void loadScreen();
+
 
 int main()
 {
@@ -114,7 +116,8 @@ int main()
 	initPrograms();
 	updateCamera();
 
-	loadPoints();
+  loadScreen();
+	lightning::loadPoints();
 
 
 	while (!glfwWindowShouldClose(window))
@@ -144,8 +147,8 @@ void genVBOsVAOs()
 	glGenVertexArrays(1, &VAO);
 
 	glBindVertexArray(VAO);
-	glGenBuffers(1, &segBuffer);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,segBuffer);
+	glGenBuffers(1, &lightning::segmentBuffer);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,lightning::segmentBuffer);
 	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);	//Points
 //		glEnableVertexAttribArray(0);
 
@@ -258,6 +261,27 @@ void initPrograms()
 	}
 }
 
+void loadScreen(){
+
+	storage.push_back(vec3(-1.0, 1.0, 0.0));
+	storage.push_back(vec3(1.0, 1.0, 0.0));
+	storage.push_back(vec3(1.0, -1.0, 0.0));
+
+	storage.push_back(vec3(1.0, -1.0, 0.0));
+	storage.push_back(vec3(-1.0, -1.0, 0.0));
+	storage.push_back(vec3(-1.0, 1.0, 0.0));
+
+	glBindVertexArray(VAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, storage.size() * sizeof(vec3), storage.data(), GL_STREAM_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	num_points = storage.size();
+}
+
 void updateCamera()
 {
 	mat4 model;
@@ -308,7 +332,7 @@ void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, in
 		updateCamera();
 	}
 	else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-		loadPoints();
+		lightning::loadPoints();
 
 }
 
@@ -353,93 +377,6 @@ void mouse_callback(GLFWwindow * window, double xpos, double ypos)
 void framebuffer_size_callback(GLFWwindow * window, int width, int height)
 {
 	glViewport(0, 0, width, height);
-}
-
-void loadPoints()
-{
-	lightning_segs.clear();
-	lightning::trace_lightning(vec3(0.0, 2.0, 0.0), vec3(-0.5, -1.0, -0.5), &lightning_segs, 2.0);
-
-	storage.push_back(vec3(-1.0, 1.0, 0.0));
-	storage.push_back(vec3(1.0, 1.0, 0.0));
-	storage.push_back(vec3(1.0, -1.0, 0.0));
-
-	storage.push_back(vec3(1.0, -1.0, 0.0));
-	storage.push_back(vec3(-1.0, -1.0, 0.0));
-	storage.push_back(vec3(-1.0, 1.0, 0.0));
-
-	glBindVertexArray(VAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, storage.size() * sizeof(vec3), storage.data(), GL_STREAM_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	num_points = storage.size();
-
-	GLfloat temp[((lightning_segs.size() * 2 * 4) + 4)];
-	for (int i = 0; i < lightning_segs.size(); i++)
-	{
-		temp[i * 8 + 4] = lightning_segs[i].p0.x;
-		temp[i * 8 + 4 + 1] = -lightning_segs[i].p0.y;
-		temp[i * 8 + 4 + 2] = lightning_segs[i].p0.z;
-		temp[i * 8 + 4 + 3] = 0;
-		
-		temp[i * 8 + 4 + 4] = lightning_segs[i].p1.x;
-		temp[i * 8 + 4 + 5] = -lightning_segs[i].p1.y;
-		temp[i * 8 + 4 + 6] = lightning_segs[i].p1.z;
-		temp[i * 8 + 4 + 7] = 0;
-	}
-
-
-	//for (int i = 2; i < lightning_segs.size(); i++){
-//		if( lightning_segs[i] != lightning_segs[i-2] || lightning_segs[i] != lightning_segs[i-1] )
-//			std::cout << "Diff:\t" <<  vPrint(lightning_segs[i]) << "\t" << vPrint(lightning_segs[i-2]) << std::endl;
-		//cout << vPrint(lightning_segs[i].p0) << "\t" << vPrint(lightning_segs[i].p1) << "\n" << endl;
-	//}
-
-    temp[0] = lightning_segs.size() * 2;
-  /*
-	int lightningLoc = glGetUniformLocation(program, "lightning_segs");
-	glUniform3fv(lightningLoc, lightning_segs.size(), temp);
-
-	int numSegsLoc = glGetUniformLocation(program, "numSegs");
-	glUniform1i(numSegsLoc, lightning_segs.size());
-
-  */
-	//cout << lightning_segs.size() << endl;
- /* //Working example via testing colors:
-int OFF=4;
-temp[OFF+0] = 0;
-temp[OFF+1] = 1.0;
-temp[OFF+2] = -2.0;
-
-temp[OFF+3] = 0; //
-
-temp[OFF+4] = -1.0;
-temp[OFF+5] = 0;
-temp[OFF+6] = -2;
-
-temp[OFF+7] = 1; //??
-
-temp[OFF+8] = -1;
-temp[OFF+9] = 0;
-temp[OFF+10] = -2;
-
-temp[OFF+11] = 0;// ??
-
-temp[OFF+12] = 0;
-temp[OFF+13] = -1;
-temp[OFF+14] = -2;
-// */
-  //EX: a single sphere:
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, segBuffer);
-  glBufferData(GL_SHADER_STORAGE_BUFFER,sizeof(temp),&temp,GL_DYNAMIC_COPY);
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER,0);
-	int numSegsLoc = glGetUniformLocation(program, "numSegs");
-	glUniform1i(numSegsLoc, lightning_segs.size());
-
 }
 
 void render()
