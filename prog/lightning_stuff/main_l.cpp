@@ -191,6 +191,7 @@ void initShaders()
         fShaderFile.open("scene1FragShader.glsl");
         
         std::stringstream vShaderStream, fShaderStream;
+        fShaderStream << "#version 430 \r\n";
         // read file's buffer contents into streams
         vShaderStream << vShaderFile.rdbuf();
         fShaderStream << fShaderFile.rdbuf();		

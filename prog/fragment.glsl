@@ -1,7 +1,10 @@
 //Simple fragment shader
 
 
+
 #version 430
+
+#define LIGHT_SUBSHADER //Tell Light fragment shader to be subordinate.
 
 // interpolated colour received from vertex stage
 

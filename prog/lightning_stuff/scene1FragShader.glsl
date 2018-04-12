@@ -4,16 +4,28 @@
 // Author:  Sonny Chan, University of Calgary
 // Date:    December 2015
 // ==========================================================================
-#version 430
-#define SPHERE 1
-#define TRIANGLE 2
-#define PLANE 3
 
-#extension GL_NV_shader_buffer_load : enable
-// interpolated colour received from vertex stage
-in vec2 vp;
-// first output is mapped to the framebuffer's colour index by default
-out vec4 FragmentColour;
+
+//  Solo-running setup
+//  #version 430          //As this _ALWAYS_ has to be frist, it is handled elsewhere.
+#ifndef LIGHT_SUBSHADER
+  #define SPHERE 1
+  #define TRIANGLE 2
+  #define PLANE 3
+
+
+  // first output is mapped to the framebuffer's colour index by default
+  out vec4 FragmentColour;
+#else
+  //Any Sub-Shader mode setup:
+
+#endif
+
+
+  #extension GL_NV_shader_buffer_load : enable
+  // interpolated colour received from vertex stage
+  in vec2 vp;
+
 
 uniform mat4 mvp;
 
@@ -85,9 +97,9 @@ float calcShortestVector(Ray r, Segment s, bool cylinder)
 vec3 calculateColor(float w, float n, Ray r)
 {
 	float dist;
-	float max_r = (float) 204.0/255.0;
-	float max_g = (float) 204.0/255.0;
-	float max_b = (float) 255.0/255.0;
+	float max_r = float( 204.0/255.0);
+	float max_g = float( 204.0/255.0);
+	float max_b = float( 255.0/255.0);
 
 	vec3 color = vec3(0.0, 0.0, 0.0);
 
@@ -106,9 +118,9 @@ vec3 calculateColor(float w, float n, Ray r)
 vec3 calculateGlow(float w, float l, Ray r)
 {
 	float dist;
-	float max_r = (float) 255.0/255.0;
-	float max_g = (float) 255.0/255.0;
-	float max_b = (float) 255.0/255.0;
+	float max_r = 1;//float( 255.f/255.f);
+	float max_g = 1;//float( 255.f/255.f);
+	float max_b = 1;//float( 255.f/255.f);
 
 	vec3 color = vec3(0.0, 0.0, 0.0);
 
