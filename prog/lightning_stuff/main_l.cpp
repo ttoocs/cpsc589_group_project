@@ -57,6 +57,7 @@ struct Camera
 		vec3 right = normalize(cross(cameraFront, vec3(0.0f, 1.0f, 0.0f)));
 		cameraUp = normalize(cross(right, cameraFront));
 		return lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    
 	}
 } camera;
 
@@ -187,7 +188,7 @@ void initShaders()
     try 
     {
         // open files
-        vShaderFile.open("vertex_shader.glsl");
+        vShaderFile.open("vertex_raytrace.glsl");
         fShaderFile.open("scene1FragShader.glsl");
         
         std::stringstream vShaderStream, fShaderStream;
@@ -295,8 +296,11 @@ void updateCamera()
 	view = camera.view();
 	projection = perspective(radians(45.0f), (float) screenWidth / screenHeight, 0.1f, 100.0f);
 
-	mvp = projection * view * model;
+	//mvp = projection * view * model;
 
+  mvp = view;
+
+  std::cout << glm::to_string(mvp) << std::endl;
 	glUseProgram(program);
 
 	int mvpLoc = glGetUniformLocation(program, "mvp");
