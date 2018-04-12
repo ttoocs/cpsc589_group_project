@@ -9,27 +9,12 @@
 
 Camera activeCamera;
 
-float speed = 1;
-
-//START: Storage for stuff
-std::vector<vec3> verts;
-std::vector<vec3> norms;
-std::vector<GLuint> idx;
-Object sphere;
-//END: Storage for stuff
-
-//START: For window resize
+//START: Window Mgmt
 mat4 winRatio = mat4(1.f);
-//END: For window resize
-
-//START: Metaball vars for testing
-std::vector<MetaBall*> metaballs;
-std::vector<float> vertices;
-int num_points;
-
 mat4 perspectiveMatrix = glm::perspective(glm::radians(45.f), 1.f, 0.1f, 400.f);
-int nextRound = 0;
-//END: Metaball vars for testing
+int WIDTH = 512;
+int HEIGHT = 512;
+//END: Window Mgmt
 
 struct GLSTUFF{
 	GLuint prog;
@@ -44,8 +29,6 @@ struct GLSTUFF{
 };
 GLSTUFF glstuff;
 
-int WIDTH = 512;
-int HEIGHT = 512;
 
 void initalize_GL(){
 		glEnable(GL_DEPTH_TEST); 		//Turn on depth testing
@@ -120,36 +103,6 @@ void Update_Perspective(){
             1,
             false,
             &perspectiveMatrix[0][0]);
-
-}
-
-void Update_GPU_data(){
-//		glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);	//Setup data-copy (points)
-//		glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*s->positions.size(),s->positions.data(),GL_DYNAMIC_DRAW);
-
-  //Calc verts/etc
-  
-  glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);
-  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*verts.size(),verts.data(),GL_DYNAMIC_DRAW);
-
-  glBindBuffer(GL_ARRAY_BUFFER,glstuff.normalbuffer);
-  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*norms.size(),norms.data(),GL_DYNAMIC_DRAW);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuff.indiciesbuffer);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*idx.size(),idx.data(),GL_DYNAMIC_DRAW);
-
-  glm::mat4 camMatrix = activeCamera.view();
-  glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "cameraMatrix"),
-            1,
-            false,
-            &camMatrix[0][0]);
-
-}
-
-
-void Render(){
-	glClearColor(0.5,0,0,0);
-  
   
   glm::mat4 camMatrix = activeCamera.view();
   glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "cameraMatrix"),
@@ -162,6 +115,29 @@ void Render(){
             false,
             &winRatio[0][0]);
   
+
+}
+
+void Update_GPU_data(){
+
+  //Calc verts/etc
+  
+  glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);
+  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*verts.size(),verts.data(),GL_DYNAMIC_DRAW);
+
+  glBindBuffer(GL_ARRAY_BUFFER,glstuff.normalbuffer);
+  glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*norms.size(),norms.data(),GL_DYNAMIC_DRAW);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuff.indiciesbuffer);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*idx.size(),idx.data(),GL_DYNAMIC_DRAW);
+
+}
+
+
+void Render(){
+	glClearColor(0.5,0,0,0);
+  
+  Update_Perspective();	//updates perspective uniform, as it's never changed.
   
 	glClear(GL_COLOR_BUFFER_BIT);
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -169,9 +145,6 @@ void Render(){
  	glBindVertexArray(glstuff.vertexarray);
  	glUseProgram(glstuff.prog);
 
-
-
-//  glDrawArrays(GL_TRIANGLES,0,3);
 
 	glDrawElements(
   	GL_TRIANGLES,   //What shape we're drawing  - GL_TRIANGLES, GL_LINES, GL_POINTS, GL_QUADS, GL_TRIANGLE_STRIP
@@ -200,20 +173,6 @@ int main(int argc, char * argv[]){
 	initalize_GL();
 
 
-	speed =0.01;
-
-  //metaballs.push_back(new MetaBall(vec3(0,0,-5), 1, fanceyMB));
- // metaballs.push_back(new MetaBall(vec3(-1,0,-5), 1, fanceyMB));
- // metaballs.push_back(new MetaBall(vec3(1,0,-5), 1, fanceyMB));
-/*  metaballs.push_back(new MetaBall(vec3(-3,0,-5), 1, fanceyMB));
-  metaballs.push_back(new MetaBall(vec3(3,0,-5), 1, fanceyMB));
-  metaballs.push_back(new MetaBall(vec3(0,3,-5), 1, fanceyMB));
-  metaballs.push_back(new MetaBall(vec3(0,-3,-5), 1, fanceyMB));*/
-
-//num of clouds, how many metaballs in each cloud initial, number of rounds
-//of adding things for each cloud
-  cloud::create_cloud(&verts, &idx, &norms, 3, 6, 3);
-  Update_Perspective();	//updates perspective uniform, as it's never changed.
   Update_GPU_data();
   
 
