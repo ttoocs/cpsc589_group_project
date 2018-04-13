@@ -14,8 +14,8 @@
 #include "../main.h"
 
 
-#define Q_GRAN 0.25
-#define F_GRAN 0.125
+#define Q_GRAN 0.3
+#define F_GRAN 0.15
 
 float AvgNew = 10;
 float AvgPer = 0.5;
@@ -103,7 +103,7 @@ void cloud::process_cloud_paper(Tris& t, int rounds)
 		  float rng = (((float)rand())/((float)INT_MAX));
 		  if(rng < (AvgNew)/((float)(indices->size()/3)))
 		  {
-			//START: Random position inside square for new metabalal
+			//START: Random position inside square for new metaball
 			p0 = (*points)[(*indices)[i*3]];
 			p1 = (*points)[(*indices)[i*3+1]];
 			p2 = (*points)[(*indices)[i*3+2]];
@@ -116,7 +116,7 @@ void cloud::process_cloud_paper(Tris& t, int rounds)
 			
 			//END: Random position inside square for new metaball
 			//Random size:
-			float rad = 0.1*((float)rand())/((float)INT_MAX)*pow(0.5,j+1);
+			float rad = 1.0 + ((float)rand())/((float)INT_MAX)*pow(0.8,j+1);
 			
 			balls.push_back((new MetaBall(p0,rad,balls[0]->m_surfaceFunction)));
 	//		std::cout << a++ << std::endl;
@@ -135,7 +135,8 @@ void cloud::process_cloud_paper(Tris& t, int rounds)
 }
 
 
-
+// NOT THIS ONE
+/*
 void cloud::create_cloud(vector<vec3> *verts, vector<GLuint> *idx,vector<vec3> *norms, int numOfClouds, int m_in_cloud, int rounds)
 {
 
@@ -157,9 +158,9 @@ void cloud::create_cloud(vector<vec3> *verts, vector<GLuint> *idx,vector<vec3> *
     float z = 10 - 20*(((float)rand())/((float)INT_MAX));
     for(int j = 0; j < m_in_cloud;j++)
     {
-      x = x+2 - 4*(((float)rand())/((float)INT_MAX));
-      y = y+2 - 4*(((float)rand())/((float)INT_MAX));
-      z = z+2 - 4*(((float)rand())/((float)INT_MAX));
+      x = x+2 - 20*(((float)rand())/((float)INT_MAX));
+      y = y+2 - 20*(((float)rand())/((float)INT_MAX));
+      z = z+2 - 20*(((float)rand())/((float)INT_MAX));
    //   clouds[i].balls.push_back(new MetaBall(vec3(x,y,z), 1, fanceyMB));
       clouds[i].balls.push_back(new MetaBall(vec3(x,y,z), 1, WyvillMetaBall));
     }
@@ -188,12 +189,12 @@ void cloud::create_cloud(vector<vec3> *verts, vector<GLuint> *idx,vector<vec3> *
       norms->push_back(norms_s[j]); //Seems to segfault?q
       idx->push_back(idx->size());
     }
-*/
+
 
   }
  
 }
-
+*/
 
 cloud::cloud(float(*f)(vec3, vec3, float) , vec3 * pos, int initBalls, int rounds, int rad, bool skip){
   if(! skip){
@@ -218,9 +219,9 @@ cloud::cloud(float(*f)(vec3, vec3, float) , vec3 * pos, int initBalls, int round
     float z = (*pos).z;
     for(int j = 0; j < initBalls;j++)
     {
-      x = x+2 - 4*(((float)rand())/((float)INT_MAX));
-      y = y+2 - 4*(((float)rand())/((float)INT_MAX));
-      z = z+2 - 4*(((float)rand())/((float)INT_MAX));
+      x = x+3 -	6*(((float)rand())/((float)INT_MAX));
+      y = y+3 - 6*(((float)rand())/((float)INT_MAX));
+      z = z+3 - 6*(((float)rand())/((float)INT_MAX));
       balls.push_back(new MetaBall(vec3(x,y,z), rad, f));
     }
   }  

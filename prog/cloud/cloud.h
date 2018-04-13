@@ -34,7 +34,7 @@ class cloud{
     static void create_cloud(std::vector<vec3> *verts, std::vector<GLuint> *idx,std::vector<vec3> *norms, int numOfClouds, int m_in_cloud, int rounds);
 
 
-    cloud(float(*f)(vec3, vec3, float) = NULL , vec3 * pos=NULL, int initBalls=3, int rounds=5, int rad=1,bool skip=false);
+    cloud(float(*f)(vec3, vec3, float) = NULL , vec3 * pos=NULL, int initBalls=3, int rounds=5, int rad=2.0,bool skip=false);
 //    cloud(); //Default constructor.. risky.
 
 
