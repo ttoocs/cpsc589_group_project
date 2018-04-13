@@ -14,6 +14,7 @@
   #define PLANE 3
 
 
+
   // first output is mapped to the framebuffer's colour index by default
   out vec4 FragmentColour;
 #else
@@ -21,6 +22,7 @@
 
 #endif
 
+  uniform float FOV=90;
 
   #extension GL_NV_shader_buffer_load : enable
   // interpolated colour received from vertex stage
@@ -142,7 +144,7 @@ vec4 main_l()
 #endif
 {
 	//vec3 cameraPosition = vec3(0,0,0);
-	float z = -(1.f/tan(90.0/2.f));	// Calculating z coord
+	float z = -(1.f/tan(FOV/2.f));	// Calculating z coord
 
     vec3 directionVector = normalize(vec3(vp.x,	// x coord for direction vector
 								 vp.y,	// y coord for direction vector

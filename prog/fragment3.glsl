@@ -1,146 +1,105 @@
-#version 430
+//FRAGMENT3.GLSL - RayTracing metaballs
 
-/*
-Compute shader variables:
-uvec3 	gl_numWorkGroups
-uvec3 	gl_WorkGroupSize
-uvec3 	gl_WorkGroupID
-uvec3 	gl_LocalInvcationID
-uvec3 	gl_GlobalInvocationID
-uint 	gl_LocalInvocationID
-
-
-*/
-
-
-#define OBJSIZE 21
-#define T_NONE -7
-#define T_TRI 1
-#define T_LIGHT 2
-#define T_SPHERE 3
-#define T_PLANE 4
-#define T_POINT 5
-#define T_PARTICLE 6
-#define T_METABALL 7
-
-////////////////////////////////////////Accsessor functions for objects.
-
-#define OBJ objs
-//Offset by 1, for the object[] size.
-#define num_objs int(OBJ[0])
-//Offset by 3, for ambient light levels.
-#define ambient vec3(OBJ[1],OBJ[2],OBJ[3])
-
-#define OBJ_BADDR(X) ((X*OBJSIZE)+4) 
-#define OBJ_ADDR(X,Y) OBJ_BADDR(X)+Y
-#define OBJ_DATA(X,Y) OBJ[OBJ_ADDR(X,Y)]
-#define OBJ_TOVEC3(X,Y) vec3(OBJ_DATA(X,Y),OBJ_DATA(X,Y+1),OBJ_DATA(X,Y+2))
-#define OBJ_SETV3(X,Y,Z)  OBJ_DATA(X,Y)=Z.x; OBJ_DATA(X,Y+1)=Z.y; OBJ_DATA(X,Y+2)=Z.z;
-
-#define obj_type(X) 		OBJ_DATA(X,0)
-#define obj_colour(X) 		OBJ_TOVEC3(X,1)
-#define obj_pcolour(X) 		OBJ_TOVEC3(X,4)
-#define obj_velc(X)   		OBJ_TOVEC3(X,7)
-#define obj_phong(X)   		OBJ_DATA(X,10)
-#define obj_reflec(X)		OBJ_DATA(X,11)
-#define OBJ_LOCD		12
-
-#define OBJ_DATAL(X,Y)		OBJ_DATA(X,(OBJ_LOCD+Y))
-#define OBJ_TOVEC3L(X,Y)	OBJ_TOVEC3(X,(OBJ_LOCD+Y))
-#define OBJ_SETV3L(X,Y,Z)	OBJ_SETV3(X,(OBJ_LOCD+Y),Z)
-
-#define sphere_c(X) OBJ_TOVEC3L(X,0)
-#define sphere_r(X) OBJ_DATAL(X,3)
-#define sphere_setc(X,Y) OBJ_SETV3L(X,0,Y)
-
-#define tri_p1(X) OBJ_TOVEC3L(X,0)
-#define tri_p2(X) OBJ_TOVEC3L(X,3)
-#define tri_p3(X) OBJ_TOVEC3L(X,6)
-
-#define plane_n(X) OBJ_TOVEC3L(X,0)
-#define plane_p(X) OBJ_TOVEC3L(X,3)
-#define plane_ned(X) OBJ_DATAL(X,6)
-
-#define mb_pos(X) OBJ_TOVEC3L(X,0)
-//These two untested/unused.
-#define mb_type(X) OBJ_DATAL(X,3)
-#define mb_density(X) OBJ_DATAL(X,4)
-#define mb_thresh(X) OBJ_DATAL(X,5)
-
-#define light_p(X) OBJ_TOVEC3L(X,0)
-
-#define get_rray ref_rays[(gl_GlobalInvocationID.x + gl_GlobalInvocationID.y*(imageSize (img_output)).x)]
-
-#define PI 3.141592653587939
-#define EPSILON 0.000001
-#define BEPSILON 0.001
-#define FUDGE 0.001
 
 struct ray{
 	vec3 origin;
 	vec3 direction;
 };
 
-
-layout(local_size_x = 1, local_size_y = 1) in;
-
-layout(rgba32f, binding = 0) uniform image2D img_output;
-
-layout(std430, binding = 1) buffer object_buffer{
-	float objs[];
+struct MB{
+  vec4 pos;
+  vec4 info;
 };
 
-uniform float FOV;
+#define BEPSILON 0.0000001
+
+////////////////////////////////// INPUT ///////////////////////////////
+layout(std430, binding = 1) buffer allMB{
+  vec4 mbInfo;
+	MB mb[];
+};
+
+// uniform float FOV;
+
 uniform vec3 offset;
 uniform mat3 transform;
+////////////////////////////////// END INPUT ///////////////////////////////
 
-//vec4 colour = vec4(0);
-bool check_light_hit = false;		// Weither or not to check lights.
-ray newray;			// A reflection ray.
-int hitobj;			// Last-hit object.
+#define mbGetType(X) int(mb[X].info.x)
+#define mbGetPos(X) vec3(mb[X].pos.x,mb[X].pos.y,mb[X].pos.z)
+#define mbGetRad(X) mb[X].info.y
+#define numMB int(mbInfo.x)
+
+#define mb_Wyvill 1
+#define mb_fancey 2
+#define mb_sphere 3
 
 
-//vec4 cam = vec4(0,0,0,PI/3); //
+//////////////////////////////////META BALL FUNCS///////////////////////////////
 
+float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
+	{
+		float r = length(mbpos - tpos);
 
-void obj_move(int obj){
-	switch(int(obj_type(obj))){
-		case T_TRI:
-			//TODO	
-			return;
-		case T_PLANE:
-      //TODO
-      return;
-		case T_SPHERE:
-		case T_POINT:
-		case T_LIGHT:
-		case T_PARTICLE:
-    case T_METABALL:
-			vec3 pos = sphere_c(obj) + obj_velc(obj);
-			sphere_setc(obj,pos);
-			return; 
+		float term1, term2, term3;
+		float R = r / radius;
+
+		term1 = (-4.0 / 9.0) * pow(R, 6.0);
+		term2 = (17.0 / 9.0) * pow(R, 4.0);
+		term3 = (-22.0 / 9.0) * pow(R, 2.0);
+		float total = term1 + term2 - term3;
+		return radius / -(term1 + term2 + term3 + 1);
+
 	}
+
+
+float sphereMB(vec3 mbpos, vec3 tpos, float radius){
+  float r = length(mbpos - tpos);
+  return (r-radius);
+  
 }
+
+
+float fanceyMB(vec3 mbpos, vec3 tpos, float radius){
+      #define EPSILON 0.0001
+      float x = tpos.x-mbpos.x;
+      float y = tpos.y-mbpos.y;
+      float z = tpos.z-mbpos.z;
+      x*=x;
+      y*=y;
+      z*=z;
+      float den = x+y+z;
+      if(den < EPSILON  && den > EPSILON )
+        return -1;
+      return radius/den;
+}
+
+//////////////////////////////////END META BALL FUNCS///////////////////////////////
+
+
+
+
 int ERROR=0;
 #define E_OTHER 1
 #define E_TYPE 2
-
 
 void set_error(int type){
 	if(ERROR ==0)				//ONLY SET THE 1st ERROR.
 		ERROR=type;
 }
-void error_out(ivec2 pixel_coords){	
-	vec4 c = vec4(1,1,0,1);			//MAKE SCREEN YELLOW ON OBJECT ERROR
-	imageStore(img_output, pixel_coords, c);
+void error_out(){
+  if(ERROR != 0)	
+  	FragmentColour = vec4(1,1,0,1);			//MAKE SCREEN YELLOW ON OBJECT ERROR
 }
 
-float ray_intersect_sphere(ray r, uint obj_ID){
+
+////////////////////////////////// INTERSECTS ///////////////////////////////
+float ray_intersect_sphere(ray r, vec3 pos, float rad){
 	
 	float t1,t2;
 	float a = dot(r.direction,r.direction);
-	float b = 2* dot(r.direction, (r.origin - sphere_c(obj_ID)))  ;
-	float c = dot((r.origin - sphere_c(obj_ID)),(r.origin - sphere_c(obj_ID)))-pow(sphere_r(obj_ID),2);
+	float b = 2* dot(r.direction, (r.origin - pos))  ;
+	float c = dot((r.origin - pos),(r.origin - pos))-pow(rad,2);
 
 
 	float det = (pow(b,2) - 4*a*c);
@@ -154,6 +113,8 @@ float ray_intersect_sphere(ray r, uint obj_ID){
 		return(t2);
 		
 }
+#ifdef OTHERINTERSECTS
+
 #define TEST_CULL
 float ray_intersect_triangle(ray r, uint obj){
 	//Möller–Trumbore algorithm
@@ -184,6 +145,7 @@ float ray_intersect_triangle(ray r, uint obj){
 	return t;
 }
 
+////////////////////////////////// STILL INTERSECTS ///////////////////////////////
 float ray_intersect_plane(ray r, uint obj){
 	//(dot(O +td -q, n) =0
 
@@ -232,105 +194,93 @@ float ray_intersect_point(ray r, uint obj){
 
 }
 
-//Hack to make list of meta-balls:
-#define MAX_MB 32
-uint MB_idx=0;
-uint MB[MAX_MB];
+#endif //OTHER INTERSECTS
+
+////////////////////////////////// END INTERSECTS ///////////////////////////////
+
+
+
+
+////////////////////////////////// METABALLS  ///////////////////////////////
 
 //Meta-ball func based on pos
 float MB_F(uint ball, vec3 tpos){ // The meta-ball function.
  
-  vec3 mbpos = mb_pos(ball);
+  vec3 mbpos = mbGetPos(ball);
 
-  switch(uint(mb_type(ball))){
-    case 0:
-      vec3 d = mbpos-tpos;
-      float r = sqrt(dot(d,d));
-      r = r*r;
-      r = 1-r;
-      r = r*r;
-      r *= mb_density(ball);
-      return r;
-
+  switch(mbGetType(ball)){
     case 1:
-      float x = tpos.x-mbpos.x;
-      float y = tpos.y-mbpos.y;
-      float z = tpos.z-mbpos.z;
-      x*=x;
-      y*=y;
-      z*=z;
-      float den = x+y+z;
-      if(den < EPSILON  && den > EPSILON )
-        return 0;
-      return mb_density(ball)/den;
-
-    case 2:    
-  		float edR = length(tpos - mbpos);
-      float radius = mb_density(ball);
-  		if (edR > radius)
-  			return 0;
-  
-  		float term1, term2, term3;
-  		float R = edR / radius;
-
-  		term1 = (-4.0 / 9.0) * pow(R, 6.0);
-  		term2 = (17.0 / 9.0) * pow(R, 4.0);
-  		term3 = (22.0 / 9.0) * pow(R, 2.0);
-  		float total = term1 + term2 - term3;
-  		//float total = (float) term1 + (float) term2 - (float) term3 + (float) 1.0;
-  		return term1 + term2 - term3 + 1.0;
-
+      return WyvillMetaBall(mbpos,tpos,mbGetRad(mb[ball]));
+    case 2:
+      return sphereMB(mbpos,tpos,mbGetRad(mb[ball]));
+    case 3: 
+      return fanceyMB(mbpos,tpos,mbGetRad(mb[ball]));
   }
   return -1;
 
 }
 
+////////////////////////////////// METABALLS  ///////////////////////////////
 
 //Finds sum of MB at pos/ray t.
-float metaBall_func(ray r, float t){
-  vec3 pos= r.origin + r.direction*t;
+float metaBall_func(vec3 pos){
   float s=0;
-  for(int i=0; i<MB_idx; i++){
-    uint ball = MB[i];
-    if(obj_type(ball) != T_METABALL)
-      break;
-    s+= MB_F(ball,pos);
+  for(int i=0; i<numMB; i++){
+    s+= MB_F(i,pos);
   }
   return s;
 }
+float metaBall_func(ray r, float t){ 
+  vec3 pos= r.origin + r.direction*t;
+  return metaBall_func(pos);
+}
+
+/////// INTERSECT
+
 
 float ray_intersect_metaBalls(ray r){
-  #define h 0.01
+
+  float t;
+  bool found = false;
+  float thres = 0.1;
+
+  #ifdef LINEAR_SEARCH 
+  //////////////////////////////////////////Linear
   float minT=0;
   float maxT=20;
   float dt = 1;
-  float t=minT;
-  float thres = 0.1;
-  bool found = false;
-// /*
+  t=minT;
+
   while( t < maxT){
     float s = metaBall_func(r,t);
     if(s > thres){
-//    if(s > 0.5){ //Attempt to find something 'good enough' for newton.
-//      //An attempt to use a derivative to find when things be good.
-//      float yp = (((metaBall_func(r,t+h)-thres) - ((metaBall_func(r,t-h))-thres))/(h*2));
-//      if(abs(yp) > thres/10){
-//      if(yp != 0){
-//        dt=1/yp;
-//        dt=min(max(dt,1),0.01);
-//      }
       t -= (dt/2);
       found = true;
       break;
     }
     t+= dt;
   }
-// */
+
+  #else ////////////////////////////////End linear search
+    //Spherical collision
+    t=0;
+    for(int i=0; i <= numMB ; i++){
+      float tn = ray_intersect_sphere(r, mbGetPos(i), mbGetRad(i));
+      if( tn > 0 && tn < t){
+        t = tn;
+        found = true;
+      }
+    }
+
+  #endif
+
+    //////////////////////////////////////////////Newtons
   if(found){
 //    #define noNewtons
     #ifdef noNewtons
     return t;
     #else
+    #define h 0.01
     //Newtons method!
     int maxIter = 200;
     while(maxIter > 0){
@@ -356,102 +306,48 @@ float ray_intersect_metaBalls(ray r){
   else
     return -1;
   #undef h
+      ////////////////////////////////////////////////EndNewtons
 }
 
-float test_object_intersect(ray r, uint obj){
-	switch(int(obj_type(obj))){
-		case T_TRI:
-			return ray_intersect_triangle(r,obj);	
-		case T_SPHERE:
-			return ray_intersect_sphere(r,obj);
-		case T_PLANE:
-			return ray_intersect_plane(r,obj);
-		case T_POINT:
-			return(-1);
-			//return ray_intersect_point(r,obj);
-		case T_LIGHT:
-			if(check_light_hit==false)
-				return(-1);
-			else
-				return ray_intersect_point(r,obj);
-		case T_PARTICLE:
-			return ray_intersect_sphere(r,obj);
-    case T_METABALL:
-      MB[MB_idx] = obj;
-      MB_idx++;
-      return(-1);
-	}
-	//If we get here, we have issues.
-	set_error(E_TYPE);
-}
+////////////////////////////////// END METABALLS  ///////////////////////////////
+
+
+
+
+
+////////////////////////////////// RAYTRACE STUFF ///////////////////////////////
 
 vec4 test_objects_intersect(ray r){ //Tests _ALL_ objects
-	float t;
-	vec4 ret;
-	ret.x = -1;
-	ret.y = T_NONE;
-	int i = 0;
-	for(i=0; i < num_objs ; i++ ){
-		t = test_object_intersect(r,i);
-		if( ( ret.x < 0 ||  t < ret.x ) && t > 0  ){
-			ret.x = t; //Distance
-			ret.y = i; //Object
-		}		
-	}
+  vec4 ret=vec4(0,0,0,0);
   float mb = ray_intersect_metaBalls(r);
-  if(mb > 0 && ( mb < ret.x || ret.x < 0))
+  if(mb > 0)
   {
     ret.x = mb;
-    ret.y = MB[0];
+//    ret.y = MB[0];
   }
 
 	return(ret);
 }
 
-vec3 get_surface_norm(vec3 hitpos, uint obj){
-	switch(int(obj_type(obj))){
-		case T_TRI:
-			vec3 tmp = normalize(cross(tri_p1(obj)-tri_p2(obj),tri_p1(obj)-tri_p3(obj)));
-			return(tmp);
-		case T_SPHERE:
-			return normalize(hitpos-sphere_c(obj));
-		case T_PLANE:
-			return normalize(plane_n(obj));
-		case T_POINT:
-			return vec3(0);
-		case T_LIGHT:
-			return vec3(0);
-		case T_PARTICLE:
-			return normalize(hitpos-sphere_c(obj));
-		case T_NONE:
-			return vec3(0);
-
-	}
-}
-
-
+////////////////////////////////// RAYTRACE STUFF ///////////////////////////////
 vec4 rtrace(ray cray){
 
 	vec4 c=vec4(0);
 	//////////////////BASIC RAY-TRACING///////////////////
-	check_light_hit=false;
+//	check_light_hit=false;
 	vec4 res = test_objects_intersect(cray);
 
 	if(res.x >= 0)
-		c = vec4(obj_colour(int(res.y)),0);
+    c = vec4(0.8,0.8,0.8,0);
 
-  if(obj_type(int(res.y)) == T_METABALL){
-    //c= vec4(1,1,1,0);
-    c = vec4(obj_colour(int(res.y)),0);
-  }
-
-  #define SIMPLE
-  #ifndef SIMPLE
+  // #define FANCEY
+  #ifdef FANCEY
 	vec3 hitpos = res.x * cray.direction + cray.origin;
 	vec3 surface_norm  = get_surface_norm(hitpos, int(res.y));	
 	
 	/////////////////////////////UPDATE GLOBALS FOR REFLECTIONS//////////////
-
+  ray newray;
+  
 	hitobj = int(res.y);
 	newray.direction = normalize(reflect(cray.direction, surface_norm));
 	newray.origin = hitpos + newray.direction*FUDGE;
@@ -493,57 +389,57 @@ vec4 rtrace(ray cray){
 	#else
 	////////////////////Diffuse Lights/////////////////////
 
-
-	vec4 c_scaler = vec4(ambient,0);	//Set-up minimum of ambient.
-	vec4 p_scaler = vec4(0);
-	
-	check_light_hit = true;
-	if(hitobj != T_NONE && (1-obj_reflec(hitobj)) >= BEPSILON){
-	for(int i=0; i < num_objs ; i++){
-	if(obj_type(i) == T_LIGHT){
-		svect = light_p(i) - hitpos;
-		svlen = sqrt(dot(svect,svect));
-		sray.direction = normalize(svect);
-
-		sray.origin = hitpos + sray.direction *FUDGE;
-		stest = test_objects_intersect(sray);
-
-		if((int(obj_type(int(stest.y))) == T_LIGHT)){
-			//DIFFUSE
-			c_scaler += vec4((obj_colour(i)*max(0,dot(sray.direction,surface_norm))),0);
-			//PHONG
-			vec3 h = normalize((-cray.direction + sray.direction));
-			float a = max(0,(dot(h,surface_norm)));
-			p_scaler += vec4( pow(a,obj_phong(hitobj)) * obj_colour(i)  ,0  );
-
-		}
-		}
-	}
-	}
-	
-	c = (c * vec4(c_scaler)) + vec4(p_scaler);
-
+  
+//	vec4 c_scaler = vec4(ambient,0);	//Set-up minimum of ambient.
+//	vec4 p_scaler = vec4(0);
+//	
+//	check_light_hit = true;
+//	if(hitobj != T_NONE && (1-obj_reflec(hitobj)) >= BEPSILON){
+//	for(int i=0; i < num_objs ; i++){
+//	if(obj_type(i) == T_LIGHT){
+//		svect = light_p(i) - hitpos;
+//		svlen = sqrt(dot(svect,svect));
+//		sray.direction = normalize(svect);
+//
+//		sray.origin = hitpos + sray.direction *FUDGE;
+//		stest = test_objects_intersect(sray);
+//
+///		if((int(obj_type(int(stest.y))) == T_LIGHT)){
+//			//DIFFUSE
+///			c_scaler += vec4((obj_colour(i)*max(0,dot(sray.direction,surface_norm))),0);
+//			//PHONG
+//			vec3 h = normalize((-cray.direction + sray.direction));
+//			float a = max(0,(dot(h,surface_norm)));
+//			p_scaler += vec4( pow(a,obj_phong(hitobj)) * obj_colour(i)  ,0  );
+//
+//		}
+//		}
+//	}
+//	}
+//	
+//	c = (c * vec4(c_scaler)) + vec4(p_scaler);
+//  */
 
 	#endif
   #endif
 	return(c);
 }
 
+////////////////////////////////// RAYTRACE STUFF ///////////////////////////////
 
-void main(){
+vec4 main_mb(){
 	
-  	ivec2 dims = imageSize (img_output);
+ 	vec4 pixel = vec4(0.0, 0.0, 0.0, 1.0);
 
-  	vec4 pixel = vec4(0.0, 0.0, 0.0, 1.0);
-
-  	ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
+// 	ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
+  ivec2 pixel_coords;
 	
 	vec4 colour = vec4(0);
 
-	vec2 coords = vec2(gl_GlobalInvocationID.xy);
-	coords = coords / vec2(dims.xy/2);
-	coords = coords + vec2(-1);
+  float z = -(1.f/tan(90.0/2.f));
+  vec2 coords = vec2(vp.x, vp.y);
 
+  ray newray;
 
 	//BASIC	pos
 	newray.direction = vec3(coords, -1/tan(FOV/2));	
@@ -560,6 +456,7 @@ void main(){
 	vec4 c2;
 	float ref_pwr=1;
 
+#ifdef FANCEY
 
 //#define stack_reflect 10
 
@@ -592,13 +489,14 @@ void main(){
 	
 #endif
 
+  #endif
 	//MOVES PARTICLES. NOTE: NO COLLISONS YET.
-	if(pixel_coords.y == 0 && pixel_coords.x <= num_objs && obj_type(pixel_coords.x) == T_PARTICLE){
-		obj_move(pixel_coords.x);
-	}
+//	if(pixel_coords.y == 0 && pixel_coords.x <= num_objs && obj_type(pixel_coords.x) == T_PARTICLE){
+//		obj_move(pixel_coords.x);
+//	}
 	if(ERROR ==0)
-		imageStore(img_output, pixel_coords, colour);
+    return vec4(colour);
 	else
-	  	error_out(pixel_coords);
+	  	error_out();
 }
 
