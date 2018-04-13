@@ -427,7 +427,7 @@ vec4 rtrace(ray cray){
 
 ////////////////////////////////// RAYTRACE STUFF ///////////////////////////////
 
-vec4 main_mb(){
+vec4 main_c(){
 	
  	vec4 pixel = vec4(0.0, 0.0, 0.0, 1.0);
 

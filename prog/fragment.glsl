@@ -1,7 +1,5 @@
 //Simple fragment shader
 
-
-
 #version 430
 
 #define LIGHT_SUBSHADER //Tell Light fragment shader to be subordinate.
@@ -11,11 +9,13 @@
 in vec2 FragUV;
 in vec3 FragNormal;
 
+vec4 main_l();
+vec4 main_c();
+
+uniform bool RayTrace = false;
+
 // first output is mapped to the framebuffer's colour index by default
 out vec4 FragmentColour;
-
-uniform ivec2 dimentions;
-uniform sampler2D image;
 
 //The projection of v0 onto v1
 //returns zero vecor if v1 has length 0
@@ -29,11 +29,12 @@ vec3 proj(vec3 v0, vec3 v1)
 
 void main(void)
 {
+  if(RayTrace == false){
+
 	vec4 colour;
 	vec2 coord = FragUV;
 	vec3 n_proj = proj(FragNormal,vec3(0,-1,0));
 	vec3 white = vec3(1);
-
 
 	coord.x = coord.x + 1.f;
 	coord.y = coord.y + 1.f;
@@ -99,4 +100,9 @@ void main(void)
 	//colour = vec4(FragNormal,0);
 
     FragmentColour = colour;
+    return;
+  }
+
+  //RayTrace Code here:
+  FragmentColour = vec4(1,1,1,1); //main_c();
 }

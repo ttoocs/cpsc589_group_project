@@ -39,7 +39,7 @@
 
 #define torad(X)	((float)(X*PI/180.f))
 
-
+#define RAYTRACE_CLOUDS
 
 Camera activeCamera;
 
@@ -84,13 +84,15 @@ void initalize_GL(){
     fs.push_back(FRAGMENTPATH1);
     fs.push_back(FRAGMENTPATH2);
     fs.push_back(FRAGMENTPATH3);
+    #ifdef RAYTRACE_CLOUDS
+		glstuff.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSource(VERTEXPATHRAY));
+    #else
 		glstuff.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSource(VERTEXPATH));
+    #endif
 //		glstuff.fragShader = CompileShader(GL_FRAGMENT_SHADER,LoadSource(FRAGMENTPATH));
 //    glstuff.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSourceM(vs));
     glstuff.fragShader = CompileShader(GL_FRAGMENT_SHADER,LoadSourceM(fs));
   
-
-
     //Attaching to prog
 		glAttachShader(glstuff.prog, glstuff.vertexShader);
 		glAttachShader(glstuff.prog, glstuff.fragShader);
@@ -100,7 +102,6 @@ void initalize_GL(){
       //Linking/compiling
 		glLinkProgram(glstuff.prog);	//Link to full program.
 		check_gllink(glstuff.prog);
-
 
 		//Vertex stuffs
 
@@ -166,8 +167,32 @@ void Update_Perspective(){
 
 }
 
-void Update_GPU_data(Tris t){
+  #ifdef RAYTRACE_CLOUDS
 
+void Update_GPU_data(){
+
+  std::vector<vec3> storage;
+
+	storage.push_back(vec3(-1.0, 1.0, 0.0));
+	storage.push_back(vec3(1.0, 1.0, 0.0));
+	storage.push_back(vec3(1.0, -1.0, 0.0));
+
+	storage.push_back(vec3(1.0, -1.0, 0.0));
+	storage.push_back(vec3(-1.0, -1.0, 0.0));
+	storage.push_back(vec3(-1.0, 1.0, 0.0));
+
+	glBindVertexArray(glstuff.vertexarray);
+
+	glBindBuffer(GL_ARRAY_BUFFER, glstuff.vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, storage.size() * sizeof(vec3), storage.data(), GL_STREAM_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
+	glEnableVertexAttribArray(0);
+}
+
+  #else
+
+void Update_GPU_data(Tris t){
   //Calc verts/etc
   glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);
   glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*t.verts->size(),t.verts->data(),GL_DYNAMIC_DRAW);
@@ -179,11 +204,30 @@ void Update_GPU_data(Tris t){
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*t.idx->size(),t.idx->data(),GL_DYNAMIC_DRAW);
 
 }
+  #endif
 
 
-void Render(Tris t){
+
+void Render(){
+  #ifdef RAYTRACE_CLOUDS
+
+  Update_GPU_data();
+  Update_Perspective();	//updates perspective uniform, as it's never changed.
+
+	glUseProgram(glstuff.prog);
+ 	glBindVertexArray(glstuff.vertexarray);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
+   //Tell shaders to enable raytrace.
+  glUniform1i(glGetUniformLocation(glstuff.prog, "RayTrace"),true);
+
+  #else
+
 	glClearColor(40/255.0,56/255.0,81/255.0,0);
   //rgb(40, 56, 81)
+
+  Tris t = cloud::getAllTris();
 
   Update_Perspective();	//updates perspective uniform, as it's never changed.
   if(t.verts != NULL && t.norms != NULL && t.idx != NULL){
@@ -199,7 +243,6 @@ void Render(Tris t){
  	glBindVertexArray(glstuff.vertexarray);
  	glUseProgram(glstuff.prog);
 
-
 	glDrawElements(
   	GL_TRIANGLES,   //What shape we're drawing  - GL_TRIANGLES, GL_LINES, GL_POINTS, GL_QUADS, GL_TRIANGLE_STRIP
 		t.idx->size(),    //How many indices
@@ -207,8 +250,10 @@ void Render(Tris t){
 		0
 	);
 
-
 	return;
+
+  #endif
+
 }
 
 void printVec(vec3 v)
@@ -237,8 +282,7 @@ int main(int argc, char * argv[]){
 
     glfwGetFramebufferSize(window, &WIDTH, &HEIGHT);
 
-    Tris t = cloud::getAllTris();
-		Render(t);
+		Render();
     glfwSwapBuffers(window);
 		glfwPollEvents();
 
