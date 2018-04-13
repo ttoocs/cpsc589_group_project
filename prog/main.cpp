@@ -41,7 +41,7 @@
 
 #define torad(X)	((float)(X*PI/180.f))
 
-//#define RAYTRACE_CLOUDS
+#define RAYTRACE_CLOUDS
 
 Camera activeCamera;
 
@@ -186,6 +186,7 @@ void Update_Perspective(){
 
   #ifdef RAYTRACE_CLOUDS
 
+bool first = true;
 void Update_GPU_data(){
 
   std::vector<vec3> storage;
@@ -217,9 +218,11 @@ void Update_GPU_data(){
 
   //TODO: Lightening
 
+	if(first){
   glBindVertexArray(glstuff.vertexarray);
   lightning::loadPoints();
-
+	first = false;
+	}
 	glBindBuffer(GL_ARRAY_BUFFER, glstuff.vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, storage.size() * sizeof(vec3), storage.data(), GL_STREAM_DRAW);
 
