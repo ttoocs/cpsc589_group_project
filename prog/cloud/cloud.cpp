@@ -13,14 +13,19 @@
 
 #include "../main.h"
 
-
-#define Q_GRAN .3
-#define F_GRAN .15
+//START: In here FALSE means ON
+#define Q_GRAN .6
+#define F_GRAN .3
 #define A_GROW false //Make this true if you want balls growing
 //In all the directions.  False if you only want them growing up.
-#define HEIGHT_ANGLE PI/2.0f
+#define HEIGHT_ANGLE PI/2.5f
+#define HEIGHT_ANGLE_DOWN PI/2.5f
+#define TT_GROW true
+#define U_GROW false
+#define D_GROW false
+//END: In here FALSE means ON
 
-float AvgNew = 10;
+float AvgNew = 20;
 float AvgPer = 0.5;
 
 
@@ -91,7 +96,9 @@ void cloud::process_cloud_paper(Tris& t, int rounds)
 	vec3 p2 = vec3(0,0,0);
   vec3 test_norm = vec3(0,0,0);
   float test_angle = 0.0f;
+  float test_angle_down = 0.0f;
   int num_of_new_balls = 0;
+  double prob_to_get_ball = 0.0f;
 	
 	float r0 = 0.0f;
 	float r1 = 0.0f;
@@ -112,33 +119,49 @@ void cloud::process_cloud_paper(Tris& t, int rounds)
 		for(int i = 0; i < indices->size()/3; i++)
 		{
       test_norm = ((*norms)[(*indices)[i*3]]+(*norms)[(*indices)[i*3+1]]+(*norms)[(*indices)[i*3+2]])/3.0f;
-      test_angle = acos(dot(normalize(test_norm),vec3(0,-1,0)));
-      if((A_GROW)||(test_angle > HEIGHT_ANGLE))
-       {
-          float rng = (((float)rand())/((float)INT_MAX));
-          if(rng < (AvgNew)/((float)(indices->size()/3)*(fabs(PI-HEIGHT_ANGLE)/PI)))
-          {
-            
 
-            //START: Random position inside square for new metaball
-            p0 = (*points)[(*indices)[i*3]];
-            p1 = (*points)[(*indices)[i*3+1]];
-            p2 = (*points)[(*indices)[i*3+2]];
-            
-            r0 = ((float)rand())/((float)INT_MAX);
-            r1 = (1.0f-r0)*((float)rand())/((float)INT_MAX);
-            
-            
-            p0 = (1.0f-r1-r0)*p2 + r1*p1 + r0*p0;
-            
-            //END: Random position inside square for new metaball
-            //Random size:
-            float rad = 1.0 + ((float)rand())/((float)INT_MAX)*pow(0.5,j+1);
-            
-            balls.push_back((new MetaBall(p0,rad,balls[0]->m_surfaceFunction)));
-            num_of_new_balls++;
-        //		std::cout << a++ << std::endl;
+      test_angle = acos(dot(normalize(test_norm),vec3(0,-1,0)));
+      test_angle_down = acos(dot(normalize(test_norm),vec3(0,1,0)));
+
+      if((A_GROW)||(U_GROW)||(test_angle > HEIGHT_ANGLE))
+       {
+        if((A_GROW)||(D_GROW)||(test_angle_down > HEIGHT_ANGLE_DOWN))
+         {
+            float rng = (((float)rand())/((float)INT_MAX));
+            prob_to_get_ball =((float)(indices->size()/3));
+            if(!U_GROW)
+            {
+              prob_to_get_ball *= (fabs(PI-HEIGHT_ANGLE)/PI);
             }
+            if(!D_GROW)
+            {
+              prob_to_get_ball *= (fabs(PI-HEIGHT_ANGLE_DOWN)/PI);
+            }
+            
+            if(rng < (AvgNew)/prob_to_get_ball)
+            {
+              
+
+              //START: Random position inside square for new metaball
+              p0 = (*points)[(*indices)[i*3]];
+              p1 = (*points)[(*indices)[i*3+1]];
+              p2 = (*points)[(*indices)[i*3+2]];
+              
+              r0 = ((float)rand())/((float)INT_MAX);
+              r1 = (1.0f-r0)*((float)rand())/((float)INT_MAX);
+              
+              
+              p0 = (1.0f-r1-r0)*p2 + r1*p1 + r0*p0;
+              
+              //END: Random position inside square for new metaball
+              //Random size:
+              float rad = 1.0 + ((float)rand())/((float)INT_MAX)*pow(0.5,j+1);
+              
+              balls.push_back((new MetaBall(p0,rad,balls[0]->m_surfaceFunction)));
+              num_of_new_balls++;
+          //		std::cout << a++ << std::endl;
+              }
+          }
         }
         else
         {
