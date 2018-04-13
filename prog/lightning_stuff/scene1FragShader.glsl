@@ -162,8 +162,8 @@ vec4 main_l()
   if(Transform)
   {
     //Make origin/ray temps
-    vec4 ot = MVP*vec4(r.origin,1);
-    vec4 rt = MVP*vec4(r.dir,0);
+    vec4 ot = mvp*vec4(r.origin,1);
+    vec4 rt = mvp*vec4(r.dir,0);
     r.origin = vec3(ot.x,ot.y,ot.z);
     r.dir = vec3(rt.x,rt.y,rt.z);
   }
