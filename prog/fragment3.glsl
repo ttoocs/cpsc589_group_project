@@ -256,8 +256,8 @@ float ray_intersect_metaBalls(ray r){
  
 
 //  #define SGRAD_SEARCH  //Simple Gradient decent.
-//  #define SPHERE_SEARCH //Uses the sphere collision alg/
-  #define LINEAR_SEARCH //Iterates
+  #define SPHERE_SEARCH //Uses the sphere collision alg/
+//  #define LINEAR_SEARCH //Iterates
 
   #ifdef SGRAD_SEARCH
     float stopThres = 0.0001;
@@ -496,7 +496,7 @@ vec4 main_c(){
 
 	//BASIC	pos
 	newray.direction = vec3(coords, -1/tan(FOV/2));	
-	newray.origin = vec3(0,0,0);	
+	newray.origin = vec3(0.5,0,0);	
 
 	//TRANSFORMATIONS
   vec4 ot = mvp*vec4(0,0,0,1);

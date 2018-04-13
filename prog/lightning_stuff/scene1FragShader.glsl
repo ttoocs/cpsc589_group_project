@@ -154,7 +154,7 @@ vec4 main_l()
 	// DIFFERENT CAMERA ANGLES* (Use a Uniform)
 
 	Ray r;
-	r.origin = vec3(0, -0.5, -1.0);
+	r.origin = vec3(0, -0.5, -1.5);
 	r.dir = directionVector;
 
   //Transform ray for camera controls
@@ -162,8 +162,8 @@ vec4 main_l()
   if(Transform)
   {
     //Make origin/ray temps
-    vec4 ot = mvp*vec4(r.origin,1);
-    vec4 rt = mvp*vec4(r.dir,0);
+    vec4 ot = MVP*vec4(r.origin,1);
+    vec4 rt = MVP*vec4(r.dir,0);
     r.origin = vec3(ot.x,ot.y,ot.z);
     r.dir = vec3(rt.x,rt.y,rt.z);
   }
@@ -203,7 +203,7 @@ vec4 main_l()
   #ifndef LIGHT_SUBSHADER
 	FragmentColour = vec4(color, 1);
   #else
-	return vec4(color, 1);
+	return vec4(color, 0);
   #endif
 }
 
