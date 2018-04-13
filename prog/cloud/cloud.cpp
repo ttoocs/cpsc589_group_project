@@ -23,7 +23,6 @@
 float AvgNew = 10;
 float AvgPer = 0.5;
 
-
 std::vector<cloud*> cloud::allClouds;
 
 using namespace std;
@@ -274,4 +273,37 @@ Tris cloud::getAllTris(){
 Tris cloud::getTris(){
 //  return  toTris(&verts,&norms,&idx);
   return tris;
+}
+
+
+
+MBS cloud::getMBs(){
+  MBS r;
+  for(auto it = balls.begin(); it != balls.end(); it++){
+    MB t;
+    t.pos = vec4((*it)->pos,0);
+    int type=-1;
+    if( (*it)->m_surfaceFunction ==  WyvillMetaBall)
+      type=1;
+    if( (*it)->m_surfaceFunction ==  sphereMB)
+      type=2;
+    if( (*it)->m_surfaceFunction ==  fanceyMB)
+      type=3;
+
+    t.info = vec4(type,(*it)->radius,0,0);
+    r.push_back(t);
+  }
+  return r;
+}
+
+MBS cloud::getAllMBs(){
+  MBS r;
+  for(auto it = allClouds.begin(); it != allClouds.end(); it++){
+    MBS m = (*it)->getMBs();
+    for(auto is = m.begin(); is != m.end() ; is++){
+    
+    r.push_back(*is);
+
+    }
+  }
 }

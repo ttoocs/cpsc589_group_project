@@ -9,7 +9,7 @@
 
 class cloud{
   public:
-    std::vector<MetaBall*> balls;
+     std::vector<MetaBall*> balls;
 
 //    std::vector<vec3> verts;
 //    std::vector<vec3> norms;
@@ -42,4 +42,9 @@ class cloud{
   static Tris getAllTris();
 
   Tris getTris();
+
+  MBS getMBs();
+  
+  static MBS getAllMBs();
+
 };
