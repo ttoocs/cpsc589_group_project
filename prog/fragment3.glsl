@@ -11,7 +11,8 @@ struct MB{
   vec4 info;
 };
 
-#define BEPSILON 0.0000001
+#define EPSILON  0.000001
+#define BEPSILON 0.001
 
 ////////////////////////////////// INPUT ///////////////////////////////
 layout(std430, binding = 1) buffer allMB{
@@ -24,16 +25,19 @@ layout(std430, binding = 1) buffer allMB{
 ////////////////////////////////// END INPUT ///////////////////////////////
 
 #define mbGetType(X) int(mb[int(X)].info.x)
+//#define mbGetType(X) 2
 #define mbGetPos(X) vec3(mb[int(X)].pos.x,mb[int(X)].pos.y,mb[int(X)].pos.z)
 #define mbGetRad(X) mb[(X)].info.y
 #define numMB int(mbInfo.x)
+#define mbThres mbInfo.y;
 
 #define mb_Wyvill 1
-#define mb_fancey 2
-#define mb_sphere 3
+#define mb_sphere 2
+#define mb_fancey 3
 
 
 //////////////////////////////////META BALL FUNCS///////////////////////////////
+
 
 float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
 	{
@@ -46,6 +50,7 @@ float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
 		term2 = (17.0 / 9.0) * pow(R, 4.0);
 		term3 = (-22.0 / 9.0) * pow(R, 2.0);
 		float total = term1 + term2 - term3;
+
 		return radius / -(term1 + term2 + term3 + 1);
 
 	}
@@ -53,13 +58,11 @@ float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
 
 float sphereMB(vec3 mbpos, vec3 tpos, float radius){
   float r = length(mbpos - tpos);
-  return (r-radius);
-  
+  return (r-(radius));  
 }
 
 
 float fanceyMB(vec3 mbpos, vec3 tpos, float radius){
-      #define EPSILON 0.0001
       float x = tpos.x-mbpos.x;
       float y = tpos.y-mbpos.y;
       float z = tpos.z-mbpos.z;
@@ -224,7 +227,11 @@ float MB_F(int ball, vec3 tpos){ // The meta-ball function.
 float metaBall_func(vec3 pos){
   float s=0;
   for(int i=0; i<numMB; i++){
-    s+= MB_F(i,pos);
+    s+= MB_F(i,pos);    //BLEND
+//    s = max(s,MB_F(i,pos));    //UNION
+//    s = min(s,MB_F(i,pos));    //INTER
+//    s = min(s,-MB_F(i,pos));    //SUB
+    
   }
   return s;
 }
@@ -236,37 +243,75 @@ float metaBall_func(ray r, float t){
 /////// INTERSECT
 
 
+
 float ray_intersect_metaBalls(ray r){
 
   float t=0;
   bool found = false;
-  float thres = 0.1;
+  float thres = 1;//mbThres;
 
-  #define LINEAR_SEARCH
+  #define h 0.0001
+  #define f(X) (metaBall_func(r,X)-thres)
+  #define fp(X) ((f(X+h)-f(X-h))/2*h)
+ 
+
+//  #define SGRAD_SEARCH  //Simple Gradient decent.
+//  #define SPHERE_SEARCH //Uses the sphere collision alg/
+  #define LINEAR_SEARCH //Iterates
+
+  #ifdef SGRAD_SEARCH
+    float stopThres = 0.0001;
+    int maxSteps = 100;
+    
+    float s_init = f(0); //Now always checks for sign change.
+    bool positive=false;
+    if(s_init == abs(s_init))
+       positive=true;
+
+    while( maxSteps > 0 ){
+      maxSteps --;
+      if( (positive && (f(t) < 0)) || ((!positive && (f(t) > 0)))){
+        found = true;
+        break;
+      }
+      t += fp(t);
+    }
+  #endif
 
   #ifdef LINEAR_SEARCH 
   //////////////////////////////////////////Linear
   float minT=0;
   float maxT=20;
-  float dt = 1;
+  float dt = 0.1;
   t=minT;
 
-  while( t < maxT){
-    float s = metaBall_func(r,t);
-    if(s > thres){
+  float s_init = f(0); //Now always checks for sign change.
+  bool positive=false;
+  if(s_init == abs(s_init))
+    positive=true;
+
+
+  while( t < maxT  ){
+    if( (positive && (f(t) < 0)) || ((!positive && (f(t) > 0))))
+    {
       t -= (dt/2);
       found = true;
       break;
     }
-    t+= dt;
+    if(fp(t) > 0){
+      t += max(fp(t),dt);
+    }else
+      t+= dt;
   }
 
-  #else ////////////////////////////////End linear search
+  #endif 
+
+  #ifdef SPHERE_SEARCH ////////////////////////////////End linear search
     //Spherical collision
     t=0;
     for(int i=0; i <= numMB ; i++){
       float tn = ray_intersect_sphere(r, mbGetPos(i), mbGetRad(i));
-      if( tn > 0 && tn < t){
+      if( tn > 0 && (tn < t || t == 0)){
         t = tn;
         found = true;
       }
@@ -274,39 +319,48 @@ float ray_intersect_metaBalls(ray r){
 
   #endif
 
-    //////////////////////////////////////////////Newtons
   if(found){
     #define noNewtons
-    #ifdef noNewtons
-    return t;
-    #else
-    #define h 0.01
-    //Newtons method!
-    int maxIter = 200;
-    while(maxIter > 0){
-      //Center difference:
-      float yp = (((metaBall_func(r,t+h)-thres) - ((metaBall_func(r,t-h))-thres))/(h*2));
-
-      if(yp < EPSILON*10)
-         maxIter=-2; //Kill it if floats will screw us.
-      
-      float tnew = t - (metaBall_func(r,t)-thres)/yp;
-      if(abs(tnew - t) < 0.0001)
-        maxIter = 0; //Kill it if we're close enough enough.
-    
-      t=tnew;
-//      maxIter --; 
-    }
-    if(maxIter == -3)
-      return -1;
-    else
+   #ifdef noNewtons
       return t;
+    #else
+    //////////////////////////////////////////////Newtons
+      //Newtons method!
+      int maxIter = 200;
+      found = false;
+      while(maxIter > 0){
+        //Center difference:
+        float yp = fp(t);
+
+        if(yp < EPSILON)
+           maxIter=-3; //Kill it if floats will screw us -> also assumes non-convergence
+      
+        float tnew = t - (f(t)/yp);
+        float delta = tnew - t;
+        if(abs(delta) < EPSILON){
+          found= true;
+          break; //Kill it if we're close enough enough.
+        }
+
+        if(abs(delta) > 0.01){
+          0.01*tnew/abs(delta);
+        }
+
+        t=tnew;
+        maxIter --;
+      }
+      if(maxIter == -3 || !found)
+        return -1; //Does not converge
+      else
+        return t;
+      #undef h
     #endif
   }
   else
     return -1;
-  #undef h
-      ////////////////////////////////////////////////EndNewtons
+  ////////////////////////////////////////////////EndNewtons
+  #undef f
+  #undef fp
 }
 
 ////////////////////////////////// END METABALLS  ///////////////////////////////
@@ -339,6 +393,8 @@ vec4 rtrace(ray cray){
 	if(res.x >= 0)
     c = vec4(res.x,res.x,res.x,0);
 
+  return c;
+  
   // #define FANCEY
   #ifdef FANCEY
 	vec3 hitpos = res.x * cray.direction + cray.origin;
@@ -445,7 +501,7 @@ vec4 main_c(){
 	//TRANSFORMATIONS
   vec4 ot = mvp*vec4(0,0,0,1);
 
-	newray.origin = vec3(ot.x,ot.y-5,ot.z+10);
+	newray.origin = vec3(ot.x,ot.y,ot.z+15);
 	newray.direction = newray.direction;
 
 	newray.direction = normalize(newray.direction);

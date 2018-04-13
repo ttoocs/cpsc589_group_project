@@ -202,8 +202,9 @@ void Update_GPU_data(){
   //Get MBs
   MBS d = cloud::getAllMBs();
   int i1 = d.size() + 1;
-  
-  vec4 inf = vec4(i1,0,0,0);
+ 
+  float thres = 1;
+  vec4 inf = vec4(i1,thres,0,0);
 
   //allocate space
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, glstuff.MB_SSBO);
@@ -305,7 +306,8 @@ int main(int argc, char * argv[]){
 
  
   for(int i=0; i < 1; i++){
-    new cloud(); //Create cloud with defaults.
+    vec3 t = vec3(0,0,0);
+    new cloud(NULL,&t,1,1,1); //Create cloud with defaults.
   }
 
 
