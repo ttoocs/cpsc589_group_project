@@ -29,7 +29,7 @@
   in vec2 vp;
 
 
-uniform mat4 mvp;
+uniform mat4 mvp=IDENTITY4;
 
 struct Segment
 {
