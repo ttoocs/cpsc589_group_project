@@ -4,6 +4,8 @@
 
 #define LIGHT_SUBSHADER //Tell Light fragment shader to be subordinate.
 
+#define IDENTITY4 mat4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1)
+
 // interpolated colour received from vertex stage
 
 in vec2 FragUV;
