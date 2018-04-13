@@ -26,6 +26,8 @@
 
 #include "metaball/metaball.h"
 #include "cloud/cloud.h"
+#include "lightning_stuff/lightning.h"
+
 
 //#define WIREFRAME
 #define DEBUG
@@ -39,7 +41,7 @@
 
 #define torad(X)	((float)(X*PI/180.f))
 
-#define RAYTRACE_CLOUDS
+//#define RAYTRACE_CLOUDS
 
 Camera activeCamera;
 
@@ -143,9 +145,9 @@ void initalize_GL(){
   	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,glstuff.MB_SSBO);
 
     //Lightening -ssbo
-    glBindVertexArray(glstuff.vertexarray);
-    glGenBuffers(1, &glstuff.L_SSBO);
-  	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,glstuff.L_SSBO);
+//    glBindVertexArray(glstuff.vertexarray);
+//    glGenBuffers(1, &glstuff.L_SSBO);
+//  	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,glstuff.L_SSBO);
 
     
 
@@ -215,6 +217,8 @@ void Update_GPU_data(){
 
   //TODO: Lightening
 
+  glBindVertexArray(glstuff.vertexarray);
+  lightning::loadPoints();
 
 	glBindBuffer(GL_ARRAY_BUFFER, glstuff.vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, storage.size() * sizeof(vec3), storage.data(), GL_STREAM_DRAW);
