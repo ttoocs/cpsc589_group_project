@@ -104,5 +104,6 @@ void main(void)
   }
 
   //RayTrace Code here:
-  FragmentColour = vec4(1,1,1,1); //main_c();
+//  FragmentColour = vec4(1,1,1,1); //main_c();
+  FragmentColour = main_c();
 }

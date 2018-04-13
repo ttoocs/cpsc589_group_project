@@ -21,13 +21,11 @@ layout(std430, binding = 1) buffer allMB{
 
 // uniform float FOV;
 
-uniform vec3 offset;
-uniform mat3 transform;
 ////////////////////////////////// END INPUT ///////////////////////////////
 
-#define mbGetType(X) int(mb[X].info.x)
-#define mbGetPos(X) vec3(mb[X].pos.x,mb[X].pos.y,mb[X].pos.z)
-#define mbGetRad(X) mb[X].info.y
+#define mbGetType(X) int(mb[int(X)].info.x)
+#define mbGetPos(X) vec3(mb[int(X)].pos.x,mb[int(X)].pos.y,mb[int(X)].pos.z)
+#define mbGetRad(X) mb[(X)].info.y
 #define numMB int(mbInfo.x)
 
 #define mb_Wyvill 1
@@ -204,17 +202,17 @@ float ray_intersect_point(ray r, uint obj){
 ////////////////////////////////// METABALLS  ///////////////////////////////
 
 //Meta-ball func based on pos
-float MB_F(uint ball, vec3 tpos){ // The meta-ball function.
+float MB_F(int ball, vec3 tpos){ // The meta-ball function.
  
   vec3 mbpos = mbGetPos(ball);
 
   switch(mbGetType(ball)){
     case 1:
-      return WyvillMetaBall(mbpos,tpos,mbGetRad(mb[ball]));
+      return WyvillMetaBall(mbpos,tpos,mbGetRad(ball));
     case 2:
-      return sphereMB(mbpos,tpos,mbGetRad(mb[ball]));
+      return sphereMB(mbpos,tpos,mbGetRad(ball));
     case 3: 
-      return fanceyMB(mbpos,tpos,mbGetRad(mb[ball]));
+      return fanceyMB(mbpos,tpos,mbGetRad(ball));
   }
   return -1;
 
@@ -240,9 +238,11 @@ float metaBall_func(ray r, float t){
 
 float ray_intersect_metaBalls(ray r){
 
-  float t;
+  float t=0;
   bool found = false;
   float thres = 0.1;
+
+  #define LINEAR_SEARCH
 
   #ifdef LINEAR_SEARCH 
   //////////////////////////////////////////Linear
@@ -276,7 +276,7 @@ float ray_intersect_metaBalls(ray r){
 
     //////////////////////////////////////////////Newtons
   if(found){
-//    #define noNewtons
+    #define noNewtons
     #ifdef noNewtons
     return t;
     #else
@@ -323,7 +323,6 @@ vec4 test_objects_intersect(ray r){ //Tests _ALL_ objects
   if(mb > 0)
   {
     ret.x = mb;
-//    ret.y = MB[0];
   }
 
 	return(ret);
@@ -338,7 +337,7 @@ vec4 rtrace(ray cray){
 	vec4 res = test_objects_intersect(cray);
 
 	if(res.x >= 0)
-    c = vec4(0.8,0.8,0.8,0);
+    c = vec4(res.x,res.x,res.x,0);
 
   // #define FANCEY
   #ifdef FANCEY
@@ -428,12 +427,10 @@ vec4 rtrace(ray cray){
 ////////////////////////////////// RAYTRACE STUFF ///////////////////////////////
 
 vec4 main_c(){
-	
+
+
  	vec4 pixel = vec4(0.0, 0.0, 0.0, 1.0);
 
-// 	ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
-  ivec2 pixel_coords;
-	
 	vec4 colour = vec4(0);
 
   float z = -(1.f/tan(90.0/2.f));
@@ -446,13 +443,15 @@ vec4 main_c(){
 	newray.origin = vec3(0,0,0);	
 
 	//TRANSFORMATIONS
-	newray.origin = offset;
-	newray.direction = transform*newray.direction;
+  vec4 ot = mvp*vec4(0,0,0,1);
+
+	newray.origin = vec3(ot.x,ot.y-5,ot.z+10);
+	newray.direction = newray.direction;
 
 	newray.direction = normalize(newray.direction);
 
 	/////////////////INIT////////////////////////////////
-	colour =vec4(0);
+	colour = rtrace(newray);
 	vec4 c2;
 	float ref_pwr=1;
 

@@ -188,4 +188,5 @@ MBS cloud::getAllMBs(){
 
     }
   }
+  return r;
 }
