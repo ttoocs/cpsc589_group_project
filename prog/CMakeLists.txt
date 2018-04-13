@@ -33,6 +33,7 @@ get_filename_component(fragmentPath1 fragment1.glsl REALPATH)
 get_filename_component(fragmentPath2 fragment2.glsl REALPATH)
 get_filename_component(fragmentPath3 fragment3.glsl REALPATH)
 get_filename_component(vertexPath vertex.glsl REALPATH)
+get_filename_component(vertexPath2 vertex_raytrace.glsl REALPATH)
 
 ##add #DEFINES for them.
 add_definitions (-DFRAGMENTPATH="${fragmentPath}")
@@ -40,6 +41,7 @@ add_definitions (-DFRAGMENTPATH1="${fragmentPath1}")
 add_definitions (-DFRAGMENTPATH2="${fragmentPath2}")
 add_definitions (-DFRAGMENTPATH3="${fragmentPath3}")
 add_definitions (-DVERTEXPATH="${vertexPath}")
+add_definitions (-DVERTEXPATHRAY="${vertexPath2}")
 
 
 # Use PkgConfig to find glew...

@@ -35,6 +35,22 @@ struct Tris {
 };
 typedef struct Tris Tris;
 
+struct MB{
+  vec4 pos;
+  vec4 info;
+};
+typedef struct MB MB;
+
+typedef std::vector<MB> MBS;
+
+inline MBS mergeMBS(MBS mbs1, MBS mbs2){
+  MBS r = mbs1;
+  for(auto it = mbs2.begin(); it != mbs2.end(); it++){
+    r.push_back((*it));
+  }
+}
+
+
 inline Tris toTris ( std::vector<vec3>   * vertsi, std::vector<vec3>   * normsi, std::vector<GLuint> * idxi){
   Tris t;
   t.verts = vertsi;

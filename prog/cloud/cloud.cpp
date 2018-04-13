@@ -28,67 +28,9 @@
 float AvgNew = 20;
 float AvgPer = 0.5;
 
-
 std::vector<cloud*> cloud::allClouds;
 
 using namespace std;
-/*
-void cloud::process_cloud_naive(vector<vec3> *points, vector<GLuint> *indices,vector<vec3> *norms, int rounds)
-{
-  
-  std::cout << "DO NOT USE" << std::endl;
-  exit(1);
-  
-	vec3 p0 = vec3(0,0,0);
-	vec3 p1 = vec3(0,0,0);
-	vec3 p2 = vec3(0,0,0);
-	
-	float r0 = 0.0f;
-	float r1 = 0.0f;
-	float radius = ((float)rand())/((float)INT_MAX);
-	
-	int a=0;
-	for(int j = 0; j < rounds; j++)
-	{
-    points->clear();
-    indices->clear();
-    norms->clear();
-  //March getting points/indexs/norms, on balls, unknown bounding boxes, granularity =Q_GRAN (half-res of new default)
-	  MetaBall::March(points,indices,norms, &balls, NULL, NULL, Q_GRAN);
-		for(int i = 0; i < indices->size()/3; i++)
-		{
-		  float rng = (((float)rand())/((float)INT_MAX));
-		  if(rng < (AvgNew)/((float)(indices->size()/3)))
-		  {
-        //START: Random position inside square for new metabalal
-        p0 = (*points)[(*indices)[i*3]];
-        p1 = (*points)[(*indices)[i*3+1]];
-        p2 = (*points)[(*indices)[i*3+2]];
-        
-        r0 = ((float)rand())/((float)INT_MAX);
-        r1 = (1.0f-r0)*((float)rand())/((float)INT_MAX);
-        
-        
-        p0 = (1.0f-r1-r0)*p2 + r1*p1 + r0*p0 +(*norms)[i]*(((float)rand())/((float)INT_MAX)*j*5);
-        
-        //END: Random position inside square for new metaball
-        //Random size:
-        float rad = ((float)rand())/((float)INT_MAX)*exp(1.0/(j+1));
-        
-        balls.push_back((new MetaBall(p0,rad,balls[0]->m_surfaceFunction)));
-    //		std::cout << a++ << std::endl;
-		  }
-		}
-   // std::cout << "cloud round done" << std::endl;
-	}
-  points->clear();
-  indices->clear();
-  norms->clear();
-	MetaBall::March(points,indices,norms, &balls, NULL, NULL, F_GRAN);
-  cout <<"Done making a cloud\n";
-}
-*/
-//void cloud::process_cloud_paper(vector<vec3> *points, vector<GLuint> *indices,vector<vec3> *norms, int rounds)
 void cloud::process_cloud_paper(Tris& t, int rounds)
 {
 	vec3 p0 = vec3(0,0,0);
@@ -181,67 +123,6 @@ void cloud::process_cloud_paper(Tris& t, int rounds)
 }
 
 
-// NOT THIS ONE
-/*
-void cloud::create_cloud(vector<vec3> *verts, vector<GLuint> *idx,vector<vec3> *norms, int numOfClouds, int m_in_cloud, int rounds)
-{
-
-  std::cout << "Despite my efforts, this seems to have issues now." << std::endl;
-  std::cout << "You have been warned." << std::endl;
-//  cloud clouds[numOfClouds];  //This caused issues with new cosntructor, hence:
-  std::vector<cloud> clouds;
-  for(int i = 0; i < numOfClouds ; i++){
-    clouds.push_back(cloud(NULL,NULL,0,0,0,true)); //All but last ignored, the skip.
-  }
-  
-  std::vector<vec3> verts_s;
-  std::vector<GLuint> idx_s;
-  std::vector<vec3> norms_s;
-  for(int i = 0; i < numOfClouds;i++)
-  {
-    float x = -1+3*i;
-    float y = 10 - 20*(((float)rand())/((float)INT_MAX));
-    float z = 10 - 20*(((float)rand())/((float)INT_MAX));
-    for(int j = 0; j < m_in_cloud;j++)
-    {
-      x = x+2 - 20*(((float)rand())/((float)INT_MAX));
-      y = y+2 - 20*(((float)rand())/((float)INT_MAX));
-      z = z+2 - 20*(((float)rand())/((float)INT_MAX));
-   //   clouds[i].balls.push_back(new MetaBall(vec3(x,y,z), 1, fanceyMB));
-      clouds[i].balls.push_back(new MetaBall(vec3(x,y,z), 1, WyvillMetaBall));
-    }
-  }
-
-  verts->clear();
-  idx->clear();
-  norms->clear();
-  
-  //aCloud.process_cloud_paper(&verts, &idx,&norms, 3);
-  for(int i = 0; i < numOfClouds;i++)
-  {
-    verts_s.clear();
-    norms_s.clear();
-    idx_s.clear();
-    clouds[i].process_cloud_paper(&verts_s, &idx_s,&norms_s, rounds);
-
-    Tris ms = mergeTris(toTris(verts,norms,idx),toTris(&verts_s,&norms_s,&idx_s));
-    verts = ms.verts;
-    norms = ms.norms;
-    idx = ms.idx;
-/*
-    for(int j = 0; j < idx_s.size();j++) // J is rediculously large here, probably the issue. (Some compression does happen now.)
-    {
-      verts->push_back(verts_s[j]);
-      norms->push_back(norms_s[j]); //Seems to segfault?q
-      idx->push_back(idx->size());
-    }
-
-
-  }
- 
-}
-*/
-
 cloud::cloud(float(*f)(vec3, vec3, float) , vec3 * pos, int initBalls, int rounds, int rad, bool skip){
   if(! skip){
   //Default pos/etc.
@@ -297,4 +178,38 @@ Tris cloud::getAllTris(){
 Tris cloud::getTris(){
 //  return  toTris(&verts,&norms,&idx);
   return tris;
+}
+
+
+
+MBS cloud::getMBs(){
+  MBS r;
+  for(auto it = balls.begin(); it != balls.end(); it++){
+    MB t;
+    t.pos = vec4((*it)->pos,0);
+    int type=-1;
+    if( (*it)->m_surfaceFunction ==  WyvillMetaBall)
+      type=1;
+    if( (*it)->m_surfaceFunction ==  sphereMB)
+      type=2;
+    if( (*it)->m_surfaceFunction ==  fanceyMB)
+      type=3;
+
+    t.info = vec4(type,(*it)->radius,0,0);
+    r.push_back(t);
+  }
+  return r;
+}
+
+MBS cloud::getAllMBs(){
+  MBS r;
+  for(auto it = allClouds.begin(); it != allClouds.end(); it++){
+    MBS m = (*it)->getMBs();
+    for(auto is = m.begin(); is != m.end() ; is++){
+    
+    r.push_back(*is);
+
+    }
+  }
+  return r;
 }

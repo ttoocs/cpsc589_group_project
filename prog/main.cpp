@@ -26,6 +26,8 @@
 
 #include "metaball/metaball.h"
 #include "cloud/cloud.h"
+#include "lightning_stuff/lightning.h"
+
 
 //#define WIREFRAME
 #define DEBUG
@@ -39,7 +41,7 @@
 
 #define torad(X)	((float)(X*PI/180.f))
 
-
+//#define RAYTRACE_CLOUDS
 
 Camera activeCamera;
 
@@ -60,6 +62,8 @@ struct GLSTUFF{
 	GLuint uvsbuffer;
 	GLuint indiciesbuffer;
 	GLuint texture;
+  GLuint MB_SSBO;
+  GLuint L_SSBO;
 };
 GLSTUFF glstuff;
 
@@ -84,13 +88,15 @@ void initalize_GL(){
     fs.push_back(FRAGMENTPATH1);
     fs.push_back(FRAGMENTPATH2);
     fs.push_back(FRAGMENTPATH3);
+    #ifdef RAYTRACE_CLOUDS
+		glstuff.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSource(VERTEXPATHRAY));
+    #else
 		glstuff.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSource(VERTEXPATH));
+    #endif
 //		glstuff.fragShader = CompileShader(GL_FRAGMENT_SHADER,LoadSource(FRAGMENTPATH));
 //    glstuff.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSourceM(vs));
     glstuff.fragShader = CompileShader(GL_FRAGMENT_SHADER,LoadSourceM(fs));
   
-
-
     //Attaching to prog
 		glAttachShader(glstuff.prog, glstuff.vertexShader);
 		glAttachShader(glstuff.prog, glstuff.fragShader);
@@ -100,7 +106,6 @@ void initalize_GL(){
       //Linking/compiling
 		glLinkProgram(glstuff.prog);	//Link to full program.
 		check_gllink(glstuff.prog);
-
 
 		//Vertex stuffs
 
@@ -132,6 +137,19 @@ void initalize_GL(){
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
+
+
+    //MB -ssbo
+    glBindVertexArray(glstuff.vertexarray);
+    glGenBuffers(1, &glstuff.MB_SSBO);
+  	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,glstuff.MB_SSBO);
+
+    //Lightening -ssbo
+//    glBindVertexArray(glstuff.vertexarray);
+//    glGenBuffers(1, &glstuff.L_SSBO);
+//  	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,glstuff.L_SSBO);
+
+    
 
 		//Texture stuff
 /*
@@ -166,8 +184,52 @@ void Update_Perspective(){
 
 }
 
-void Update_GPU_data(Tris t){
+  #ifdef RAYTRACE_CLOUDS
 
+void Update_GPU_data(){
+
+  std::vector<vec3> storage;
+
+	storage.push_back(vec3(-1.0, 1.0, 0.0));
+	storage.push_back(vec3(1.0, 1.0, 0.0));
+	storage.push_back(vec3(1.0, -1.0, 0.0));
+
+	storage.push_back(vec3(1.0, -1.0, 0.0));
+	storage.push_back(vec3(-1.0, -1.0, 0.0));
+	storage.push_back(vec3(-1.0, 1.0, 0.0));
+
+	glBindVertexArray(glstuff.vertexarray);
+
+ 
+  //Get MBs
+  MBS d = cloud::getAllMBs();
+  int i1 = d.size() + 1;
+ 
+  float thres = 1;
+  vec4 inf = vec4(i1,thres,0,0);
+
+  //allocate space
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, glstuff.MB_SSBO);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(vec4)*i1, NULL, GL_DYNAMIC_COPY);
+  //Send Most data
+  glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(vec4), sizeof(vec4)*d.size(), d.data());
+  glBufferSubData(GL_SHADER_STORAGE_BUFFER,0,sizeof(vec4),&inf); //Send info data..
+
+  //TODO: Lightening
+
+  glBindVertexArray(glstuff.vertexarray);
+  lightning::loadPoints();
+
+	glBindBuffer(GL_ARRAY_BUFFER, glstuff.vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, storage.size() * sizeof(vec3), storage.data(), GL_STREAM_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
+	glEnableVertexAttribArray(0);
+}
+
+  #else
+
+void Update_GPU_data(Tris t){
   //Calc verts/etc
   glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);
   glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*t.verts->size(),t.verts->data(),GL_DYNAMIC_DRAW);
@@ -179,11 +241,30 @@ void Update_GPU_data(Tris t){
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*t.idx->size(),t.idx->data(),GL_DYNAMIC_DRAW);
 
 }
+  #endif
 
 
-void Render(Tris t){
+
+void Render(){
+  #ifdef RAYTRACE_CLOUDS
+
+  Update_GPU_data();
+  Update_Perspective();	//updates perspective uniform, as it's never changed.
+
+	glUseProgram(glstuff.prog);
+ 	glBindVertexArray(glstuff.vertexarray);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
+   //Tell shaders to enable raytrace.
+  glUniform1i(glGetUniformLocation(glstuff.prog, "RayTrace"),true);
+
+  #else
+
 	glClearColor(40/255.0,56/255.0,81/255.0,0);
   //rgb(40, 56, 81)
+
+  Tris t = cloud::getAllTris();
 
   Update_Perspective();	//updates perspective uniform, as it's never changed.
   if(t.verts != NULL && t.norms != NULL && t.idx != NULL){
@@ -199,7 +280,6 @@ void Render(Tris t){
  	glBindVertexArray(glstuff.vertexarray);
  	glUseProgram(glstuff.prog);
 
-
 	glDrawElements(
   	GL_TRIANGLES,   //What shape we're drawing  - GL_TRIANGLES, GL_LINES, GL_POINTS, GL_QUADS, GL_TRIANGLE_STRIP
 		t.idx->size(),    //How many indices
@@ -207,8 +287,10 @@ void Render(Tris t){
 		0
 	);
 
-
 	return;
+
+  #endif
+
 }
 
 void printVec(vec3 v)
@@ -228,7 +310,8 @@ int main(int argc, char * argv[]){
 
  
   for(int i=0; i < 1; i++){
-    new cloud(); //Create cloud with defaults.
+    vec3 t = vec3(0,0,0);
+    new cloud(NULL,&t,1,1,1); //Create cloud with defaults.
   }
 
 
@@ -237,8 +320,7 @@ int main(int argc, char * argv[]){
 
     glfwGetFramebufferSize(window, &WIDTH, &HEIGHT);
 
-    Tris t = cloud::getAllTris();
-		Render(t);
+		Render();
     glfwSwapBuffers(window);
 		glfwPollEvents();
 
