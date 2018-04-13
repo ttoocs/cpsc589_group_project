@@ -25,7 +25,7 @@
 #define D_GROW false
 //END: In here FALSE means ON
 
-float AvgNew = 20;
+float AvgNew = 3;
 float AvgPer = 0.5;
 
 std::vector<cloud*> cloud::allClouds;
@@ -123,14 +123,15 @@ void cloud::process_cloud_paper(Tris& t, int rounds)
 }
 
 
-cloud::cloud(float(*f)(vec3, vec3, float) , vec3 * pos, int initBalls, int rounds, int rad, bool skip){
-  if(! skip){
+cloud::cloud(float(*f)(vec3, vec3, float) , vec3 * pos, int initBalls, int rounds, int rad,float gap, int type){
+{
   //Default pos/etc.
   vec3 npos;
+  float angle = 0.0f;
   if(pos == NULL){ //Make a position if there isn't one given.
-    float x = -1+3;
-    float y = 10 - 20*(((float)rand())/((float)INT_MAX));
-    float z = 10 - 20*(((float)rand())/((float)INT_MAX));
+    float x = gap - 2*gap*(((float)rand())/((float)INT_MAX));
+    float y = gap - 2*gap*(((float)rand())/((float)INT_MAX));
+    float z = gap - 2*gap*(((float)rand())/((float)INT_MAX));
     npos = vec3(x,y,z);
     pos = &npos; 
   }
@@ -139,16 +140,27 @@ cloud::cloud(float(*f)(vec3, vec3, float) , vec3 * pos, int initBalls, int round
     f=WyvillMetaBall;
   }
 
+	AvgNew *= initBalls;
   { //Gen balls
-    balls.push_back(new MetaBall(*pos, rad, f));
+   // balls.push_back(new MetaBall(*pos, rad, f));
     float x = (*pos).x;
     float y = (*pos).y;
     float z = (*pos).z;
     for(int j = 0; j < initBalls;j++)
     {
-      x = x+3 -	6*(((float)rand())/((float)INT_MAX));
-      y = y+3 - 6*(((float)rand())/((float)INT_MAX));
-      z = z+3 - 6*(((float)rand())/((float)INT_MAX));
+		if(type == 0)
+		{
+			x = (*pos).x+gap - 2*gap*(((float)rand())/((float)INT_MAX));
+			y = y;//+gap - 2*gap*(((float)rand())/((float)INT_MAX));
+			z = (*pos).z+gap - 2*gap*(((float)rand())/((float)INT_MAX));
+		}
+		else if(type ==1)
+		{
+			angle = 2*PI*(((float)rand())/((float)INT_MAX));
+			x = gap*cos(angle);
+			y = y;//+gap - 2*gap*(((float)rand())/((float)INT_MAX));
+			z = gap*sin(angle);
+		}
       balls.push_back(new MetaBall(vec3(x,y,z), rad, f));
     }
   }  

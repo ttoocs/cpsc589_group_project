@@ -311,7 +311,11 @@ int main(int argc, char * argv[]){
  
   for(int i=0; i < 1; i++){
     vec3 t = vec3(0,0,0);
-    new cloud(NULL,&t,1,1,1); //Create cloud with defaults.
+//cloud::cloud(float(*f)(vec3, vec3, float) , vec3 * pos, int initBalls, int rounds, int rad, bool skip)
+//    new cloud(NULL,&t,6,10,1.0f,8.0f); //wings
+//    new cloud(NULL,&t,5,10,1.0f,15.0f); //frog
+//    new cloud(NULL,&t,5,10,1.0f,40.0f); //scattered
+      new cloud(NULL,&t,14,10,1.0f,16.0f,1); //scattered
   }
 
 
