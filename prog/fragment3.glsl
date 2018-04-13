@@ -496,13 +496,18 @@ vec4 main_c(){
 
 	//BASIC	pos
 	newray.direction = vec3(coords, -1/tan(FOV/2));	
-	newray.origin = vec3(0.5,0,0);	
+	newray.origin = vec3(0.5,0,15);	
+
+  mat4 t = cameraMatrix*modelviewMatrix;
 
 	//TRANSFORMATIONS
-  vec4 ot = mvp*vec4(0,0,0,1);
+  vec4 ot = t*vec4(newray.origin,1);
 
-	newray.origin = vec3(ot.x,ot.y,ot.z+15);
-	newray.direction = newray.direction;
+	newray.origin = vec3(ot.x,ot.y,ot.z);
+
+  vec4 pt = t*vec4(newray.direction,0);
+  newray.direction = vec3(pt.x,pt.y,pt.z);
+
 
 	newray.direction = normalize(newray.direction);
 

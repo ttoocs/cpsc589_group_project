@@ -14,6 +14,12 @@ in vec3 FragNormal;
 vec4 main_l();
 vec4 main_c();
 
+  //Camera Stuffs:
+  uniform mat4 cameraMatrix=IDENTITY4;
+  uniform mat4 perspectiveMatrix=IDENTITY4;
+  uniform mat4 modelviewMatrix = IDENTITY4;
+  uniform mat4 windowRatio = IDENTITY4;
+
 uniform bool RayTrace = false;
 
 // first output is mapped to the framebuffer's colour index by default
