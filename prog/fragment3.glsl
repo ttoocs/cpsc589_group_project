@@ -36,6 +36,7 @@ layout(std430, binding = 1) buffer allMB{
 #define mb_fancey 3
 
 
+float thres = mbThres;
 //////////////////////////////////META BALL FUNCS///////////////////////////////
 
 
@@ -248,7 +249,6 @@ float ray_intersect_metaBalls(ray r){
 
   float t=0;
   bool found = false;
-  float thres = 1;//mbThres;
 
   #define h 0.0001
   #define f(X) (metaBall_func(r,X)-thres)
@@ -258,6 +258,7 @@ float ray_intersect_metaBalls(ray r){
 //  #define SGRAD_SEARCH  //Simple Gradient decent.
   #define SPHERE_SEARCH //Uses the sphere collision alg/
 //  #define LINEAR_SEARCH //Iterates
+//  #define Newtons
 
   #ifdef SGRAD_SEARCH
     float stopThres = 0.0001;
@@ -319,48 +320,56 @@ float ray_intersect_metaBalls(ray r){
 
   #endif
 
-  if(found){
-    #define noNewtons
-   #ifdef noNewtons
-      return t;
-    #else
+   #ifdef Newtons
     //////////////////////////////////////////////Newtons
       //Newtons method!
-      int maxIter = 200;
+    if(found){
+      int maxIter = 400;
       found = false;
       while(maxIter > 0){
         //Center difference:
         float yp = fp(t);
 
-        if(yp < EPSILON)
+        if(abs(yp) < EPSILON){
+           found = true;
+            break;
            maxIter=-3; //Kill it if floats will screw us -> also assumes non-convergence
+        }
       
         float tnew = t - (f(t)/yp);
         float delta = tnew - t;
-        if(abs(delta) < EPSILON){
+        if(abs(delta) < 0.1){
+          t=tnew;
           found= true;
           break; //Kill it if we're close enough enough.
         }
 
-        if(abs(delta) > 0.01){
-          0.01*tnew/abs(delta);
-        }
+//        if(abs(delta) > 0.01){
+//          0.01*tnew/abs(delta);
+//        }
 
         t=tnew;
         maxIter --;
       }
-      if(maxIter == -3 || !found)
+      if(maxIter == -3 || !found){
         return -1; //Does not converge
-      else
+      }else
         return t;
-      #undef h
+     
+    }else
+      return -1;
     #endif
-  }
-  else
+
+  //End-catch
+  if(found){
+    return t;
+  }else{
     return -1;
+  }
   ////////////////////////////////////////////////EndNewtons
-  #undef f
-  #undef fp
+//  #undef h
+//  #undef f
+//  #undef fp
 }
 
 ////////////////////////////////// END METABALLS  ///////////////////////////////
@@ -513,10 +522,11 @@ vec4 main_c(){
 
 	/////////////////INIT////////////////////////////////
 	colour = rtrace(newray);
-	vec4 c2;
-	float ref_pwr=1;
+
 
 #ifdef FANCEY
+	vec4 c2;
+	float ref_pwr=1;
 
 //#define stack_reflect 10
 
