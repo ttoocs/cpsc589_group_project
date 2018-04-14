@@ -22,7 +22,7 @@
 #define HEIGHT_ANGLE_DOWN PI/2.5f
 #define TT_GROW true
 #define U_GROW false
-#define D_GROW false
+#define D_GROW true
 //END: In here FALSE means ON
 
 float AvgNew = 3;
