@@ -311,7 +311,7 @@ float ray_intersect_metaBalls(ray r){
     //Spherical collision
     t=0;
     for(int i=0; i <= numMB ; i++){
-      float tn = ray_intersect_sphere(r, mbGetPos(i), mbGetRad(i));
+      float tn = ray_intersect_sphere(r, mbGetPos(i), mbGetRad(i)-0.05); //just under 1 values seem to look nicer
       if( tn > 0 && (tn < t || t == 0)){
         t = tn;
         found = true;
