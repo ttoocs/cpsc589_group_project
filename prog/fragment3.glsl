@@ -96,7 +96,7 @@ void error_out(){
 
 
 ////////////////////////////////// INTERSECTS ///////////////////////////////
-float ray_intersect_sphere(ray r, vec3 pos, float rad){
+vec2 ray_intersect_sphere(ray r, vec3 pos, float rad){
 	
 	float t1,t2;
 	float a = dot(r.direction,r.direction);
@@ -105,15 +105,19 @@ float ray_intersect_sphere(ray r, vec3 pos, float rad){
 
 
 	float det = (pow(b,2) - 4*a*c);
-	if(det < EPSILON){return -1;}
+	if(det < EPSILON){return vec2(-1,-1);}
 	t1 = (-b + sqrt(det))/2*a;
 	t2 = (-b - sqrt(det))/2*a;
 
+  vec2 re = vec2(-1,-1);
 	if(t1 < t2 && t1 > 0){
-		return(t1);
-	}else
-		return(t2);
-		
+		re.x = t1;
+    re.y = t2;
+	}else{
+		re.x=t2;
+		re.y=t1;
+	}
+  return re;
 }
 #ifdef OTHERINTERSECTS
 
@@ -245,9 +249,9 @@ float metaBall_func(ray r, float t){
 
 
 
-float ray_intersect_metaBalls(ray r){
+float ray_intersect_metaBalls(ray r, float minT=0){
 
-  float t=0;
+  float t=minT;
   bool found = false;
 
   #define h 0.0001
@@ -255,10 +259,10 @@ float ray_intersect_metaBalls(ray r){
   #define fp(X) ((f(X+h)-f(X-h))/2*h)
  
 
-//  #define SGRAD_SEARCH  //Simple Gradient decent.
-  #define SPHERE_SEARCH //Uses the sphere collision alg/
-//  #define LINEAR_SEARCH //Iterates
-//  #define Newtons
+//  #define SGRAD_SEARCH  //Simple Gradient decent. //DOESNT DO VOLUMETRIC
+//  #define SPHERE_SEARCH //Uses the sphere collision alg/
+  #define LINEAR_SEARCH //Iterates
+//  #define Newtons     //DOESNT DO VOLUMETRIC
 
   #ifdef SGRAD_SEARCH
     float stopThres = 0.0001;
@@ -281,12 +285,11 @@ float ray_intersect_metaBalls(ray r){
 
   #ifdef LINEAR_SEARCH 
   //////////////////////////////////////////Linear
-  float minT=0;
   float maxT=20;
-  float dt = 0.1;
+  float dt = 0.05;
   t=minT;
 
-  float s_init = f(0); //Now always checks for sign change.
+  float s_init = f(t); //Now always checks for sign change.
   bool positive=false;
   if(s_init == abs(s_init))
     positive=true;
@@ -295,7 +298,7 @@ float ray_intersect_metaBalls(ray r){
   while( t < maxT  ){
     if( (positive && (f(t) < 0)) || ((!positive && (f(t) > 0))))
     {
-      t -= (dt/2);
+//      t -= (dt/2);
       found = true;
       break;
     }
@@ -311,9 +314,13 @@ float ray_intersect_metaBalls(ray r){
     //Spherical collision
     t=0;
     for(int i=0; i <= numMB ; i++){
-      float tn = ray_intersect_sphere(r, mbGetPos(i), mbGetRad(i)-0.05); //just under 1 values seem to look nicer
-      if( tn > 0 && (tn < t || t == 0)){
-        t = tn;
+      vec2 tn = ray_intersect_sphere(r, mbGetPos(i), mbGetRad(i)-0.05); //just under 1 values seem to look nicer
+      if( tn.x > minT && (tn.x < t || t == minT)){
+        t = tn.x;
+        found = true;
+      }
+      if( tn.y > minT && (tn.x < t || t == minT)){
+        t = tn.y;
         found = true;
       }
     }
@@ -382,12 +389,19 @@ float ray_intersect_metaBalls(ray r){
 
 vec4 test_objects_intersect(ray r){ //Tests _ALL_ objects
   vec4 ret=vec4(0,0,0,0);
-  float mb = ray_intersect_metaBalls(r);
+  float mb = ray_intersect_metaBalls(r,0);
   if(mb > 0)
   {
     ret.x = mb;
   }
-
+  //Get second intercepts
+  if(ret.x != 0){
+    float mb2 = ray_intersect_metaBalls(r,ret.x);
+    if(mb2 > 0)
+    {
+      ret.y = mb2;
+    }
+  }
 	return(ret);
 }
 
@@ -431,16 +445,19 @@ vec4 rtrace(ray cray){
     norms[2]  = vec3(-1,0.5,-0.2);
 
 
-  vec3 tpos2 = cray.origin + (res.x)*cray.direction;
-  vec3 curNorm = vec3(
-    ((metaBall_func(tpos2 + vec3(h,0,0))) - (metaBall_func(tpos2 - vec3(h,0,0)))),
-    ((metaBall_func(tpos2 + vec3(0,h,0))) - (metaBall_func(tpos2 - vec3(0,h,0)))),
-    ((metaBall_func(tpos2 + vec3(0,0,h))) - (metaBall_func(tpos2 - vec3(0,0,h))))
+  vec3 t1pos = cray.origin + (res.x)*cray.direction;
+  vec3 t2pos = cray.origin + (res.y)*cray.direction;
+  vec3 Norm1 = vec3(
+    ((metaBall_func(t1pos + vec3(h,0,0))) - (metaBall_func(t1pos - vec3(h,0,0)))),
+    ((metaBall_func(t1pos + vec3(0,h,0))) - (metaBall_func(t1pos - vec3(0,h,0)))),
+    ((metaBall_func(t1pos + vec3(0,0,h))) - (metaBall_func(t1pos - vec3(0,0,h))))
   );
+  Norm1 /= 2*h;
 
-  curNorm /= 2*h;
+  return vec4(abs(t2pos-t1pos),0);
 
-  curNorm = normalize(curNorm);
+
+  vec3 curNorm = normalize(Norm1);
 
   vec4 colour = vec4(ambient,0);
   for(int i = 0; i < numColors; i++){
@@ -451,7 +468,6 @@ vec4 rtrace(ray cray){
 
   #undef r
 
-//  return vec4(curNorm,0);
   return colour;
   
   // #define FANCEY
