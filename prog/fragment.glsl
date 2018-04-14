@@ -14,6 +14,12 @@ in vec3 FragNormal;
 vec4 main_l();
 vec4 main_c();
 
+  //Camera Stuffs:
+  uniform mat4 cameraMatrix=IDENTITY4;
+  uniform mat4 perspectiveMatrix=IDENTITY4;
+  uniform mat4 modelviewMatrix = IDENTITY4;
+  uniform mat4 windowRatio = IDENTITY4;
+
 uniform bool RayTrace = false;
 
 // first output is mapped to the framebuffer's colour index by default
@@ -107,10 +113,16 @@ void main(void)
 
   //RayTrace Code here:
 //  FragmentColour = vec4(1,1,1,1); //main_c();
-  FragmentColour = vec4(0.0, 0.0, 0.0, 0.0);
-  vec4 cloudColor = main_c();
-  vec4 lightningColor = main_l();
+  vec4 c = main_c();
+  if(c.x < 0) 
+    c.x=0;
+  if(c.y < 0) 
+    c.y=0;
+  if(c.z < 0) 
+    c.z=0;
+  if(c.w < 0) 
+    c.w=0;
+  c += main_l();
   
-  FragmentColour += cloudColor;
-  FragmentColour += lightningColor;
+  FragmentColour = c;
 }

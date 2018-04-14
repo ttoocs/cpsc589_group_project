@@ -13,7 +13,12 @@
   #define TRIANGLE 2
   #define PLANE 3
 
+  #define IDENTITY4 mat4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1)
 
+  uniform mat4 cameraMatrix=IDENTITY4;
+  uniform mat4 perspectiveMatrix=IDENTITY4;
+  uniform mat4 modelviewMatrix = IDENTITY4;
+  uniform mat4 windowRatio = IDENTITY4;
 
   // first output is mapped to the framebuffer's colour index by default
   out vec4 FragmentColour;
@@ -153,8 +158,11 @@ vec4 main_l()
 	// Assume the camera position is at the origin. *CHANGE THIS LATER TO ACCOMODATE
 	// DIFFERENT CAMERA ANGLES* (Use a Uniform)
 
+  mat4 t = cameraMatrix*modelviewMatrix;
+//  mat4 t = modelviewMatrix*cameraMatrix;
+
 	Ray r;
-	r.origin = vec3(0, -0.5, -1.5);
+	r.origin = vec3(-0.3, -1.0, -2.0);
 	r.dir = directionVector;
 
   //Transform ray for camera controls
@@ -162,8 +170,8 @@ vec4 main_l()
   if(Transform)
   {
     //Make origin/ray temps
-    vec4 ot = mvp*vec4(r.origin,1);
-    vec4 rt = mvp*vec4(r.dir,0);
+    vec4 ot = t*mvp*vec4(r.origin,1);
+    vec4 rt = t*mvp*vec4(r.dir,0);
     r.origin = vec3(ot.x,ot.y,ot.z);
     r.dir = vec3(rt.x,rt.y,rt.z);
   }
