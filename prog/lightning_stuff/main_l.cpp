@@ -12,6 +12,9 @@
 #include <iterator>
 #include <sstream>
 
+#include <chrono>
+#include <thread>
+
 #include "lightning.h"
 
 	#define vPrint(X)   "(" << X.x << "," <<  X.y << "," << X.z << ")"
@@ -107,7 +110,7 @@ int main()
 
 	glViewport(0, 0, screenWidth, screenHeight);
 
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetKeyCallback(window, keyboard_callback);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -130,6 +133,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		render();
+		std::this_thread::sleep_for(std::chrono::milliseconds(200));
 		glfwPollEvents();
 	}
 
@@ -300,7 +304,6 @@ void updateCamera()
 
   mvp = view;
 
-  std::cout << glm::to_string(mvp) << std::endl;
 	glUseProgram(program);
 
 	int mvpLoc = glGetUniformLocation(program, "mvp");
