@@ -113,10 +113,16 @@ void main(void)
 
   //RayTrace Code here:
 //  FragmentColour = vec4(1,1,1,1); //main_c();
-  FragmentColour = vec4(0.0, 0.0, 0.0, 0.0);
-  vec4 cloudColor = main_c();
-  vec4 lightningColor = main_l();
+  vec4 c = main_c();
+  if(c.x < 0) 
+    c.x=0;
+  if(c.y < 0) 
+    c.y=0;
+  if(c.z < 0) 
+    c.z=0;
+  if(c.w < 0) 
+    c.w=0;
+  c += main_l();
   
-  FragmentColour += cloudColor;
-  FragmentColour += lightningColor;
+  FragmentColour = c;
 }
