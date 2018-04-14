@@ -161,6 +161,13 @@ cloud::cloud(float(*f)(vec3, vec3, float) , vec3 * pos, int initBalls, int round
 			y = y;//+gap - 2*gap*(((float)rand())/((float)INT_MAX));
 			z = gap*sin(angle);
 		}
+		else if(type == 3) //The old-style one.
+		{
+			x = (*pos).x+gap - 2*gap*(((float)rand())/((float)INT_MAX));
+			y = (*pos).y+gap - 2*gap*(((float)rand())/((float)INT_MAX));
+			z = (*pos).z+gap - 2*gap*(((float)rand())/((float)INT_MAX));
+		}
+
       balls.push_back(new MetaBall(vec3(x,y,z), rad, f));
     }
   }  
