@@ -399,10 +399,60 @@ vec4 rtrace(ray cray){
 //	check_light_hit=false;
 	vec4 res = test_objects_intersect(cray);
 
-	if(res.x >= 0)
-    c = vec4(res.x,res.x,res.x,0);
+	if(res.x <= 0)
+    return c=vec4(-1);
 
-  return c;
+  c = vec4(0,0,0,res.x);
+  
+  #define r cray
+
+  //Simple colors from samthing
+  const int numColors = 3;
+  vec3 norms[numColors];
+  vec3 colors[numColors];
+  vec3 ambient = vec3(0.4);
+ 
+  //Note: the following are + / -
+  //Note: X: R/L 
+  //Note: Y: Up/down,
+  //Note: Z: Into/Outof (screen)
+
+  //Sunlite air:
+    colors[0] = vec3(.8);  //White
+    norms[0]  = vec3(0,1,0);   //Up
+  
+  //Under-side:
+//    rgb(35, 41, 51)
+    colors[1] = vec3(0.13,0.16,0.20);
+    norms[1]  = vec3(0,-1,0);
+  
+  //left-sunglowyness
+    colors[2] = vec3(.7,0.5,0.25);
+    norms[2]  = vec3(-1,0.5,-0.2);
+
+
+  vec3 tpos2 = cray.origin + (res.x)*cray.direction;
+  vec3 curNorm = vec3(
+    ((metaBall_func(tpos2 + vec3(h,0,0))) - (metaBall_func(tpos2 - vec3(h,0,0)))),
+    ((metaBall_func(tpos2 + vec3(0,h,0))) - (metaBall_func(tpos2 - vec3(0,h,0)))),
+    ((metaBall_func(tpos2 + vec3(0,0,h))) - (metaBall_func(tpos2 - vec3(0,0,h))))
+  );
+
+  curNorm /= 2*h;
+
+  curNorm = normalize(curNorm);
+
+  vec4 colour = vec4(ambient,0);
+  for(int i = 0; i < numColors; i++){
+    float p = dot(curNorm,norms[i]);
+    if(p > 0)
+      colour += vec4( p* colors[i], 0);
+  }
+
+  #undef r
+
+//  return vec4(curNorm,0);
+  return colour;
   
   // #define FANCEY
   #ifdef FANCEY
