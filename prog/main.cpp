@@ -29,6 +29,9 @@
 #include "lightning_stuff/lightning.h"
 
 
+#include <chrono>
+#include <thread>
+
 //#define WIREFRAME
 #define DEBUG
 
@@ -145,10 +148,12 @@ void initalize_GL(){
   	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,glstuff.MB_SSBO);
 
     //Lightening -ssbo
-//    glBindVertexArray(glstuff.vertexarray);
-//    glGenBuffers(1, &glstuff.L_SSBO);
-//  	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,glstuff.L_SSBO);
+    glBindVertexArray(glstuff.vertexarray);
+    glGenBuffers(1, &glstuff.L_SSBO);
+  	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,glstuff.L_SSBO);
 
+//  glBindVertexArray(glstuff.vertexarray);
+//  lightning::loadPoints();
     
 
 		//Texture stuff
@@ -219,8 +224,6 @@ void Update_GPU_data(){
   //TODO: Lightening
 
 	if(first){
-  glBindVertexArray(glstuff.vertexarray);
-  lightning::loadPoints();
 	first = false;
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, glstuff.vertexbuffer);
@@ -329,6 +332,9 @@ int main(int argc, char * argv[]){
 
 		Render();
     glfwSwapBuffers(window);
+    
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
 		glfwPollEvents();
 
 	}

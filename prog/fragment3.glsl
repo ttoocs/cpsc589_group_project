@@ -36,6 +36,7 @@ layout(std430, binding = 1) buffer allMB{
 #define mb_fancey 3
 
 
+float thres = mbThres;
 //////////////////////////////////META BALL FUNCS///////////////////////////////
 
 
@@ -248,7 +249,6 @@ float ray_intersect_metaBalls(ray r){
 
   float t=0;
   bool found = false;
-  float thres = 1;//mbThres;
 
   #define h 0.0001
   #define f(X) (metaBall_func(r,X)-thres)
@@ -256,8 +256,9 @@ float ray_intersect_metaBalls(ray r){
  
 
 //  #define SGRAD_SEARCH  //Simple Gradient decent.
-//  #define SPHERE_SEARCH //Uses the sphere collision alg/
-  #define LINEAR_SEARCH //Iterates
+  #define SPHERE_SEARCH //Uses the sphere collision alg/
+//  #define LINEAR_SEARCH //Iterates
+//  #define Newtons
 
   #ifdef SGRAD_SEARCH
     float stopThres = 0.0001;
@@ -319,48 +320,56 @@ float ray_intersect_metaBalls(ray r){
 
   #endif
 
-  if(found){
-    #define noNewtons
-   #ifdef noNewtons
-      return t;
-    #else
+   #ifdef Newtons
     //////////////////////////////////////////////Newtons
       //Newtons method!
-      int maxIter = 200;
+    if(found){
+      int maxIter = 400;
       found = false;
       while(maxIter > 0){
         //Center difference:
         float yp = fp(t);
 
-        if(yp < EPSILON)
+        if(abs(yp) < EPSILON){
+           found = true;
+            break;
            maxIter=-3; //Kill it if floats will screw us -> also assumes non-convergence
+        }
       
         float tnew = t - (f(t)/yp);
         float delta = tnew - t;
-        if(abs(delta) < EPSILON){
+        if(abs(delta) < 0.1){
+          t=tnew;
           found= true;
           break; //Kill it if we're close enough enough.
         }
 
-        if(abs(delta) > 0.01){
-          0.01*tnew/abs(delta);
-        }
+//        if(abs(delta) > 0.01){
+//          0.01*tnew/abs(delta);
+//        }
 
         t=tnew;
         maxIter --;
       }
-      if(maxIter == -3 || !found)
+      if(maxIter == -3 || !found){
         return -1; //Does not converge
-      else
+      }else
         return t;
-      #undef h
+     
+    }else
+      return -1;
     #endif
-  }
-  else
+
+  //End-catch
+  if(found){
+    return t;
+  }else{
     return -1;
+  }
   ////////////////////////////////////////////////EndNewtons
-  #undef f
-  #undef fp
+//  #undef h
+//  #undef f
+//  #undef fp
 }
 
 ////////////////////////////////// END METABALLS  ///////////////////////////////
@@ -390,10 +399,60 @@ vec4 rtrace(ray cray){
 //	check_light_hit=false;
 	vec4 res = test_objects_intersect(cray);
 
-	if(res.x >= 0)
-    c = vec4(res.x,res.x,res.x,0);
+	if(res.x <= 0)
+    return c=vec4(-1);
 
-  return c;
+  c = vec4(0,0,0,res.x);
+  
+  #define r cray
+
+  //Simple colors from samthing
+  const int numColors = 3;
+  vec3 norms[numColors];
+  vec3 colors[numColors];
+  vec3 ambient = vec3(0.4);
+ 
+  //Note: the following are + / -
+  //Note: X: R/L 
+  //Note: Y: Up/down,
+  //Note: Z: Into/Outof (screen)
+
+  //Sunlite air:
+    colors[0] = vec3(.8);  //White
+    norms[0]  = vec3(0,1,0);   //Up
+  
+  //Under-side:
+//    rgb(35, 41, 51)
+    colors[1] = vec3(0.13,0.16,0.20);
+    norms[1]  = vec3(0,-1,0);
+  
+  //left-sunglowyness
+    colors[2] = vec3(.7,0.5,0.25);
+    norms[2]  = vec3(-1,0.5,-0.2);
+
+
+  vec3 tpos2 = cray.origin + (res.x)*cray.direction;
+  vec3 curNorm = vec3(
+    ((metaBall_func(tpos2 + vec3(h,0,0))) - (metaBall_func(tpos2 - vec3(h,0,0)))),
+    ((metaBall_func(tpos2 + vec3(0,h,0))) - (metaBall_func(tpos2 - vec3(0,h,0)))),
+    ((metaBall_func(tpos2 + vec3(0,0,h))) - (metaBall_func(tpos2 - vec3(0,0,h))))
+  );
+
+  curNorm /= 2*h;
+
+  curNorm = normalize(curNorm);
+
+  vec4 colour = vec4(ambient,0);
+  for(int i = 0; i < numColors; i++){
+    float p = dot(curNorm,norms[i]);
+    if(p > 0)
+      colour += vec4( p* colors[i], 0);
+  }
+
+  #undef r
+
+//  return vec4(curNorm,0);
+  return colour;
   
   // #define FANCEY
   #ifdef FANCEY
@@ -496,22 +555,30 @@ vec4 main_c(){
 
 	//BASIC	pos
 	newray.direction = vec3(coords, -1/tan(FOV/2));	
-	newray.origin = vec3(0,0,0);	
+	
+  newray.origin = vec3(0,0,0);	
+	//newray.origin = vec3(0.5,0,15);	
+
+  mat4 t = cameraMatrix*modelviewMatrix;
 
 	//TRANSFORMATIONS
-  vec4 ot = mvp*vec4(0,0,0,1);
+  vec4 ot = t*vec4(newray.origin,1);
 
-	newray.origin = vec3(ot.x,ot.y,ot.z+15);
-	newray.direction = newray.direction;
+	newray.origin = vec3(ot.x,ot.y,ot.z);
+
+  vec4 pt = t*vec4(newray.direction,0);
+  newray.direction = vec3(pt.x,pt.y,pt.z);
+
 
 	newray.direction = normalize(newray.direction);
 
 	/////////////////INIT////////////////////////////////
 	colour = rtrace(newray);
-	vec4 c2;
-	float ref_pwr=1;
+
 
 #ifdef FANCEY
+	vec4 c2;
+	float ref_pwr=1;
 
 //#define stack_reflect 10
 
