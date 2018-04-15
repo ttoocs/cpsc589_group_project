@@ -54,24 +54,58 @@ float tanh(vec3 mbpos, vec3 tpos, float radius){
   return r2;
 }
 */
+
+
+// /*
 float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
 	{
 		float r = length(mbpos - tpos);
 
-    if(r > radius)
-      return 0;
+//    if( r < )
+//      std::cout << "r-1\t" << r-1  << "\tpos:\t(" << tpos.x << ","<< tpos.y << "," << tpos.z << ")" << std::endl;
+//    return (r-1);
 
+//		if (r > radius)
+//			return 0;
 		float term1, term2, term3;
 		float R = r / radius;
 
 		term1 = (-4.0 / 9.0) * pow(R, 6.0);
 		term2 = (17.0 / 9.0) * pow(R, 4.0);
 		term3 = (-22.0 / 9.0) * pow(R, 2.0);
-		float total = term1 + term2 + term3 +1;
-
-		return  total;
+		float total = term1 + term2 + term3 + 1;
+		//float total = (float) term1 + (float) term2 - (float) term3 + (float) 1.0;
+		return radius / -(total);
 
 	}
+// */
+
+ /*
+float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
+	{
+		float r = length(mbpos - tpos);
+
+    if(r >= radius){
+      return abs(1/r)-(1/radius);
+//        float f= (pow((r/radius),2) -1);
+        float f =  pow(((r-radius)*(r+radius))/radius,2);
+        f /= (abs(r*r*r)*1);
+//        std::cout << " f: " << f << std::endl;
+        return f;
+    }
+		float term1, term2, term3;
+		float R = r / radius;
+
+		term1 = (-4.0 / 9.0) * pow(R, 6.0);
+		term2 = (17.0 / 9.0) * pow(R, 4.0);
+		term3 = (-22.0 / 9.0) * pow(R, 2.0);
+		float total = term1 + term2 + term3 +1 ;
+
+//    std::cout <<  "\tt:" << total <<std::endl;
+		return  -total;
+
+	}
+// */
 
 
 float sphereMB(vec3 mbpos, vec3 tpos, float radius){
@@ -305,11 +339,11 @@ vec2 linearSearch(ray r, float minT){
   vec2 ret =vec2(-1,-1);
 
   float s_init = f(t); //Now always checks for sign change.
-  bool positive= (s_init >0 );
+  bool positive= (s_init >=0 );
 
 
   while( t < maxT  ){
-    if( (positive && (f(t) <= 0)) || ((!positive && (f(t) >= 0))))
+    if( (positive && (f(t) < 0)) || ((!positive && (f(t) >= 0))))
     {
       if(ret.x == -1){
         ret.x = t;
