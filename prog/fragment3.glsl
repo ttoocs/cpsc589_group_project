@@ -24,8 +24,8 @@ layout(std430, binding = 1) buffer allMB{
 
 ////////////////////////////////// END INPUT ///////////////////////////////
 
-#define mbGetType(X) int(mb[int(X)].info.x)
-//#define mbGetType(X) 2
+//#define mbGetType(X) int(mb[int(X)].info.x)
+#define mbGetType(X) 3
 #define mbGetPos(X) vec3(mb[int(X)].pos.x,mb[int(X)].pos.y,mb[int(X)].pos.z)
 #define mbGetRad(X) mb[(X)].info.y
 #define numMB int(mbInfo.x)
@@ -463,6 +463,47 @@ vec4 simple_colors(ray cray, vec2 res){
   return colour;
 }
 
+
+float otogentic_weight(float t, float p0=0, float p1=1, float r0=0, float r1=0){
+  float t3 = pow(t,3);
+  float t2 = pow(t,2);
+
+
+  float ret4 = (2*t3 - 3*t2 + 1)*p0;
+  ret4 += (-2*t3 + 3*t2 )*p1;
+  ret4 += (t*3 - 2*t2 + t)*r0;
+  ret4 += (t3 - t2 )*r1 ;
+  return ret4;
+}
+
+vec4 ontogenetic(ray cray, vec2 res){
+  vec3 color;
+
+  float k = 0.8;
+  #define weighting(X)  1-exp(k*X)
+  
+  #define kbackground(X) otogentic_weight(X,1,0,-10,-32)
+  #define klight(X) otogentic_weight(X,0,1,32,-16)
+  #define kshadow(X) otogentic_weight(X,0,1,0,0.5)
+
+  vec3 cbackground = vec3(40,56,81)/256;
+  vec3 csunlight = vec3(.7,.5,.25);
+  vec3 cshadow = vec3(0.13,0.16,0.20);
+
+  float weight = weighting(res.y-res.x); //Just say the density is the length
+  color = kbackground(weight)*cbackground;
+  color += klight(weight)*csunlight;
+  color += kshadow(weight)*cshadow;
+
+
+  #undef kbackground
+  #undef klight
+  #undef kshadow
+  #undef weighting
+  return normalize(vec4(color,0));
+}
+
+
 ////////////////////////////////// RAYTRACE STUFF ///////////////////////////////
 vec4 rtrace(ray cray){
 
@@ -472,13 +513,14 @@ vec4 rtrace(ray cray){
 	vec4 res = test_objects_intersect(cray);
 
 	if(res.x <= 0){
-    return vec4(-1);
+    vec3 c = vec3(40,56,81)/256;
+    return vec4(c,0);
   }else{
 //    return vec4(1);
   }
 
-  c = simple_colors(cray, vec2(res.x,res.y));  
-
+//  c = simple_colors(cray, vec2(res.x,res.y));  
+  c= ontogenetic(cray,vec2(res.x,res.y));
   return c;
   
   // #define FANCEY
