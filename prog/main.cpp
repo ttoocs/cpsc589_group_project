@@ -44,7 +44,7 @@
 
 #define torad(X)	((float)(X*PI/180.f))
 
-#define RAYTRACE_CLOUDS
+//#define RAYTRACE_CLOUDS
 
 Camera activeCamera;
 
@@ -54,6 +54,11 @@ mat4 perspectiveMatrix = glm::perspective(glm::radians(45.f), 1.f, 0.1f, 400.f);
 int WIDTH = 512;
 int HEIGHT = 512;
 //END: Window Mgmt
+
+//Input-passings
+float thres=1;
+float pass1=0; //MISC
+float pass2=0; //MISC
 
 struct GLSTUFF{
 	GLuint prog;
@@ -211,8 +216,7 @@ void Update_GPU_data(){
   MBS d = cloud::getAllMBs();
   int i1 = d.size() + 1;
  
-  float thres = 1;
-  vec4 inf = vec4(i1,thres,0,0);
+  vec4 inf = vec4(i1,thres,pass1,pass2);
 
   //allocate space
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, glstuff.MB_SSBO);
@@ -314,14 +318,23 @@ int main(int argc, char * argv[]){
 
 	initalize_GL();
 
+
+  for(float i=-4; i <= 4; i+=.5){
+    float r = WyvillMetaBall(vec3(0,0,0), vec3(0,i,0), 1);
+    std::cout << i << ", " << r << std::endl;
+  }
+  exit(0);
+
+
  
   for(int i=0; i < 1; i++){
-    vec3 t = vec3(0,0,0);
+    vec3 t = vec3(0,0,-2);
+//      new cloud(NULL,&t,3,0,1.0f,0,3);
 //cloud::cloud(float(*f)(vec3, vec3, float) , vec3 * pos, int initBalls, int rounds, int rad, bool skip)
-//    new cloud(NULL,&t,6,10,1.0f,8.0f); //wings
+    new cloud(NULL,&t,6,10,1.0f,8.0f); //wings
 //    new cloud(NULL,&t,5,10,1.0f,15.0f); //frog
 //    new cloud(NULL,&t,5,10,1.0f,40.0f); //scattered
-      new cloud(NULL,&t,14,10,1.0f,16.0f,1); //scattered
+//      new cloud(NULL,&t,14,10,1.0f,16.0f,1); //scattered
   }
 
 
@@ -333,9 +346,9 @@ int main(int argc, char * argv[]){
 		Render();
     glfwSwapBuffers(window);
     
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  //  std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-		glfwPollEvents();
+		glfwWaitEvents();
 
 	}
 	glfwTerminate();	//Kill the glfw interface

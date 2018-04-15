@@ -19,6 +19,9 @@ extern Camera activeCamera;
 extern int nextRound;
 extern mat4 winRatio;
 
+extern float thres;
+extern float pass1;
+extern float pass2;
 
 namespace input{
 
@@ -40,6 +43,16 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
   //std::cout << activeCamera.pos.x << std::endl;
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
+	if (key ==GLFW_KEY_T && action == GLFW_PRESS)
+	{
+    thres+= 0.2;
+    std::cout << thres << std::endl;
+	}
+	if (key ==GLFW_KEY_G && action == GLFW_PRESS)
+	{
+    thres-= 0.2;
+    std::cout << thres << std::endl;
+	}
 	if (key ==GLFW_KEY_W)
 	{
 		activeCamera.cameraPos += activeCamera.cameraSpeed * activeCamera.cameraFront;

@@ -25,51 +25,39 @@ layout(std430, binding = 1) buffer allMB{
 ////////////////////////////////// END INPUT ///////////////////////////////
 
 #define mbGetType(X) int(mb[int(X)].info.x)
-//#define mbGetType(X) 4
+//#define mbGetType(X) 2
 #define mbGetPos(X) vec3(mb[int(X)].pos.x,mb[int(X)].pos.y,mb[int(X)].pos.z)
 #define mbGetRad(X) mb[(X)].info.y
 #define numMB int(mbInfo.x)
-#define mbThres mbInfo.y;
-//#define mbThres -1;
+//#define mbThres mbInfo.y;
+#define mbThres 10;
 
 
 #define mb_Wyvill 1
 #define mb_sphere 2
 #define mb_fancey 3
-#define mb_tanh 4
+
 
 float thres = mbThres;
 //////////////////////////////////META BALL FUNCS///////////////////////////////
-/*
-float tanh(vec3 mbpos, vec3 tpos, float radius){
-  float r = length(mbpos - tpos);
-  
-  float density=1;
 
-  float r2= (2*r)/radius;
-  r2 = tanh(r2);
-  r2 = -r2*r2;
-  r2+=.9294;
-  //Something I found by screwing with tanh.
-  return r2;
-}
-*/
+
 float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
 	{
 		float r = length(mbpos - tpos);
 
-    if(r > radius)
-      return 0;
-
 		float term1, term2, term3;
 		float R = r / radius;
+
+    if(r > radius)
+      return 0;
 
 		term1 = (-4.0 / 9.0) * pow(R, 6.0);
 		term2 = (17.0 / 9.0) * pow(R, 4.0);
 		term3 = (-22.0 / 9.0) * pow(R, 2.0);
-		float total = term1 + term2 + term3 +1;
+		float total = term1 + term2 + term3;
 
-		return  total;
+		return  -(term1 + term2 + term3 + 1);
 
 	}
 
@@ -298,8 +286,8 @@ float applyNewton(ray r, float t, int maxIterIn=10){
      
 }
 vec2 linearSearch(ray r, float minT){
-  float maxT=10;
-  float dt = 0.01;
+  float maxT=20;
+  float dt = 0.05;
   float t=minT;
 
   vec2 ret =vec2(-1,-1);
@@ -309,7 +297,7 @@ vec2 linearSearch(ray r, float minT){
 
 
   while( t < maxT  ){
-    if( (positive && (f(t) <= 0)) || ((!positive && (f(t) >= 0))))
+    if( (positive && (f(t) < 0)) || ((!positive && (f(t) > 0))))
     {
       if(ret.x == -1){
         ret.x = t;
@@ -392,6 +380,7 @@ vec4 rtrace(ray cray){
 	if(res.x <= 0)
     return c=vec4(-1);
 
+  return vec4(res.x);
   c = vec4(0,0,0,res.x);
   
   #define r cray
