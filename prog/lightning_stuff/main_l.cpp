@@ -16,6 +16,7 @@
 #include <thread>
 
 #include "lightning.h"
+#include "bspline.h"
 
 	#define vPrint(X)   "(" << X.x << "," <<  X.y << "," << X.z << ")"
 
@@ -31,13 +32,22 @@ unsigned int VBO;
 unsigned int VAO;
 int num_points;
 
+int num_control;
+int num_spline;
+
+unsigned int controlVBO;
+unsigned int controlVAO;
+
+unsigned int splineVBO;
+unsigned int splineVAO;
+
 unsigned int vertexShader;
 unsigned int fragmentShader;
 unsigned int program;
 
 GLuint segBuffer;
 
-
+BSpline spline;
 vector<vec3> storage;
 
 /*
@@ -81,6 +91,7 @@ void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, in
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 //void loadPoints();
+void loadSpline();
 void render();
 void loadScreen();
 
@@ -120,8 +131,16 @@ int main()
 	initPrograms();
 	updateCamera();
 
-  loadScreen();
-	lightning::loadPoints();
+	loadScreen();
+  
+    spline = BSpline();
+	spline.addPoint(vec3(-1.0, 0.0, 0.0));
+	spline.addPoint(vec3(0.0, 1.0, 0.0));
+	spline.addPoint(vec3(1.0, 0.0, 0.0));
+	spline.loadControlPoints();
+	spline.loadBSpline();
+	lightning::loadPoints(spline);
+	//loadSpline();
 
 
 	while (!glfwWindowShouldClose(window))
@@ -148,10 +167,11 @@ void genVBOsVAOs()
 	glGenBuffers(1, &VBO);
 	glGenVertexArrays(1, &VAO);
 
-	glGenBuffers(1, &VBO);
-	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &controlVBO);
+	glGenVertexArrays(1, &controlVAO);
 
-	glBindVertexArray(VAO);
+	glGenBuffers(1, &splineVBO);
+	glGenVertexArrays(1, &splineVAO);
 //	glGenBuffers(1, &lightning::segmentBuffer);
 //	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,lightning::segmentBuffer);
 
@@ -289,6 +309,30 @@ void loadScreen(){
 	num_points = storage.size();
 }
 
+void loadSpline()
+{
+	glBindVertexArray(controlVAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, controlVBO);
+	glBufferData(GL_ARRAY_BUFFER, spline.control_vecs.size() * sizeof(vec3), spline.control_vecs.data(), GL_STREAM_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
+	glEnableVertexAttribArray(0);
+	glBindVertexArray(0);
+	num_control = spline.control_vecs.size();
+
+	glBindVertexArray(splineVAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, splineVBO);
+	glBufferData(GL_ARRAY_BUFFER, spline.bspline_vecs.size() * sizeof(vec3), spline.bspline_vecs.data(), GL_STREAM_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
+	glEnableVertexAttribArray(0);
+	glBindVertexArray(0);
+
+	num_spline = spline.bspline_vecs.size();
+}
+
 void updateCamera()
 {
 	mat4 model;
@@ -341,7 +385,7 @@ void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, in
 		updateCamera();
 	}
 	else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-		lightning::loadPoints();
+		lightning::loadPoints(spline);
 
 }
 
@@ -391,7 +435,6 @@ void framebuffer_size_callback(GLFWwindow * window, int width, int height)
 void render()
 {
 	glUseProgram(program);
-
 
 	// Draw the pointMasses
 	glBindVertexArray(VAO);
