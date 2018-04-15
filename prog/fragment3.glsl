@@ -25,7 +25,7 @@ layout(std430, binding = 1) buffer allMB{
 ////////////////////////////////// END INPUT ///////////////////////////////
 
 #define mbGetType(X) int(mb[int(X)].info.x)
-//#define mbGetType(X) 4
+//#define mbGetType(X) 2
 #define mbGetPos(X) vec3(mb[int(X)].pos.x,mb[int(X)].pos.y,mb[int(X)].pos.z)
 #define mbGetRad(X) mb[(X)].info.y
 #define numMB int(mbInfo.x)
@@ -414,21 +414,9 @@ vec4 test_objects_intersect(ray r){ //Tests _ALL_ objects
   return vec4(ray_intersect_metaBalls(r),-1,-1);
 }
 
-////////////////////////////////// RAYTRACE STUFF ///////////////////////////////
-vec4 rtrace(ray cray){
 
-	vec4 c=vec4(0);
-	//////////////////BASIC RAY-TRACING///////////////////
-//	check_light_hit=false;
-	vec4 res = test_objects_intersect(cray);
 
-	if(res.x <= 0)
-    return c=vec4(-1);
-
-  c = vec4(0,0,0,res.x);
-  
-  #define r cray
-
+vec4 simple_colors(ray cray, vec2 res){
   //Simple colors from samthing
   const int numColors = 3;
   vec3 norms[numColors];
@@ -463,8 +451,6 @@ vec4 rtrace(ray cray){
   );
   Norm1 /= 2*h;
 
-  return vec4(abs(t2pos-t1pos),0);
-
 
   vec3 curNorm = normalize(Norm1);
 
@@ -474,10 +460,26 @@ vec4 rtrace(ray cray){
     if(p > 0)
       colour += vec4( p* colors[i], 0);
   }
-
-  #undef r
-
   return colour;
+}
+
+////////////////////////////////// RAYTRACE STUFF ///////////////////////////////
+vec4 rtrace(ray cray){
+
+	vec4 c=vec4(0);
+	//////////////////BASIC RAY-TRACING///////////////////
+//	check_light_hit=false;
+	vec4 res = test_objects_intersect(cray);
+
+	if(res.x <= 0){
+    return vec4(-1);
+  }else{
+//    return vec4(1);
+  }
+
+  c = simple_colors(cray, vec2(res.x,res.y));  
+
+  return c;
   
   // #define FANCEY
   #ifdef FANCEY
