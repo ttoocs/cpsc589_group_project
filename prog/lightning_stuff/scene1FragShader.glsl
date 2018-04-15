@@ -154,7 +154,7 @@ vec4 main_l()
 	// DIFFERENT CAMERA ANGLES* (Use a Uniform)
 
 	Ray r;
-	r.origin = vec3(0.0, 0.0, -3.0);
+	r.origin = vec3(0.0, 0.0, 1.65);
 	r.dir = directionVector;
 
   //Transform ray for camera controls

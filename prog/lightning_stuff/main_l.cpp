@@ -54,7 +54,7 @@ GLuint segBuffer;
 BSpline spline;
 vector<vec3> storage;
 bool left_mouse_down = false;
-bool editMode = false;
+bool editMode = true;
 
 /*
 	CAMERA CLASS TAKEN FROM: learnopengl.com
@@ -128,7 +128,7 @@ int main()
 	glViewport(0, 0, screenWidth, screenHeight);
 
 	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfwSetCursorPosCallback(window, mouse_callback);
+	//glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetKeyCallback(window, keyboard_callback);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -444,11 +444,39 @@ void updateCamera()
 
 void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
-
+	if (editMode){
+		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+		{
+			spline.decOrder();
+			spline.loadBSpline();
+			loadSpline();
+		}
+		else if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+		{
+			spline.incOrder();
+			spline.loadBSpline();
+			loadSpline();
+		}
+		else if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+		{
+			spline.decResolution();
+			spline.loadBSpline();
+			loadSpline();
+		}
+		else if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
+		{
+			spline.incResolution();
+			spline.loadBSpline();
+			loadSpline();
+		}
+		else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS){
+			editMode = !editMode;
+			glBindVertexArray(VAO);
+			lightning::loadPoints(spline);
+		}
+	}
 	/* CAMERA */
-	else if (!editMode){
+	else{
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		{
 			camera.cameraPos += camera.cameraSpeed * camera.cameraFront;
@@ -469,15 +497,13 @@ void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, in
 			camera.cameraPos += normalize(cross(camera.cameraFront, camera.cameraUp)) * camera.cameraSpeed;
 			updateCamera();
 		}
-	}
-	
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS){
+		else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS){
 			editMode = !editMode;
-			if(!editMode){
-				glBindVertexArray(VAO);
-				lightning::loadPoints(spline);
-			}
+		}
 	}
+
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
 }
 
 /*
@@ -535,36 +561,38 @@ void mouse_button_callback(GLFWwindow * window, int button, int action, int mods
 
 void mouse_callback(GLFWwindow * window, double xpos, double ypos)
 {
-	if (firstMouse)
-	{
+	if (!editMode){
+		if (firstMouse)
+		{
+			lastX = xpos;
+			lastY = ypos;
+			firstMouse = false;
+		}
+
+		float xoffset = (float) xpos - (float) lastX;
+		float yoffset = (float) lastY -  (float) ypos;
 		lastX = xpos;
 		lastY = ypos;
-		firstMouse = false;
+
+		float sensitivity = 0.05;
+		xoffset *= sensitivity;
+		yoffset *= sensitivity;
+
+		camera.yaw += xoffset;
+		camera.pitch += yoffset;
+
+		if (camera.pitch > 89.0f)
+			camera.pitch = 89.0f;
+		if (camera.pitch < -89.0)
+			camera.pitch = -89.0f;
+
+		vec3 front;
+		front.x = cos(radians(camera.yaw)) * cos(radians(camera.pitch));
+		front.y = sin(radians(camera.pitch));
+		front.z = sin(radians(camera.yaw)) * cos(radians(camera.pitch));
+		camera.cameraFront = normalize(front);
+		updateCamera();
 	}
-
-	float xoffset = (float) xpos - (float) lastX;
-	float yoffset = (float) lastY -  (float) ypos;
-	lastX = xpos;
-	lastY = ypos;
-
-	float sensitivity = 0.05;
-	xoffset *= sensitivity;
-	yoffset *= sensitivity;
-
-	camera.yaw += xoffset;
-	camera.pitch += yoffset;
-
-	if (camera.pitch > 89.0f)
-		camera.pitch = 89.0f;
-	if (camera.pitch < -89.0)
-		camera.pitch = -89.0f;
-
-	vec3 front;
-	front.x = cos(radians(camera.yaw)) * cos(radians(camera.pitch));
-	front.y = sin(radians(camera.pitch));
-	front.z = sin(radians(camera.yaw)) * cos(radians(camera.pitch));
-	camera.cameraFront = normalize(front);
-	updateCamera();
 }
 
 void framebuffer_size_callback(GLFWwindow * window, int width, int height)

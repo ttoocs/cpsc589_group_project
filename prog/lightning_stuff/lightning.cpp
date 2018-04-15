@@ -214,15 +214,15 @@ void lightning::loadPoints(BSpline spline)
 	cout << lightning_segs.size() << endl;
 	cout << vPrint(lightning_segs[0].p0) << endl;
 	float temp[((lightning_segs.size() * 2 * 4) + 4)];
-	for (int i = 4; i < lightning_segs.size(); i++)
+	for (int i = 0; i < lightning_segs.size(); i++)
 	{
 		temp[i * 8 + 4] = lightning_segs[i].p0.x;
-		temp[i * 8 + 4 + 1] = -lightning_segs[i].p0.y;
+		temp[i * 8 + 4 + 1] = lightning_segs[i].p0.y;
 		temp[i * 8 + 4 + 2] = lightning_segs[i].p0.z;
 		temp[i * 8 + 4 + 3] = 0;
 		
 		temp[i * 8 + 4 + 4] = lightning_segs[i].p1.x;
-		temp[i * 8 + 4 + 5] = -lightning_segs[i].p1.y;
+		temp[i * 8 + 4 + 5] = lightning_segs[i].p1.y;
 		temp[i * 8 + 4 + 6] = lightning_segs[i].p1.z;
 		temp[i * 8 + 4 + 7] = 0;
 	}

@@ -225,7 +225,7 @@ using namespace glm;
 
 				distance = length(point_vec - click_pos);
 
-				if (distance < point_radius)
+				if (distance < point_radius + 0.5)
 				{
 					if (closest_point_index == -1)
 					{
