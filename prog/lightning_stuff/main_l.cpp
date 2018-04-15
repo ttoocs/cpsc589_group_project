@@ -45,10 +45,16 @@ unsigned int vertexShader;
 unsigned int fragmentShader;
 unsigned int program;
 
+unsigned int splineVShader;
+unsigned int splineFShader;
+unsigned int splineProgram;
+
 GLuint segBuffer;
 
 BSpline spline;
 vector<vec3> storage;
+bool left_mouse_down = false;
+bool editMode = false;
 
 /*
 	CAMERA CLASS TAKEN FROM: learnopengl.com
@@ -83,11 +89,11 @@ vector<Segment> lightning_segs;
 vector<float> vertices;
 
 void genVBOsVAOs();
-string LoadSource(const string &filename);
-void initShaders();
-void initPrograms();
+void initLightningProgram();
+void initSplineProgram();
 void updateCamera();
 void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void mouse_button_callback(GLFWwindow * window, int button, int action, int mods);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 //void loadPoints();
@@ -104,7 +110,7 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-	GLFWwindow* window = glfwCreateWindow(800, 800, "Learn OpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "Learn OpenGL", NULL, NULL);
 	if (window == NULL)
 	{
 		cout << "Failed to create GLFW window" << endl;
@@ -123,28 +129,47 @@ int main()
 
 	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetKeyCallback(window, keyboard_callback);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	genVBOsVAOs();
-	initShaders();
-	initPrograms();
+	initLightningProgram();
+	initSplineProgram();
 	updateCamera();
-
-	loadScreen();
   
     spline = BSpline();
-	spline.addPoint(vec3(-1.0, 0.0, 0.0));
-	spline.addPoint(vec3(0.0, 1.0, 0.0));
-	spline.addPoint(vec3(1.0, 0.0, 0.0));
+    spline.addPoint(vec3(-1.0, 0.0, 0.0));
+    spline.addPoint(vec3(0.0, 1.0, 0.0));
+    spline.addPoint(vec3(1.0, 0.0, 0.0));
+
 	spline.loadControlPoints();
 	spline.loadBSpline();
+	loadSpline();
+	loadScreen();
+	glBindVertexArray(VAO);
 	lightning::loadPoints(spline);
-	//loadSpline();
-
 
 	while (!glfwWindowShouldClose(window))
 	{
+		if ((left_mouse_down) && (editMode))
+		{
+			double xpos, ypos;
+			glfwGetCursorPos(window, &xpos, &ypos);
+
+			int winWidth, winHeight;
+			glfwGetWindowSize(window, &winWidth, &winHeight);
+
+			xpos = (xpos - (winWidth / 2)) / (winWidth / 2);
+			ypos = (ypos - (winHeight / 2)) / (-1 * winHeight / 2);
+
+			spline.movePoint(vec3(xpos, ypos, 0.0));
+			spline.loadControlPoints();
+			spline.loadBSpline();
+			loadSpline();
+			
+		}
+		
 		glfwSwapBuffers(window);
 
 		//Render command
@@ -152,7 +177,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		render();
-		std::this_thread::sleep_for(std::chrono::milliseconds(200));
+		//std::this_thread::sleep_for(std::chrono::milliseconds(200));
 		glfwPollEvents();
 	}
 
@@ -180,26 +205,7 @@ void genVBOsVAOs()
 
 }
 
-string LoadSource(const string &filename)
-{
-	string source;
-
-	ifstream input(filename.c_str());
-	if (input) {
-		copy(istreambuf_iterator<char>(input),
-			istreambuf_iterator<char>(),
-			back_inserter(source));
-		input.close();
-	}
-	else {
-		cout << "ERROR: Could not load shader source from file "
-			<< filename << endl;
-	}
-
-	return source;
-}
-
-void initShaders()
+void initLightningProgram()
 {
 	// 1. retrieve the vertex/fragment source code from filePath
     std::string vertexCode;
@@ -213,7 +219,7 @@ void initShaders()
     {
         // open files
         vShaderFile.open("vertex_raytrace.glsl");
-        fShaderFile.open("scene1FragShader.glsl");
+        fShaderFile.open("scene1FragShader.glsl" /*"fragment_shader.glsl"*/);
         
         std::stringstream vShaderStream, fShaderStream;
         fShaderStream << "#version 430 \r\n";
@@ -229,7 +235,7 @@ void initShaders()
     }
     catch(std::ifstream::failure e)
     {
-        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+        std::cout << "ERROR::LIGHTNING::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
     }
     const char* vShaderCode = vertexCode.c_str();
     const char* fShaderCode = fragmentCode.c_str();
@@ -248,7 +254,7 @@ void initShaders()
 	if (!success)
 	{
 		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << endl;
+		cout << "ERROR::LIGHTNING::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << endl;
 		exit(0);
 	}
 
@@ -263,33 +269,109 @@ void initShaders()
 	if (!success)
 	{
 		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		cout << "ERROR::SHADER::FRAGMENT::POINT::COMPILATION_FAILED\n" << infoLog << endl;
+		cout << "ERROR::LIGHTINING::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << endl;
 		exit(0);
 	}
-}
-
-void initPrograms()
-{
+	
 	program = glCreateProgram();
 
 	glAttachShader(program, vertexShader);
 	glAttachShader(program, fragmentShader);
 	glLinkProgram(program);
 
-	int success;
-	char infoLog[512];
-
 	glGetProgramiv(program, GL_LINK_STATUS, &success);
 	if (!success)
 	{
 		glGetProgramInfoLog(program, 512, NULL, infoLog);
-		cout << "ERROR::PROGRAM::POINT::LINKING_FAILED\n" << infoLog << endl;
+		cout << "ERROR::PROGRAM::LIGHTNING::LINKING_FAILED\n" << infoLog << endl;
+		exit(0);
+	}
+}
+
+void initSplineProgram()
+{
+	// 1. retrieve the vertex/fragment source code from filePath
+    std::string vertexCode;
+    std::string fragmentCode;
+    std::ifstream vShaderFile;
+    std::ifstream fShaderFile;
+    // ensure ifstream objects can throw exceptions:
+    vShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+    fShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+    try 
+    {
+        // open files
+        vShaderFile.open("vertex_raytrace.glsl");
+        fShaderFile.open("fragment_shader.glsl");
+        
+        std::stringstream vShaderStream, fShaderStream;
+        // read file's buffer contents into streams
+        vShaderStream << vShaderFile.rdbuf();
+        fShaderStream << fShaderFile.rdbuf();		
+        // close file handlers
+        vShaderFile.close();
+        fShaderFile.close();
+        // convert stream into string
+        vertexCode   = vShaderStream.str();
+        fragmentCode = fShaderStream.str();		
+    }
+    catch(std::ifstream::failure e)
+    {
+        std::cout << "ERROR::SPLINE::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+    }
+    const char* vShaderCode = vertexCode.c_str();
+    const char* fShaderCode = fragmentCode.c_str();
+	
+	// Vertex Shader
+	splineVShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(splineVShader, 1, &vShaderCode, NULL);
+	glCompileShader(splineVShader);
+
+	// Check if compilation is a success
+	int success;
+	char infoLog[512];
+
+	glGetShaderiv(splineVShader, GL_COMPILE_STATUS, &success);
+
+	if (!success)
+	{
+		glGetShaderInfoLog(splineVShader, 512, NULL, infoLog);
+		cout << "ERROR::SPLINE::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << endl;
+		exit(0);
+	}
+
+
+	// Point Mass Fragment Shader
+	splineFShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(splineFShader, 1, &fShaderCode, NULL);
+	glCompileShader(splineFShader);
+
+	glGetShaderiv(splineFShader, GL_COMPILE_STATUS, &success);
+
+	if (!success)
+	{
+		glGetShaderInfoLog(splineFShader, 512, NULL, infoLog);
+		cout << "ERROR::SPLINE::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << endl;
+		exit(0);
+	}
+	
+	splineProgram = glCreateProgram();
+
+	glAttachShader(splineProgram, splineVShader);
+	glAttachShader(splineProgram, splineFShader);
+	glLinkProgram(splineProgram);
+
+	glGetProgramiv(splineProgram, GL_LINK_STATUS, &success);
+	if (!success)
+	{
+		glGetProgramInfoLog(splineProgram, 512, NULL, infoLog);
+		cout << "ERROR::PROGRAM::SPLINE::LINKING_FAILED\n" << infoLog << endl;
 		exit(0);
 	}
 }
 
 void loadScreen(){
-
+	storage.clear();
 	storage.push_back(vec3(-1.0, 1.0, 0.0));
 	storage.push_back(vec3(1.0, 1.0, 0.0));
 	storage.push_back(vec3(1.0, -1.0, 0.0));
@@ -297,6 +379,7 @@ void loadScreen(){
 	storage.push_back(vec3(1.0, -1.0, 0.0));
 	storage.push_back(vec3(-1.0, -1.0, 0.0));
 	storage.push_back(vec3(-1.0, 1.0, 0.0));
+	glUseProgram(program);
 
 	glBindVertexArray(VAO);
 
@@ -305,12 +388,14 @@ void loadScreen(){
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
 	glEnableVertexAttribArray(0);
+	glBindVertexArray(0);
 
 	num_points = storage.size();
 }
 
 void loadSpline()
 {
+	glUseProgram(splineProgram);
 	glBindVertexArray(controlVAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, controlVBO);
@@ -342,11 +427,11 @@ void updateCamera()
 
 	model = mat4(1.0f);
 	view = camera.view();
-	projection = perspective(radians(45.0f), (float) screenWidth / screenHeight, 0.1f, 100.0f);
+	projection = perspective(radians(45.0f), (float) screenWidth / screenHeight, 0.01f, 100.0f);
 
 	//mvp = projection * view * model;
 
-  mvp = view;
+	mvp = view;
 
 	glUseProgram(program);
 
@@ -363,35 +448,90 @@ void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, in
 		glfwSetWindowShouldClose(window, true);
 
 	/* CAMERA */
-
-	else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-	{
-		camera.cameraPos += camera.cameraSpeed * camera.cameraFront;
-		updateCamera();
+	else if (!editMode){
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		{
+			camera.cameraPos += camera.cameraSpeed * camera.cameraFront;
+			updateCamera();
+		}
+		else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		{
+			camera.cameraPos -= camera.cameraSpeed * camera.cameraFront;
+			updateCamera();
+		}
+		else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		{
+			camera.cameraPos -= normalize(cross(camera.cameraFront, camera.cameraUp)) * camera.cameraSpeed;
+			updateCamera();
+		}
+		else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		{
+			camera.cameraPos += normalize(cross(camera.cameraFront, camera.cameraUp)) * camera.cameraSpeed;
+			updateCamera();
+		}
 	}
-	else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-	{
-		camera.cameraPos -= camera.cameraSpeed * camera.cameraFront;
-		updateCamera();
+	
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS){
+			editMode = !editMode;
+			if(!editMode){
+				glBindVertexArray(VAO);
+				lightning::loadPoints(spline);
+			}
 	}
-	else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-	{
-		camera.cameraPos -= normalize(cross(camera.cameraFront, camera.cameraUp)) * camera.cameraSpeed;
-		updateCamera();
-	}
-	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-	{
-		camera.cameraPos += normalize(cross(camera.cameraFront, camera.cameraUp)) * camera.cameraSpeed;
-		updateCamera();
-	}
-	else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-		lightning::loadPoints(spline);
-
 }
 
 /*
 	MOUSE PROCESSING FOR CAMERA TAKEN FROM: learnopengl.com
 */
+
+void mouse_button_callback(GLFWwindow * window, int button, int action, int mods)
+{
+	if (editMode)
+	{
+		if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS)
+		{
+			double xpos, ypos;
+			glfwGetCursorPos(window, &xpos, &ypos);
+
+			int winWidth, winHeight;
+			glfwGetWindowSize(window, &winWidth, &winHeight);
+
+			xpos = ( xpos - ( winWidth / 2 ) ) / (winWidth / 2);
+			ypos = ( ypos - ( winHeight / 2 ) ) / ( -1 * winHeight / 2 );
+
+			spline.addPoint(vec3(xpos, ypos, 0.0));
+			spline.loadControlPoints();
+			spline.loadBSpline();
+			loadSpline();
+		}
+
+		else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+		{
+			double xpos, ypos;
+			glfwGetCursorPos(window, &xpos, &ypos);
+
+			int winWidth, winHeight;
+			glfwGetWindowSize(window, &winWidth, &winHeight);
+
+			xpos = (xpos - (winWidth / 2)) / (winWidth / 2);
+			ypos = (ypos - (winHeight / 2)) / (-1 * winHeight / 2);
+
+			spline.deletePoint(vec3(xpos, ypos, 0.0));
+			spline.loadControlPoints();
+			spline.loadBSpline();
+			loadSpline();
+		}
+
+		else if (button == GLFW_MOUSE_BUTTON_LEFT)
+		{
+			if (action == GLFW_PRESS)
+				left_mouse_down = true;
+
+			else if (action == GLFW_RELEASE)
+				left_mouse_down = false;
+		}
+	}
+}
 
 void mouse_callback(GLFWwindow * window, double xpos, double ypos)
 {
@@ -434,12 +574,22 @@ void framebuffer_size_callback(GLFWwindow * window, int width, int height)
 
 void render()
 {
-	glUseProgram(program);
-
-	// Draw the pointMasses
-	glBindVertexArray(VAO);
-	//glDrawArrays(GL_LINES, 0, num_points);
-	glDrawArrays(GL_TRIANGLES, 0, num_points);
+	if (editMode)
+	{
+		glUseProgram(splineProgram);
+	
+		glBindVertexArray(splineVAO);
+		glDrawArrays(GL_LINE_STRIP, 0, num_spline);
+	
+		glBindVertexArray(controlVAO);
+		glDrawArrays(GL_LINES, 0, num_control);
+	}
+	else{
+		glUseProgram(program);
+		
+		glBindVertexArray(VAO);
+		glDrawArrays(GL_TRIANGLES, 0, num_points);
+	}
 }
 
 /*

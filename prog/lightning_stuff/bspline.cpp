@@ -101,6 +101,7 @@ using namespace glm;
 			vector<vec3> vertices;
 			
 			bspline_points.clear();
+			bspline_vecs.clear();
 			
 			int m = control_points.size() / 3;
 
@@ -138,6 +139,7 @@ using namespace glm;
 		
 		void BSpline::loadControlPoints()
 		{
+			control_vecs.clear();
 			vector<vec3> vertices;
 			
 			for (int i = 0; i < control_points.size(); i += 3) 

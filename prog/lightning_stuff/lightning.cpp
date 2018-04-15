@@ -6,6 +6,7 @@
 #include <random>
 
 #define GL_SHADER_STORAGE_BUFFER 0x90D2
+	#define vPrint(X)   "(" << X.x << "," <<  X.y << "," << X.z << ")"
 
 using namespace std;
 using namespace glm;
@@ -151,7 +152,7 @@ void lightning::trace_lightning(vector<vec3> targets, vector<Segment> *storage, 
 		vec3 dir = (targets[last_index + 1] - targets[last_index]);
 		
 		accumDistance += /*length(rand_segment);*/length(dot(rand_segment,dir) / dot(dir, dir) * dir);
-		cout << accumDistance << endl;
+		//cout << accumDistance << endl;
 		if (accumDistance >= thresholdDistance)
 		{
 			last_index++;
@@ -211,17 +212,9 @@ void lightning::loadPoints(BSpline spline)
 	}
 	*/
 	cout << lightning_segs.size() << endl;
-
-	for (int i = 0; i < spline.bspline_vecs.size() - 1; i++)
-	{
-		Segment s;
-		s.p0 = spline.bspline_vecs[i];
-		s.p1 = spline.bspline_vecs[i + 1];
-		lightning_segs.push_back(s);
-	}
-
+	cout << vPrint(lightning_segs[0].p0) << endl;
 	float temp[((lightning_segs.size() * 2 * 4) + 4)];
-	for (int i = 0; i < lightning_segs.size(); i++)
+	for (int i = 4; i < lightning_segs.size(); i++)
 	{
 		temp[i * 8 + 4] = lightning_segs[i].p0.x;
 		temp[i * 8 + 4 + 1] = -lightning_segs[i].p0.y;
