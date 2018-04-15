@@ -8,6 +8,7 @@
 #include "metaball.h"
 #include "math.h"
 
+extern float thres;
 
 std::vector<MetaBall*> MetaBall::metaballs;
 std::vector<MetaBall*> * MetaBall::accumData;
@@ -44,7 +45,7 @@ float MetaBall::accumMetaBallFuncs(vec3 point)
   
 
 //  std::cout << "\tpos:\t(" << point.x << ",\t"<< point.y << ",\t" << point.z << ")" << "\t\t" << "accum:" << accum << std::endl;
-	return accum-1;
+	return accum-thres;
 //  return 100;
 }
 
@@ -240,7 +241,7 @@ float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
 
     if(r >= radius){
 //      return 0;
-        float f= (r*r -radius);
+        float f= (pow((r/radius),2) -1);
 //        std::cout << " f: " << f << std::endl;
         return f;
     }
