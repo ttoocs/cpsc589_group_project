@@ -86,10 +86,9 @@ float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
 		float r = length(mbpos - tpos);
 
     if(r >= radius){
-      return abs(1/r)-(1/radius);
-//        float f= (pow((r/radius),2) -1);
-        float f =  pow(((r-radius)*(r+radius))/radius,2);
-        f /= (abs(r*r*r)*1);
+      return abs(1/r)-(1/radius); //Linear 
+        float f =  pow(((r-radius)*(r+radius))/radius,2); //X^2
+        f /= (abs(r*r*r)*1); //Make x^2 linear and small (the *1 scales it's steepness.. but all other than 1 break horribly?
 //        std::cout << " f: " << f << std::endl;
         return f;
     }
