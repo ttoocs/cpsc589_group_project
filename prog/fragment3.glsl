@@ -312,7 +312,7 @@ float ray_intersect_metaBalls(ray r, float minT=0){
 
   #ifdef SPHERE_SEARCH ////////////////////////////////End linear search
     //Spherical collision
-    t=0;
+    t=minT;
     for(int i=0; i <= numMB ; i++){
       vec2 tn = ray_intersect_sphere(r, mbGetPos(i), mbGetRad(i)-0.05); //just under 1 values seem to look nicer
       if( tn.x > minT && (tn.x < t || t == minT)){
