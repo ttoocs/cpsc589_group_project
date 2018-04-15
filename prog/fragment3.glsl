@@ -471,7 +471,7 @@ float otogentic_weight(float t, float p0=0, float p1=1, float r0=0, float r1=0){
 
   float ret4 = (2*t3 - 3*t2 + 1)*p0;
   ret4 += (-2*t3 + 3*t2 )*p1;
-  ret4 += (t*3 - 2*t2 + t)*r0;
+  ret4 += (t3 - 2*t2 + t)*r0;
   ret4 += (t3 - t2 )*r1 ;
   return ret4;
 }
