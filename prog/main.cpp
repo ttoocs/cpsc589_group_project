@@ -44,7 +44,7 @@
 
 #define torad(X)	((float)(X*PI/180.f))
 
-//#define RAYTRACE_CLOUDS
+// #define RAYTRACE_CLOUDS
 
 Camera activeCamera;
 
@@ -215,7 +215,8 @@ void Update_GPU_data(){
   //Get MBs
   MBS d = cloud::getAllMBs();
   int i1 = d.size() + 1;
- 
+
+  std::cout << "Rendering " << i1 - 1 << " metaballs" << std::endl; 
   vec4 inf = vec4(i1,thres,pass1,pass2);
 
   //allocate space
@@ -323,15 +324,16 @@ int main(int argc, char * argv[]){
     float r = WyvillMetaBall(vec3(0,0,0), vec3(0,i,0), 1);
     std::cout << i << ", " << r << std::endl;
   }
-  exit(0);
+//  exit(0);
 
 
  
   for(int i=0; i < 1; i++){
     vec3 t = vec3(0,0,-2);
-//      new cloud(NULL,&t,3,0,1.0f,0,3);
-//cloud::cloud(float(*f)(vec3, vec3, float) , vec3 * pos, int initBalls, int rounds, int rad, bool skip)
-    new cloud(NULL,&t,6,10,1.0f,8.0f); //wings
+    new cloud(NULL,&t,1,1,1.0f,1,3);
+    new cloud(NULL,&t,1,1,1.0f,1,3);
+//cloud::cloud(float(*f)(vec3, vec3, float) , vec3 * pos, int initBalls, int rounds, int rad, float gap, int type)
+//    new cloud(NULL,&t,6,10,1.0f,8.0f); //wings
 //    new cloud(NULL,&t,5,10,1.0f,15.0f); //frog
 //    new cloud(NULL,&t,5,10,1.0f,40.0f); //scattered
 //      new cloud(NULL,&t,14,10,1.0f,16.0f,1); //scattered
