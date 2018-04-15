@@ -13,7 +13,7 @@ using namespace glm;
 
 Plane plane;
 
-float lightning::meter = 0.004;
+float lightning::meter = 0.002;
 GLuint lightning::segmentBuffer =0;
 
 
@@ -44,14 +44,14 @@ mat4 lightning::rotateAbout(vec3 axis, float radians)
 
 
 //This assumes ground is at z = 0
-void lightning::trace_lightning_recursion(vec3 init_point, vec3 init_direction, vector<Segment> *storage, int num_segs, float max_h, int recursion_depth, Plane pl)
+void lightning::trace_lightning_recursion(vec3 init_point, vec3 init_direction, vector<Segment> *storage, int num_segs, float max_h, int recursion_depth)
 {
 	default_random_engine norm_gen, uni_gen;
-	normal_distribution<double> norm_distribution(16.0, 0.1);
+	normal_distribution<double> norm_distribution(16.0, sqrt(0.1));
 	uniform_real_distribution<double> uni_distribution_length(meter, 10.0*meter);
 	uniform_real_distribution<double> uni_distribution_branch(0.0, 1.0);
 	uniform_real_distribution<double> uni_distribution_new_dir(0.0, 60.0);
-	uniform_int_distribution<int> uni_distribution_segs(10, 50);
+	uniform_int_distribution<int> uni_distribution_segs(5, 20);
 
 	vec3 rand_segment = vec3(0, 0, 0);
 	vec3 current_point = init_point;
@@ -62,7 +62,7 @@ void lightning::trace_lightning_recursion(vec3 init_point, vec3 init_direction, 
 	vec3 N = normalize(cross(init_direction, vec3(0.0, 1.0, 0.0)));
 	vec3 B = normalize(cross(T, N));
 
-	while ((dot(pl.normal, (current_point - pl.point)) > 0) && (num_segs > 0))
+	while (num_segs > 0)
 	{
 		Segment s;
 		s.p0 = current_point;
@@ -85,7 +85,7 @@ void lightning::trace_lightning_recursion(vec3 init_point, vec3 init_direction, 
 							* rotateAbout(N, radians(random_50_50() * uni_distribution_new_dir(uni_gen)))
 							* rotateAbout(B, radians(random_50_50() * uni_distribution_new_dir(uni_gen)))
 							* vec4(rand_segment, 0.0);
-			trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen), current_point.y, recursion_depth + 1, pl);
+			lightning::trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen), current_point.y, recursion_depth + 1);
 		}
 		num_segs--;
 	}
@@ -167,11 +167,11 @@ void lightning::trace_lightning(vector<vec3> targets, vector<Segment> *storage, 
 		
 		//std::cout << "s:\t" << vPrint(s.p0) << "\t" << vPrint(s.p1) << std::endl;
 		
-		/*if (uni_distribution_branch(uni_gen) <= (0.1*pow(10, -(current_point.y/max_h))))
+		if (uni_distribution_branch(uni_gen) <= (0.1*pow(10, -(accumDistance/endDistance))))
 		{
 			vec3 new_dir = rotateAbout(T, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * rotateAbout(N, radians(random_50_50() * uni_distribution_new_dir(uni_gen))) * vec4(rand_segment, 0.0);
-			trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen), current_point.y, 0, plane);
-		}*/
+			lightning::trace_lightning_recursion(current_point, normalize(new_dir), storage, uni_distribution_segs(uni_gen), current_point.y, 0);
+		}
 	}
 }
 
