@@ -363,8 +363,8 @@ vec4 linearSearch(ray r, float minT){
       t+= dt;
   }
 
-  if(denCnt > 0)
-    ret.z /= float(denCnt);
+//  if(denCnt > 0)
+//    ret.z /= float(denCnt);
 
   return ret;
 }
@@ -394,21 +394,25 @@ vec4 ray_intersect_metaBalls(ray r, float minT=0){
       if( tn.y > minT && (tn.x < t || t == minT)){
         ret.y = tn.y;
       }
-      if( (tn.y > 0 ) && ( tn.z > 0 ) && !isinf(tn.x) && !isinf(tn.y)){
-        ret.z += mbGetRad(i); //Do something for density.
-      }
+//      if( (tn.y > 0 ) && ( tn.z > 0 ) && !isinf(tn.x) && !isinf(tn.y)){
+//        ret.z += mbGetRad(i); //Do something for density.
+//      }
+    ret.z = abs(ret.y - ret.z);
     }
 
   #endif
 
    #ifdef Newtons
-    float nx, nx;
-    nx = applyNewton(r,rex.x,10);
-    ny = applyNewton(r,rex.y,10);
+    float nx, ny;
+    nx = applyNewton(r,ret.x,10);
+    ny = applyNewton(r,ret.y,10);
     if( nx != -1 && !isnan(nx) && !isinf(nx)) { ret.x = nx ;}
     if( ny != -1 && !isnan(ny) && !isinf(ny)) { ret.y = ny ;}
+
+    ret.z = ret.y-ret.x;
    #endif
 
+//    ret.z = abs(ret.y-ret.x);
   return ret;
 
 //  #undef h
@@ -467,7 +471,7 @@ vec4 simple_colors(ray cray, vec2 res){
   Norm1 /= 2*h;
 
 
-  vec3 curNorm = normalize(Norm1);
+  vec3 curNorm = normalize(-Norm1);
 
   vec4 colour = vec4(ambient,0);
   for(int i = 0; i < numColors; i++){
@@ -494,24 +498,26 @@ float otogentic_weight(float t, float p0=0, float p1=1, float r0=0, float r1=0){
 vec4 ontogenetic(ray cray, vec3 res){
   vec3 color = vec3(0);
 
-  float k = 2;
+  float k = 0.1;
   #define weighting(X)  1-exp(-k*X)
  
   //DESMOS:
   //(2*\left(x\right)^3-3*\left(x\right)^2+1)*a+(-2*\left(x\right)^3+3*\left(x\right)^2)*b+(\left(x\right)^3-2*\left(x\right)^2+\left(x\right))*c+(\left(x\right)^3-\left(x\right)^2)*d
- 
-  #define kbackground(X) otogentic_weight(X,1,0,-5,3)
-  #define klight(X) otogentic_weight(X,0,.5,4,2)
+//  #define kbackground(X) otogentic_weight(X,1,0,-5,3)
+//  #define kbackground(X) otogentic_weight(X,1,0,-3,0.1)
+  #define kbackground(X) otogentic_weight(X,1,0.1,-4.6,-0.3)
+  #define klight(X) otogentic_weight(X,0,.5,6,2)
+//  #define klight(X) otogentic_weight(X,0,1,1,1)
   #define kshadow(X) otogentic_weight(X,0,1,0,2)
 
-//  vec3 cbackground = vec3(40,56,81)/256/2;
-    vec3 cbackground = vec3(0,1,0);
-//  vec3 csunlight = vec3(0.8,0.8,0.8);
-//  vec3 csunlight = //vec3(.7,.5,.25);
-  vec3 csunlight = vec3(1,0,0);
+  vec3 cbackground = vec3(40,56,81)/256;
+//    vec3 cbackground = vec3(0,0.8,0);
+  vec3 csunlight = vec3(0.2);
+//  vec3 csunlight = vec3(.7,.5,.25);
+//  vec3 csunlight = vec3(0.8,0,0);
 //  vec3 cshadow = vec3(0.13,0.16,0.20);
 //  vec3 cshadow = -vec3(0.2);
-  vec3 cshadow = vec3(0,0,1);
+  vec3 cshadow = vec3(0.2);
 
   vec3 t1pos = cray.origin + (res.x)*cray.direction;
   vec3 Norm1 = vec3(
@@ -522,10 +528,21 @@ vec4 ontogenetic(ray cray, vec3 res){
   Norm1 /= 2*h;
   Norm1 = normalize(Norm1);
 
-  float weight = weighting(abs(res.z)); //Just say the density is the length
-  color = kbackground(weight)*cbackground;
-  color += klight(weight)*csunlight;
-  color += kshadow(weight)*cshadow;
+  float weight = weighting(abs(res.z));
+  
+//  if(weight > 0 && weight < 1){
+
+  color =  kbackground(weight) * cbackground;
+  
+  vec4 c = simple_colors(cray,vec2(res.x,res.y)) * (length(cbackground) - length(color));
+ // color += klight(weight)*csunlight;
+//  color += kshadow(weight)*cshadow;
+
+//  }else
+//    color = cshadow+csunlight;
+  
+  if(isinf(color.x) || isnan(color.x))
+    color = vec3(1,1,0);
 
   float p = dot(Norm1,vec3(0,1,0));
 //  color -= p*vec3(0.5);
@@ -535,7 +552,7 @@ vec4 ontogenetic(ray cray, vec3 res){
   #undef klight
   #undef kshadow
   #undef weighting
-  return normalize(vec4(color,0));
+  return vec4(color,0) + c;
 }
 
 
@@ -547,15 +564,26 @@ vec4 rtrace(ray cray){
 //	check_light_hit=false;
 	vec4 res = test_objects_intersect(cray);
 
+  vec3 cbackground = vec3(40,56,81)/256;
 	if(res.x <= 0){
-    vec3 c = vec3(40,56,81)/256;
+    vec3 c = cbackground;
     return vec4(c,0);
   }else{
 //    return vec4(1);
   }
 
-//  c = simple_colors(cray, vec2(res.x,res.y));  
-  c= ontogenetic(cray,vec3(res.x,res.y,res.z));
+//  c = simple_colors(cray, vec2(res.x,res.y)); 
+
+    c= ontogenetic(cray,vec3(res.x,res.y,res.z));
+  return c;
+
+vec3 t1pos = cray.origin + (res.x)*cray.direction;
+vec3 t2pos = cray.origin + (res.y)*cray.direction;
+
+  c = abs(vec4(t2pos-t1pos,0));
+
+//  c = vec4(res.z)/10;
+//  c = vec4((res.y)/5);
   return c;
   
   // #define FANCEY
