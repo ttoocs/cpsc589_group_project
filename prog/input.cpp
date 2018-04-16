@@ -14,7 +14,7 @@
 bool firstMouse = true;
 float lastX = 0;
 float lastY = 0;
-bool left = false;
+bool Left = false;
 bool right = false;
 
 
@@ -71,6 +71,65 @@ void cloudHelp(){
   std::cout << "[y/h]\t\t- Increase/decrease thresholds of clouds." << std::endl;
 }
 
+
+void BsplineCallBack(GLFWwindow* window, int key, int scancode, int action, int mods){
+		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+		{
+			spline.decOrder();
+			spline.loadBSpline();
+			loadSpline();
+		}
+		else if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+		{
+			spline.incOrder();
+			spline.loadBSpline();
+			loadSpline();
+		}
+		else if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+		{
+			spline.decResolution();
+			spline.loadBSpline();
+			loadSpline();
+		}
+		else if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
+		{
+			spline.incResolution();
+			spline.loadBSpline();
+			loadSpline();
+		}
+//		else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS){
+			//glBindVertexArray(VAO);
+			//lightning::loadPoints(spline);
+//		}
+	}
+	/* CAMERA */
+/*
+  else{
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		{
+			camera.cameraPos += camera.cameraSpeed * camera.cameraFront;
+			updateCamera();
+		}
+		else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		{
+			camera.cameraPos -= camera.cameraSpeed * camera.cameraFront;
+			updateCamera();
+		}
+		else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		{
+			camera.cameraPos -= normalize(cross(camera.cameraFront, camera.cameraUp)) * camera.cameraSpeed;
+			updateCamera();
+		}
+		else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		{
+			camera.cameraPos += normalize(cross(camera.cameraFront, camera.cameraUp)) * camera.cameraSpeed;
+			updateCamera();
+		}
+		else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS){
+			editMode = !editMode;
+		}
+	}
+  */
 
 
 void RayCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
@@ -265,7 +324,7 @@ void mouseButtonCallback(GLFWwindow* window, int key, int action, int mods)
     }
   }
   else if( ((action == GLFW_PRESS) || (action == GLFW_RELEASE))&& key == GLFW_MOUSE_BUTTON_LEFT )
-    left = !left;
+    Left = !Left;
   
   }
 }
@@ -286,7 +345,7 @@ void mousePosCallback(GLFWwindow* window, double xpos, double ypos)
     lastX = xpos;
     lastY = ypos;
 
-  if(left)
+  if(Left)
   {
     xoffset *= activeCamera.lookSpeed;
     yoffset *= activeCamera.lookSpeed;

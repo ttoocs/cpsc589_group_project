@@ -27,7 +27,7 @@
 #include "metaball/metaball.h"
 #include "cloud/cloud.h"
 #include "lightning_stuff/lightning.h"
-
+#include "lightning_stuff/bspline.h"
 
 #include <chrono>
 #include <thread>
@@ -68,12 +68,18 @@ float thres=1;
 float pass1=0; //MISC
 float pass2=0; //MISC
 
+
+//Lightening/Bspline
+BSpline spline;
+
 struct GLSTUFF{
 	GLuint prog;
 	GLuint vertexShader;
 	GLuint fragShader;
 	GLuint vertexarray;
+	GLuint vertexarray2;
 	GLuint vertexbuffer;
+	GLuint vertexbuffer2;
 	GLuint normalbuffer;
 	GLuint uvsbuffer;
 	GLuint indiciesbuffer;
@@ -84,6 +90,33 @@ struct GLSTUFF{
 GLSTUFF glstuffRay;
 GLSTUFF glstuffCloud;
 GLSTUFF glstuffBspline;
+
+//Minimal modification from main_l
+int num_control, num_spline;
+void loadSpline()
+{
+	glUseProgram(glstuffBspline.prog);
+	glBindVertexArray(glstuffBspline.vertexarray);
+
+	glBindBuffer(GL_ARRAY_BUFFER, glstuffBspline.vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, spline.control_vecs.size() * sizeof(vec3), spline.control_vecs.data(), GL_STREAM_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
+	glEnableVertexAttribArray(0);
+	glBindVertexArray(0);
+	num_control = spline.control_vecs.size();
+
+	glBindVertexArray(glstuffBspline.vertexarray2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, glstuffBspline.vertexbuffer2);
+	glBufferData(GL_ARRAY_BUFFER, spline.bspline_vecs.size() * sizeof(vec3), spline.bspline_vecs.data(), GL_STREAM_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
+	glEnableVertexAttribArray(0);
+	glBindVertexArray(0);
+
+	num_spline = spline.bspline_vecs.size();
+}
 
 
 void initalize_GL(){
