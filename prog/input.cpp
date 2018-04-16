@@ -71,7 +71,7 @@ void cloudHelp(){
   std::cout << "[m]\t\t- Toggle wireframe" << std::endl;
   std::cout << "RightClick\t- Place meta-ball at camera position" << std::endl;
   std::cout << "LeftClick\t- Drag to rotate camera." << std::endl;
-  std::cout << "[y/h]\t\t- Increase/decrease thresholds of clouds." << std::endl;
+//  std::cout << "[y/h]\t\t- Increase/decrease thresholds of clouds." << std::endl;
 }
 
 
@@ -84,6 +84,7 @@ void bsplineHelp(){
   std::cout << "MiddleClick\t- Add control points" << std::endl;
 
 }
+
 
 
 void BsplineCallBack(GLFWwindow* window, int key, int scancode, int action, int mods){
