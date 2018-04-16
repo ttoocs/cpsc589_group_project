@@ -179,6 +179,9 @@ void lightning::trace_lightning(vector<vec3> targets, vector<Segment> *storage, 
 
 void lightning::loadPoints(BSpline spline)
 {
+  if(spline.bspline_vecs.size() < 3)
+    return;
+
   if(lightning::segmentBuffer == 0){
   //  std::cout << "Note: Lightening SSBO buffer is 0.. Attempting to auto-generate it." << std::endl;
   //  std::cout << "May not work, assumes VAO is already bounded. If blank this is why." << std::endl;    

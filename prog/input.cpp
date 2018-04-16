@@ -78,7 +78,7 @@ void cloudHelp(){
 void bsplineHelp(){
   std::cout << "\t Edit Mode: " << std::endl;
   std::cout << "[t/r]\t\t- Increase/Decrease bspline order" << std::endl;
-  std::cout << "[g/f]\t\t- Decrease bspline order" << std::endl;
+  std::cout << "[g/f]\t\t- Increase/Decrease bspline steps" << std::endl;
   std::cout << "RightClick\t- Remove control point under mouse cursor" << std::endl;
   std::cout << "LeftClick\t- Move control points" << std::endl;
   std::cout << "MiddleClick\t- Add control points" << std::endl;

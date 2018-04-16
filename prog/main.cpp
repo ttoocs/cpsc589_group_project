@@ -392,9 +392,10 @@ void Render(){
 		glBindVertexArray(glstuffBspline.vertexarray2);
 		glDrawArrays(GL_LINE_STRIP, 0, num_spline);
 
-    if(num_control >= 2)
+    if(num_control > 2){
     //Get Lightening stuffs
     lightning::loadPoints(spline);
+    }
   }
 
 
