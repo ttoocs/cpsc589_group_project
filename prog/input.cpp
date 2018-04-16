@@ -237,7 +237,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     //TODO
   }
 
-  if (MODE == MODE_CLOUD){
+  if (MODE == MODE_CLOUD || MODE == MODE_RAY){
     CloudCallback( window,  key, scancode, action, mods);
   }else if (MODE == MODE_RAY){
     RayCallback(window,  key, scancode, action, mods);
@@ -256,11 +256,13 @@ void mouseButtonCallback(GLFWwindow* window, int key, int action, int mods)
  
   if( ((action == GLFW_PRESS))&& key == GLFW_MOUSE_BUTTON_RIGHT )
   {
+    if(MODE == MODE_CLOUD){
       positions.push_back(activeCamera.cameraPos+3.0f*(activeCamera.cameraFront));
       radiuss.push_back(radius);
       spare = positions;
       spare2 = radiuss;
       aCloud = *(new cloud(positions,radiuss));
+    }
   }
   else if( ((action == GLFW_PRESS) || (action == GLFW_RELEASE))&& key == GLFW_MOUSE_BUTTON_LEFT )
     left = !left;
