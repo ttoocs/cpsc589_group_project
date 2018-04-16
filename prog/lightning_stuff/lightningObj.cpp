@@ -1,6 +1,8 @@
 
 #include "lightningObj.h"
 
+#include <iostream>
+
 namespace lightning{
 
   std::vector<lightningObj*> lightningObj::strikes;
@@ -20,7 +22,8 @@ namespace lightning{
   
   void lightningObj::genSegments(){
     Segments.clear();
-    trace_lightning(vec3(0.0,2.0,0.0), vec3(-0.5,-1.0,-0.5), &Segments, 2.0);
+    std::cout << "TODO" << std::endl;
+//    trace_lightning(vec3(0.0,2.0,0.0), vec3(-0.5,-1.0,-0.5), &Segments, 2.0);
   }
 
   lightningObj::lightningObj(){

@@ -44,6 +44,15 @@ void setup(GLFWwindow * window){
 	glfwSetCursorPosCallback(window, mousePosCallback);
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
   glfwSetWindowSizeCallback(window, resizeCallback);
+
+  std::cout << "[w/a/s/d/f/r]\t- Move camera about" << std::endl;
+  std::cout << "[u]\t\t- Undo cloud add operation" << std::endl;
+  std::cout << "[j]\t\t- Run cloud processing" << std::endl;
+  std::cout << "[i/k]\t\t- Toggle Upward/Downward growth" << std::endl;
+  std::cout << "[t/g]\t\t- Increase/decrease radius of new cloud." << std::endl;
+  std::cout << "[m]\t\t- Toggle wireframe" << std::endl;
+  std::cout << "RightClick\t- Place meta-ball at camera position" << std::endl;
+  std::cout << "LeftClick\t- Drag to rotate camera." << std::endl;
 }
 
 // handles keyboard input events
@@ -52,6 +61,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
   //std::cout << activeCamera.pos.x << std::endl;
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
+  if (action != GLFW_RELEASE){
 	if (key ==GLFW_KEY_W)
 	{
 		activeCamera.cameraPos += activeCamera.cameraSpeed * activeCamera.cameraFront;
@@ -76,6 +86,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	{
 		activeCamera.cameraPos += activeCamera.cameraUp * activeCamera.cameraSpeed;
 	}
+  }
 	if (key ==GLFW_KEY_U && action == GLFW_PRESS)
 	{
 		if(positions.size() >1)
