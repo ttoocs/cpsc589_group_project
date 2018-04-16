@@ -446,8 +446,11 @@ int main(int argc, char * argv[]){
     glfwSwapBuffers(window);
     
     //std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-		glfwWaitEvents();
+    if(MODE == MODE_BSPLINE){
+      glfwPollEvents();
+    }else{
+  		glfwWaitEvents();
+    }
 
 	}
 	glfwTerminate();	//Kill the glfw interface

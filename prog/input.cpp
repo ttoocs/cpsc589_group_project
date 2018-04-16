@@ -398,6 +398,8 @@ void mouseButtonCallback(GLFWwindow* window, int key, int action, int mods)
 vec2 mousePos;
 void mousePosCallback(GLFWwindow* window, double xpos, double ypos)
 {
+
+  if(MODE == MODE_RAY || MODE == MODE_CLOUD){
     if (firstMouse)
     {
       lastX = xpos;
@@ -429,6 +431,23 @@ void mousePosCallback(GLFWwindow* window, double xpos, double ypos)
     front.z = sin(glm::radians(activeCamera.yaw)) * cos(glm::radians(activeCamera.pitch));
     activeCamera.cameraFront = normalize(front);
   }
+  }
+      if(Left && MODE == MODE_BSPLINE){
+  			double xpos, ypos;
+  			glfwGetCursorPos(window, &xpos, &ypos);
+
+  			int winWidth, winHeight;
+  			glfwGetWindowSize(window, &winWidth, &winHeight);
+  
+  			xpos = (xpos - (winWidth / 2)) / (winWidth / 2);
+  			ypos = (ypos - (winHeight / 2)) / (-1 * winHeight / 2);
+
+        spline.movePoint(vec3(xpos, ypos, 0.0));
+        spline.loadControlPoints();
+        spline.loadBSpline();
+        loadSpline();  
+
+      }
 }
 void resizeCallback(GLFWwindow* window, int width, int height)
 {
