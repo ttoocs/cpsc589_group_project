@@ -22,6 +22,7 @@ extern cloud aCloud;
 extern Tris renderTris;
 extern int havePoints;
 extern mat4 winRatio;
+
 extern GLFWwindow * window;
 extern std::vector<vec3> positions;
 extern std::vector<float> radiuss;
@@ -31,6 +32,10 @@ int meshMode = GL_LINE;
 float radius = 1.0f;
 bool up = true;
 bool down = true;
+
+extern float thres;
+extern float pass1;
+extern float pass2;
 
 namespace input{
 
@@ -53,6 +58,7 @@ void setup(GLFWwindow * window){
   std::cout << "[m]\t\t- Toggle wireframe" << std::endl;
   std::cout << "RightClick\t- Place meta-ball at camera position" << std::endl;
   std::cout << "LeftClick\t- Drag to rotate camera." << std::endl;
+  std::cout << "[y/h]\t\t- Increase/decrease thresholds of clouds." << std::endl;
 }
 
 // handles keyboard input events
@@ -62,6 +68,16 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
   if (action != GLFW_RELEASE){
+	if (key ==GLFW_KEY_Y && action == GLFW_PRESS)
+	{
+    thres+= 0.2;
+    std::cout << thres << std::endl;
+	}
+	if (key ==GLFW_KEY_H && action == GLFW_PRESS)
+	{
+    thres-= 0.2;
+    std::cout << thres << std::endl;
+	}
 	if (key ==GLFW_KEY_W)
 	{
 		activeCamera.cameraPos += activeCamera.cameraSpeed * activeCamera.cameraFront;

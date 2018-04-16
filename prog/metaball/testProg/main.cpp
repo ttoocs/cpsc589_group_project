@@ -3,6 +3,45 @@
 //Cpsc 453 template
 //October 1st, 2016.
 
+
+#include "../../main.h"
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <string>
+#include <vector>
+#include <iterator>
+#include <sstream>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#include "../../types.h"
+#include "../../gl_helpers.h"
+#include "../../shapes.h"
+#include "../../input.h"
+#include "../../camera.h"
+
+#include <glm/gtc/matrix_transform.hpp>
+
+#include "../../metaball/metaball.h"
+
+#include <chrono>
+#include <thread>
+
+//#define WIREFRAME
+#define DEBUG
+
+#ifdef DEBUG
+	#define DEBUGMSG	printf("\n\n\t\t DEBUG MESSAGE AT LINE:\t%d\t In file:\t%s\n\n",__LINE__,__FILE__);
+#else
+	#define DEBUGMSG	;
+#endif
+
+
+#define torad(X)	((float)(X*PI/180.f))
+
 #include "../../main.h"
 #include "../metaball.h"
 // #include "../../clouds/cloud.h"
@@ -12,6 +51,9 @@ Camera activeCamera;
 #define cam activeCamera
 
 float speed = 1;
+float thres =1;
+mat4 winRatio;
+
 
 //START: Metaball vars for testing
 std::vector<MetaBall*> metaballs;
@@ -140,7 +182,9 @@ void Update_GPU_data(){
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuff.indiciesbuffer);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*idx.size(),idx.data(),GL_DYNAMIC_DRAW);
 
-	glm::mat4 camMatrix = cam.getMatrix();
+
+  
+  glm::mat4 camMatrix = activeCamera.view();
   glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "cameraMatrix"),
             1,
             false,
@@ -193,17 +237,25 @@ int main(int argc, char * argv[]){
   metaballs.push_back(new MetaBall(vec3(0,3,-5), 1, fanceyMB));
   metaballs.push_back(new MetaBall(vec3(0,-3,-5), 1, fanceyMB));
 */
+
+  //metaballs.push_back(new MetaBall(vec3(0,0,-5), 1, WyvillMetaBall));
+  metaballs.push_back(new MetaBall(vec3(0,0,-5), 3, WyvillMetaBall));
+  metaballs.push_back(new MetaBall(vec3(-3,0,-5), 1, WyvillMetaBall));
+  metaballs.push_back(new MetaBall(vec3(3,0,-5), 1, WyvillMetaBall));
+  metaballs.push_back(new MetaBall(vec3(0,3,-5), 1, WyvillMetaBall));
+  metaballs.push_back(new MetaBall(vec3(0,-3,-5), 1, WyvillMetaBall));
+
   Update_Perspective();	//updates perspective uniform, as it's never changed.
-  Update_GPU_data();
 
 	while(!glfwWindowShouldClose(window))
 	{ //Main loop.
 
     glfwGetFramebufferSize(window, &WIDTH, &HEIGHT);
 
+    Update_GPU_data();
 		Render();
     glfwSwapBuffers(window);
-		glfwPollEvents();
+		glfwWaitEvents();
 
 	}
 	glfwTerminate();	//Kill the glfw interface

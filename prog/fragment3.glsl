@@ -24,37 +24,87 @@ layout(std430, binding = 1) buffer allMB{
 
 ////////////////////////////////// END INPUT ///////////////////////////////
 
-#define mbGetType(X) int(mb[int(X)].info.x)
-//#define mbGetType(X) 2
+//#define mbGetType(X) int(mb[int(X)].info.x)
+#define mbGetType(X) 3
 #define mbGetPos(X) vec3(mb[int(X)].pos.x,mb[int(X)].pos.y,mb[int(X)].pos.z)
 #define mbGetRad(X) mb[(X)].info.y
 #define numMB int(mbInfo.x)
 #define mbThres mbInfo.y;
+//#define mbThres -1;
+
 
 #define mb_Wyvill 1
 #define mb_sphere 2
 #define mb_fancey 3
-
+#define mb_tanh 4
 
 float thres = mbThres;
 //////////////////////////////////META BALL FUNCS///////////////////////////////
+/*
+float tanh(vec3 mbpos, vec3 tpos, float radius){
+  float r = length(mbpos - tpos);
+  
+  float density=1;
+
+  float r2= (2*r)/radius;
+  r2 = tanh(r2);
+  r2 = -r2*r2;
+  r2+=.9294;
+  //Something I found by screwing with tanh.
+  return r2;
+}
+*/
 
 
+// /*
 float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
 	{
 		float r = length(mbpos - tpos);
 
+//    if( r < )
+//      std::cout << "r-1\t" << r-1  << "\tpos:\t(" << tpos.x << ","<< tpos.y << "," << tpos.z << ")" << std::endl;
+//    return (r-1);
+
+//		if (r > radius)
+//			return 0;
 		float term1, term2, term3;
 		float R = r / radius;
 
 		term1 = (-4.0 / 9.0) * pow(R, 6.0);
 		term2 = (17.0 / 9.0) * pow(R, 4.0);
 		term3 = (-22.0 / 9.0) * pow(R, 2.0);
-		float total = term1 + term2 - term3;
-
-		return radius / -(term1 + term2 + term3 + 1);
+		float total = term1 + term2 + term3 + 1;
+		//float total = (float) term1 + (float) term2 - (float) term3 + (float) 1.0;
+		return radius / -(total);
 
 	}
+// */
+
+ /*
+float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
+	{
+		float r = length(mbpos - tpos);
+
+    if(r >= radius){
+      return abs(1/r)-(1/radius); //Linear 
+        float f =  pow(((r-radius)*(r+radius))/radius,2); //X^2
+        f /= (abs(r*r*r)*1); //Make x^2 linear and small (the *1 scales it's steepness.. but all other than 1 break horribly?
+//        std::cout << " f: " << f << std::endl;
+        return f;
+    }
+		float term1, term2, term3;
+		float R = r / radius;
+
+		term1 = (-4.0 / 9.0) * pow(R, 6.0);
+		term2 = (17.0 / 9.0) * pow(R, 4.0);
+		term3 = (-22.0 / 9.0) * pow(R, 2.0);
+		float total = term1 + term2 + term3 +1 ;
+
+//    std::cout <<  "\tt:" << total <<std::endl;
+		return  -total;
+
+	}
+// */
 
 
 float sphereMB(vec3 mbpos, vec3 tpos, float radius){
@@ -96,7 +146,7 @@ void error_out(){
 
 
 ////////////////////////////////// INTERSECTS ///////////////////////////////
-float ray_intersect_sphere(ray r, vec3 pos, float rad){
+vec2 ray_intersect_sphere(ray r, vec3 pos, float rad){
 	
 	float t1,t2;
 	float a = dot(r.direction,r.direction);
@@ -105,15 +155,19 @@ float ray_intersect_sphere(ray r, vec3 pos, float rad){
 
 
 	float det = (pow(b,2) - 4*a*c);
-	if(det < EPSILON){return -1;}
+	if(det < EPSILON){return vec2(-1,-1);}
 	t1 = (-b + sqrt(det))/2*a;
 	t2 = (-b - sqrt(det))/2*a;
 
+  vec2 re = vec2(-1,-1);
 	if(t1 < t2 && t1 > 0){
-		return(t1);
-	}else
-		return(t2);
-		
+		re.x = t1;
+    re.y = t2;
+	}else{
+		re.x=t2;
+		re.y=t1;
+	}
+  return re;
 }
 #ifdef OTHERINTERSECTS
 
@@ -241,132 +295,126 @@ float metaBall_func(ray r, float t){
   return metaBall_func(pos);
 }
 
-/////// INTERSECT
-
-
-
-float ray_intersect_metaBalls(ray r){
-
-  float t=0;
-  bool found = false;
+/////////////////////////////////////////////////////////// INTERSECT
 
   #define h 0.0001
   #define f(X) (metaBall_func(r,X)-thres)
   #define fp(X) ((f(X+h)-f(X-h))/2*h)
- 
-
-//  #define SGRAD_SEARCH  //Simple Gradient decent.
-  #define SPHERE_SEARCH //Uses the sphere collision alg/
-//  #define LINEAR_SEARCH //Iterates
-//  #define Newtons
-
-  #ifdef SGRAD_SEARCH
-    float stopThres = 0.0001;
-    int maxSteps = 100;
-    
-    float s_init = f(0); //Now always checks for sign change.
-    bool positive=false;
-    if(s_init == abs(s_init))
-       positive=true;
-
-    while( maxSteps > 0 ){
-      maxSteps --;
-      if( (positive && (f(t) < 0)) || ((!positive && (f(t) > 0)))){
-        found = true;
-        break;
-      }
-      t += fp(t);
-    }
-  #endif
-
-  #ifdef LINEAR_SEARCH 
-  //////////////////////////////////////////Linear
-  float minT=0;
-  float maxT=20;
-  float dt = 0.1;
-  t=minT;
-
-  float s_init = f(0); //Now always checks for sign change.
-  bool positive=false;
-  if(s_init == abs(s_init))
-    positive=true;
 
 
-  while( t < maxT  ){
-    if( (positive && (f(t) < 0)) || ((!positive && (f(t) > 0))))
-    {
-      t -= (dt/2);
-      found = true;
-      break;
-    }
-    if(fp(t) > 0){
-      t += max(fp(t),dt);
-    }else
-      t+= dt;
-  }
-
-  #endif 
-
-  #ifdef SPHERE_SEARCH ////////////////////////////////End linear search
-    //Spherical collision
-    t=0;
-    for(int i=0; i <= numMB ; i++){
-      float tn = ray_intersect_sphere(r, mbGetPos(i), mbGetRad(i));
-      if( tn > 0 && (tn < t || t == 0)){
-        t = tn;
-        found = true;
-      }
-    }
-
-  #endif
-
-   #ifdef Newtons
-    //////////////////////////////////////////////Newtons
-      //Newtons method!
-    if(found){
-      int maxIter = 400;
-      found = false;
+float applyNewton(ray r, float t, int maxIterIn=10){
+  int maxIter = maxIterIn;
+    bool found = false;
       while(maxIter > 0){
         //Center difference:
         float yp = fp(t);
 
-        if(abs(yp) < EPSILON){
-           found = true;
+        if(abs(yp) < EPSILON || isinf(yp) || isnan(yp) ){
             break;
-           maxIter=-3; //Kill it if floats will screw us -> also assumes non-convergence
         }
       
         float tnew = t - (f(t)/yp);
         float delta = tnew - t;
-        if(abs(delta) < 0.1){
+        if(abs(delta) < 0.01){
           t=tnew;
           found= true;
           break; //Kill it if we're close enough enough.
         }
 
-//        if(abs(delta) > 0.01){
-//          0.01*tnew/abs(delta);
-//        }
-
         t=tnew;
-        maxIter --;
+        maxIter--;
       }
-      if(maxIter == -3 || !found){
+      if(!found){
         return -1; //Does not converge
       }else
         return t;
      
-    }else
-      return -1;
-    #endif
+}
+vec4 linearSearch(ray r, float minT){
+  float maxT=10;
+  float dt = 0.01;
+  float t=minT;
 
-  //End-catch
-  if(found){
-    return t;
-  }else{
-    return -1;
+  vec4 ret =vec4(-1,-1,0,-1);
+
+  float s_init = f(t); //Now always checks for sign change.
+  bool positive= (s_init >=0 );
+
+  bool internal = false;
+  int denCnt = 0;
+
+  while( t < maxT  ){
+    float s = f(t);
+    if(internal){
+      ret.z += s; //Increase the density by total densitys
+      denCnt ++;
+    }
+    if( (positive && (s < 0)) || ((!positive && (s >= 0))))
+    {
+      if(ret.x == -1){
+        ret.x = t;
+        positive = !positive;
+        internal = true;
+      }else{
+        ret.y = t;
+        break;
+      }
+    }
+      t+= dt;
   }
-  ////////////////////////////////////////////////EndNewtons
+
+//  if(denCnt > 0)
+//    ret.z /= float(denCnt);
+
+  return ret;
+}
+
+vec4 ray_intersect_metaBalls(ray r, float minT=0){
+
+  float t=minT;
+
+  vec4 ret = vec4(-1,-1,0,-1);
+
+//  #define SPHERE_SEARCH //Uses the sphere collision alg/
+  #define LINEAR_SEARCH //Iterates
+//  #define Newtons     //Applies newton
+
+  #ifdef LINEAR_SEARCH 
+    ret = linearSearch(r,minT);    
+  #endif 
+
+  #ifdef SPHERE_SEARCH ////////////////////////////////End linear search
+    //Spherical collision
+    t=minT;
+    for(int i=0; i <= numMB ; i++){
+      vec2 tn = ray_intersect_sphere(r, mbGetPos(i), mbGetRad(i)-0.05); //just under 1 values seem to look nicer
+      if( tn.x > minT && (tn.x < t || t == minT)){
+        ret.x = tn.x;
+      }
+      if( tn.y > minT && (tn.x < t || t == minT)){
+        ret.y = tn.y;
+      }
+//      if( (tn.y > 0 ) && ( tn.z > 0 ) && !isinf(tn.x) && !isinf(tn.y)){
+//        ret.z += mbGetRad(i); //Do something for density.
+//      }
+    ret.z = abs(ret.y - ret.z);
+    }
+
+  #endif
+
+   #ifdef Newtons
+    float nx, ny;
+    nx = applyNewton(r,ret.x,10);
+    ny = applyNewton(r,ret.y,10);
+    if( nx != -1 && !isnan(nx) && !isinf(nx)) { ret.x = nx ;}
+    if( ny != -1 && !isnan(ny) && !isinf(ny)) { ret.y = ny ;}
+
+    ret.z = ret.y-ret.x;
+   #endif
+
+//    ret.z = abs(ret.y-ret.x);
+  return ret;
+
 //  #undef h
 //  #undef f
 //  #undef fp
@@ -381,31 +429,13 @@ float ray_intersect_metaBalls(ray r){
 ////////////////////////////////// RAYTRACE STUFF ///////////////////////////////
 
 vec4 test_objects_intersect(ray r){ //Tests _ALL_ objects
-  vec4 ret=vec4(0,0,0,0);
-  float mb = ray_intersect_metaBalls(r);
-  if(mb > 0)
-  {
-    ret.x = mb;
-  }
 
-	return(ret);
+  return ray_intersect_metaBalls(r);
 }
 
-////////////////////////////////// RAYTRACE STUFF ///////////////////////////////
-vec4 rtrace(ray cray){
 
-	vec4 c=vec4(0);
-	//////////////////BASIC RAY-TRACING///////////////////
-//	check_light_hit=false;
-	vec4 res = test_objects_intersect(cray);
 
-	if(res.x <= 0)
-    return c=vec4(-1);
-
-  c = vec4(0,0,0,res.x);
-  
-  #define r cray
-
+vec4 simple_colors(ray cray, vec2 res){
   //Simple colors from samthing
   const int numColors = 3;
   vec3 norms[numColors];
@@ -431,16 +461,17 @@ vec4 rtrace(ray cray){
     norms[2]  = vec3(-1,0.5,-0.2);
 
 
-  vec3 tpos2 = cray.origin + (res.x)*cray.direction;
-  vec3 curNorm = vec3(
-    ((metaBall_func(tpos2 + vec3(h,0,0))) - (metaBall_func(tpos2 - vec3(h,0,0)))),
-    ((metaBall_func(tpos2 + vec3(0,h,0))) - (metaBall_func(tpos2 - vec3(0,h,0)))),
-    ((metaBall_func(tpos2 + vec3(0,0,h))) - (metaBall_func(tpos2 - vec3(0,0,h))))
+  vec3 t1pos = cray.origin + (res.x)*cray.direction;
+  vec3 t2pos = cray.origin + (res.y)*cray.direction;
+  vec3 Norm1 = vec3(
+    ((metaBall_func(t1pos + vec3(h,0,0))) - (metaBall_func(t1pos - vec3(h,0,0)))),
+    ((metaBall_func(t1pos + vec3(0,h,0))) - (metaBall_func(t1pos - vec3(0,h,0)))),
+    ((metaBall_func(t1pos + vec3(0,0,h))) - (metaBall_func(t1pos - vec3(0,0,h))))
   );
+  Norm1 /= 2*h;
 
-  curNorm /= 2*h;
 
-  curNorm = normalize(curNorm);
+  vec3 curNorm = normalize(-Norm1);
 
   vec4 colour = vec4(ambient,0);
   for(int i = 0; i < numColors; i++){
@@ -448,11 +479,112 @@ vec4 rtrace(ray cray){
     if(p > 0)
       colour += vec4( p* colors[i], 0);
   }
-
-  #undef r
-
-//  return vec4(curNorm,0);
   return colour;
+}
+
+
+float otogentic_weight(float t, float p0=0, float p1=1, float r0=0, float r1=0){
+  float t3 = pow(t,3);
+  float t2 = pow(t,2);
+
+
+  float ret4 = (2*t3 - 3*t2 + 1)*p0;
+  ret4 += (-2*t3 + 3*t2 )*p1;
+  ret4 += (t3 - 2*t2 + t)*r0;
+  ret4 += (t3 - t2 )*r1 ;
+  return ret4;
+}
+
+vec4 ontogenetic(ray cray, vec3 res){
+  vec3 color = vec3(0);
+
+  float k = 0.1;
+  #define weighting(X)  1-exp(-k*X)
+ 
+  //DESMOS:
+  //(2*\left(x\right)^3-3*\left(x\right)^2+1)*a+(-2*\left(x\right)^3+3*\left(x\right)^2)*b+(\left(x\right)^3-2*\left(x\right)^2+\left(x\right))*c+(\left(x\right)^3-\left(x\right)^2)*d
+//  #define kbackground(X) otogentic_weight(X,1,0,-5,3)
+//  #define kbackground(X) otogentic_weight(X,1,0,-3,0.1)
+  #define kbackground(X) otogentic_weight(X,1,0.1,-4.6,-0.3)
+  #define klight(X) otogentic_weight(X,0,.5,6,2)
+//  #define klight(X) otogentic_weight(X,0,1,1,1)
+  #define kshadow(X) otogentic_weight(X,0,1,0,2)
+
+  vec3 cbackground = vec3(40,56,81)/256;
+//    vec3 cbackground = vec3(0,0.8,0);
+  vec3 csunlight = vec3(0.2);
+//  vec3 csunlight = vec3(.7,.5,.25);
+//  vec3 csunlight = vec3(0.8,0,0);
+//  vec3 cshadow = vec3(0.13,0.16,0.20);
+//  vec3 cshadow = -vec3(0.2);
+  vec3 cshadow = vec3(0.2);
+
+  vec3 t1pos = cray.origin + (res.x)*cray.direction;
+  vec3 Norm1 = vec3(
+    ((metaBall_func(t1pos + vec3(h,0,0))) - (metaBall_func(t1pos - vec3(h,0,0)))),
+    ((metaBall_func(t1pos + vec3(0,h,0))) - (metaBall_func(t1pos - vec3(0,h,0)))),
+    ((metaBall_func(t1pos + vec3(0,0,h))) - (metaBall_func(t1pos - vec3(0,0,h))))
+  );
+  Norm1 /= 2*h;
+  Norm1 = normalize(Norm1);
+
+  float weight = weighting(abs(res.z));
+  
+//  if(weight > 0 && weight < 1){
+
+  color =  kbackground(weight) * cbackground;
+  
+  vec4 c = simple_colors(cray,vec2(res.x,res.y)) * (length(cbackground) - length(color));
+ // color += klight(weight)*csunlight;
+//  color += kshadow(weight)*cshadow;
+
+//  }else
+//    color = cshadow+csunlight;
+  
+  if(isinf(color.x) || isnan(color.x))
+    color = vec3(1,1,0);
+
+  float p = dot(Norm1,vec3(0,1,0));
+//  color -= p*vec3(0.5);
+
+
+  #undef kbackground
+  #undef klight
+  #undef kshadow
+  #undef weighting
+  return vec4(color,0) + c;
+}
+
+
+////////////////////////////////// RAYTRACE STUFF ///////////////////////////////
+vec4 rtrace(ray cray){
+
+	vec4 c=vec4(0);
+	//////////////////BASIC RAY-TRACING///////////////////
+//	check_light_hit=false;
+	vec4 res = test_objects_intersect(cray);
+
+  vec3 cbackground = vec3(40,56,81)/256;
+	if(res.x <= 0){
+    vec3 c = cbackground;
+    return vec4(c,0);
+  }else{
+//    return vec4(1);
+  }
+
+//  c = simple_colors(cray, vec2(res.x,res.y)); 
+
+    c= ontogenetic(cray,vec3(res.x,res.y,res.z));
+  return c;
+
+vec3 t1pos = cray.origin + (res.x)*cray.direction;
+vec3 t2pos = cray.origin + (res.y)*cray.direction;
+
+  c = abs(vec4(t2pos-t1pos,0));
+
+//  c = vec4(res.z)/10;
+//  c = vec4((res.y)/5);
+  return c;
   
   // #define FANCEY
   #ifdef FANCEY

@@ -8,6 +8,7 @@
 #include "metaball.h"
 #include "math.h"
 
+extern float thres;
 
 std::vector<MetaBall*> MetaBall::metaballs;
 std::vector<MetaBall*> * MetaBall::accumData;
@@ -44,7 +45,7 @@ float MetaBall::accumMetaBallFuncs(vec3 point)
   
 
 //  std::cout << "\tpos:\t(" << point.x << ",\t"<< point.y << ",\t" << point.z << ")" << "\t\t" << "accum:" << accum << std::endl;
-	return accum-1;
+	return accum-thres;
 //  return 100;
 }
 
@@ -209,6 +210,7 @@ void loadPoints()
 //END: From Eds file
 
 
+// /* //The one that seems to work for some reason.
 
 float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
 	{
@@ -232,6 +234,34 @@ float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
 		return radius / -(term1 + term2 + term3);
 
 	}
+
+// */
+
+/* 
+float WyvillMetaBall(vec3 mbpos, vec3 tpos, float radius)
+	{
+		float r = length(mbpos - tpos);
+
+    if(r >= radius){
+      return abs(1/r)-(1/radius); //Linear 
+        float f =  pow(((r-radius)*(r+radius))/radius,2); //X^2
+        f /= (abs(r*r*r)*1); //Make x^2 linear and small (the *1 scales it's steepness.. but all other than 1 break horribly?
+//        std::cout << " f: " << f << std::endl;
+        return f;
+    }
+		float term1, term2, term3;
+		float R = r / radius;
+
+		term1 = (-4.0 / 9.0) * pow(R, 6.0);
+		term2 = (17.0 / 9.0) * pow(R, 4.0);
+		term3 = (-22.0 / 9.0) * pow(R, 2.0);
+		float total = term1 + term2 + term3 +1 ;
+
+//    std::cout <<  "\tt:" << total <<std::endl;
+		return  -total;
+
+	}
+// */
 
 
 float sphereMB(vec3 mbpos, vec3 tpos, float radius){
