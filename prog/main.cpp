@@ -53,9 +53,6 @@ int WIDTH = 512;
 int HEIGHT = 512;
 int MODE = 0;
 
-#define MODE_CLOUD   0
-#define MODE_BSPLINE 1
-#define MODE_RAY     2
 
 
 //Cloud editing?

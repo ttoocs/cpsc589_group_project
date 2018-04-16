@@ -7,6 +7,9 @@
 #include "camera.h"
 #include "metaball/metaball.h"
 #include "cloud/cloud.h"
+
+#include "main.h"
+
 #define TRNL 3.f
 bool firstMouse = true;
 float lastX = 0;
@@ -44,12 +47,19 @@ void printVec(vec2 v)
   std::cout <<"aVec: (x,y,z) = (" << v.x << ", " << v.y << ")\n";
 }
 
+void cloudHelp();
+
 void setup(GLFWwindow * window){
 	glfwSetKeyCallback(window, KeyCallback);
 	glfwSetCursorPosCallback(window, mousePosCallback);
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
   glfwSetWindowSizeCallback(window, resizeCallback);
 
+  cloudHelp();
+}
+
+
+void cloudHelp(){
   std::cout << "[w/a/s/d/f/r]\t- Move camera about" << std::endl;
   std::cout << "[u]\t\t- Undo cloud add operation" << std::endl;
   std::cout << "[j]\t\t- Run cloud processing" << std::endl;
@@ -61,12 +71,9 @@ void setup(GLFWwindow * window){
   std::cout << "[y/h]\t\t- Increase/decrease thresholds of clouds." << std::endl;
 }
 
-// handles keyboard input events
-void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-  //std::cout << activeCamera.pos.x << std::endl;
-  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GL_TRUE);
+
+
+void CloudCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
   if (action != GLFW_RELEASE){
 	if (key ==GLFW_KEY_Y && action == GLFW_PRESS)
 	{
@@ -166,12 +173,43 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
       meshMode = GL_LINE;
     }
   }
+} //End cloud call-back.
+
+// handles keyboard input events
+void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, GL_TRUE);
+  if (key == GLFW_KEY_1 && action == GLFW_PRESS){
+    std::cout << "Switching to Cloud Mode." << std::endl;
+    //TODO
+  }
+  if (key == GLFW_KEY_2 && action == GLFW_PRESS){
+    std::cout << "Switching to Raytrace Mode." << std::endl;
+    //TODO
+  }
+  if (key == GLFW_KEY_3 && action == GLFW_PRESS){
+    std::cout << "Switching to BSpline edit Mode." << std::endl;
+    //TODO
+  }
+
+  if (MODE == MODE_CLOUD){
+    CloudCallback(GLFWwindow* window,  key, scancode, action, mods);
+  }else if (MODE == MODE_RAY){
+//    RayCallback(GLFWwindow* window,  key, scancode, action, mods);
+  }else if (MODE == MODE_BSPLINE){
+//    BezierCallback(GLFWwindow* window,  key, scancode, action, mods);
+  }
+
+
 }
 
 bool mousePressed;
 void mouseButtonCallback(GLFWwindow* window, int key, int action, int mods)
 {
-  
+ 
+  if(MODE == MODE_CLOUD){
+ 
   if( ((action == GLFW_PRESS))&& key == GLFW_MOUSE_BUTTON_RIGHT )
   {
       positions.push_back(activeCamera.cameraPos+3.0f*(activeCamera.cameraFront));
@@ -183,6 +221,7 @@ void mouseButtonCallback(GLFWwindow* window, int key, int action, int mods)
   else if( ((action == GLFW_PRESS) || (action == GLFW_RELEASE))&& key == GLFW_MOUSE_BUTTON_LEFT )
     left = !left;
   
+  }
 }
 
 
