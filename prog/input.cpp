@@ -73,6 +73,47 @@ void cloudHelp(){
 
 
 
+void RayCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
+  if(action != GLFW_RELEASE){
+	if (key ==GLFW_KEY_Y && action == GLFW_PRESS)
+	{
+    thres+= 0.2;
+    std::cout << thres << std::endl;
+	}
+	if (key ==GLFW_KEY_H && action == GLFW_PRESS)
+	{
+    thres-= 0.2;
+    std::cout << thres << std::endl;
+	}
+
+	if (key ==GLFW_KEY_W)
+	{
+		activeCamera.cameraPos += activeCamera.cameraSpeed * activeCamera.cameraFront;
+	}
+	if (key ==GLFW_KEY_S)
+	{
+		activeCamera.cameraPos -= activeCamera.cameraSpeed * activeCamera.cameraFront;
+	}
+	if (key ==GLFW_KEY_A)
+	{
+		activeCamera.cameraPos -= normalize(cross(activeCamera.cameraFront, activeCamera.cameraUp)) * activeCamera.cameraSpeed;
+	}
+	if (key ==GLFW_KEY_D)
+	{
+		activeCamera.cameraPos += normalize(cross(activeCamera.cameraFront, activeCamera.cameraUp)) * activeCamera.cameraSpeed;
+	}
+	if (key ==GLFW_KEY_F)
+	{
+		activeCamera.cameraPos -= activeCamera.cameraUp * activeCamera.cameraSpeed;
+	}
+	if (key ==GLFW_KEY_R)
+	{
+		activeCamera.cameraPos += activeCamera.cameraUp * activeCamera.cameraSpeed;
+	}
+
+  }
+}
+
 void CloudCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
   if (action != GLFW_RELEASE){
 	if (key ==GLFW_KEY_Y && action == GLFW_PRESS)
@@ -182,23 +223,26 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         glfwSetWindowShouldClose(window, GL_TRUE);
   if (key == GLFW_KEY_1 && action == GLFW_PRESS){
     std::cout << "Switching to Cloud Mode." << std::endl;
+    MODE=MODE_CLOUD;
     //TODO
   }
   if (key == GLFW_KEY_2 && action == GLFW_PRESS){
     std::cout << "Switching to Raytrace Mode." << std::endl;
+    MODE=MODE_RAY;
     //TODO
   }
   if (key == GLFW_KEY_3 && action == GLFW_PRESS){
+    MODE=MODE_BSPLINE;
     std::cout << "Switching to BSpline edit Mode." << std::endl;
     //TODO
   }
 
   if (MODE == MODE_CLOUD){
-    CloudCallback(GLFWwindow* window,  key, scancode, action, mods);
+    CloudCallback( window,  key, scancode, action, mods);
   }else if (MODE == MODE_RAY){
-//    RayCallback(GLFWwindow* window,  key, scancode, action, mods);
+    RayCallback(window,  key, scancode, action, mods);
   }else if (MODE == MODE_BSPLINE){
-//    BezierCallback(GLFWwindow* window,  key, scancode, action, mods);
+//    BezierCallback(window,  key, scancode, action, mods);
   }
 
 
@@ -208,7 +252,7 @@ bool mousePressed;
 void mouseButtonCallback(GLFWwindow* window, int key, int action, int mods)
 {
  
-  if(MODE == MODE_CLOUD){
+  if(MODE == MODE_CLOUD || MODE == MODE_RAY){
  
   if( ((action == GLFW_PRESS))&& key == GLFW_MOUSE_BUTTON_RIGHT )
   {

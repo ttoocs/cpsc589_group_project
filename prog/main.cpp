@@ -221,6 +221,16 @@ void Update_Perspective(){
   }
 
   //Todo: Get raytracing perspective.  
+  if(MODE == MODE_RAY){
+
+  glm::mat4 camMatrix = activeCamera.view();
+  glUniformMatrix4fv(glGetUniformLocation(glstuffRay.prog, "cameraMatrix"),
+            1,
+            false,
+            &camMatrix[0][0]);
+  }
+
+
 
   //BSpline has no perspective.
 }

@@ -693,6 +693,8 @@ vec4 main_c(){
 
   mat4 t = cameraMatrix*modelviewMatrix;
 
+  t = inverse(t);
+
 	//TRANSFORMATIONS
   vec4 ot = t*vec4(newray.origin,1);
 
