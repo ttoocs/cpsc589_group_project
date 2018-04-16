@@ -169,6 +169,7 @@ vec4 main_l()
   bool Transform=true;
   if(Transform)
   {
+    t = inverse(t);
     //Make origin/ray temps
     vec4 ot = t*mvp*vec4(r.origin,1);
     vec4 rt = t*mvp*vec4(r.dir,0);

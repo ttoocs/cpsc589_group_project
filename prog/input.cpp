@@ -37,8 +37,8 @@ bool up = true;
 bool down = true;
 
 extern float thres;
-extern float pass1;
-extern float pass2;
+extern int pass1;
+extern int pass2;
 
 namespace input{
 

@@ -117,16 +117,37 @@ void main(void)
 
   //RayTrace Code here:
 //  FragmentColour = vec4(1,1,1,1); //main_c();
-  vec4 c = main_c();
-  if(c.x < 0) 
-    c.x=0;
-  if(c.y < 0) 
-    c.y=0;
-  if(c.z < 0) 
-    c.z=0;
-  if(c.w < 0) 
-    c.w=0;
-  c += main_l();
-  
+
+  vec4 c = vec4(0);
+/*
+  if(pass1 == 1)
+    c = vec4(1,0,0,0);
+  if(pass1 == 2)
+    c = vec4(0,1,0,0);
+  if(pass1 == 3)
+    c = vec4(0,0,1,0);
+  if(pass1 == 0)
+    c = vec4(1);
+  if(isnan(pass1))
+    c = vec4(1,1,0,0);
+  if(isinf(pass1))
+    c = vec4(0,1,1,0);
+*/
+//  /*
+  if( pass1 == 1 || pass1 == 3){
+    c += main_c();
+    if(c.x < 0) 
+      c.x=0;
+    if(c.y < 0) 
+      c.y=0;
+    if(c.z < 0) 
+      c.z=0;
+    if(c.w < 0) 
+      c.w=0;
+  }
+  if( pass1  == 2 || pass1 == 3){
+    c += main_l();
+  }
+//  */
   FragmentColour = c;
 }

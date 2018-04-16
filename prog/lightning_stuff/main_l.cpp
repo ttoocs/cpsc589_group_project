@@ -148,7 +148,6 @@ int main()
 	loadSpline();
 	loadScreen();
 	glBindVertexArray(VAO);
-	lightning::loadPoints(spline);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -167,6 +166,7 @@ int main()
 			spline.loadControlPoints();
 			spline.loadBSpline();
 			loadSpline();
+	    lightning::loadPoints(spline);
 			
 		}
 		

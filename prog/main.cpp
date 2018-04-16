@@ -307,7 +307,6 @@ void Update_GPU_data(){
 	glBindBuffer(GL_ARRAY_BUFFER, glstuffRay.vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, storage.size() * sizeof(vec3), storage.data(), GL_STREAM_DRAW);
 
-
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
 	glEnableVertexAttribArray(0);
 }
@@ -326,6 +325,9 @@ void Update_GPU_data(Tris t){
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuffCloud.indiciesbuffer);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*t.idx->size(),t.idx->data(),GL_DYNAMIC_DRAW);
 
+
+  
+
 }
 
 
@@ -342,6 +344,8 @@ void Render(){
 
      //Tell shaders to enable raytrace.
     glUniform3i(glGetUniformLocation(glstuffRay.prog, "RayTrace"),1,pass1,pass2);
+ 
+    std::cout << pass1 << std::endl; 
 
   }
   else if (MODE == MODE_CLOUD){
@@ -387,6 +391,10 @@ void Render(){
 	
 		glBindVertexArray(glstuffBspline.vertexarray2);
 		glDrawArrays(GL_LINE_STRIP, 0, num_spline);
+
+    if(num_control >= 2)
+    //Get Lightening stuffs
+    lightning::loadPoints(spline);
   }
 
 
