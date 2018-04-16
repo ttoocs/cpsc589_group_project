@@ -479,21 +479,41 @@ float otogentic_weight(float t, float p0=0, float p1=1, float r0=0, float r1=0){
 vec4 ontogenetic(ray cray, vec2 res){
   vec3 color;
 
-  float k = 0.8;
-  #define weighting(X)  1-exp(k*X)
-  
-  #define kbackground(X) otogentic_weight(X,1,0,-10,-32)
-  #define klight(X) otogentic_weight(X,0,1,32,-16)
-  #define kshadow(X) otogentic_weight(X,0,1,0,0.5)
+  float k = 2;
+  #define weighting(X)  1-exp(-k*X)
+ 
+  //DESMOS:
+  //(2*\left(x\right)^3-3*\left(x\right)^2+1)*a+(-2*\left(x\right)^3+3*\left(x\right)^2)*b+(\left(x\right)^3-2*\left(x\right)^2+\left(x\right))*c+(\left(x\right)^3-\left(x\right)^2)*d
+ 
+  #define kbackground(X) otogentic_weight(X,1,0,-5,3)
+  #define klight(X) otogentic_weight(X,0,.5,4,2)
+  #define kshadow(X) otogentic_weight(X,0,1,0,2)
 
-  vec3 cbackground = vec3(40,56,81)/256;
-  vec3 csunlight = vec3(.7,.5,.25);
-  vec3 cshadow = vec3(0.13,0.16,0.20);
+//  vec3 cbackground = vec3(40,56,81)/256/2;
+    vec3 cbackground = vec3(0,1,0);
+//  vec3 csunlight = vec3(0.8,0.8,0.8);
+//  vec3 csunlight = //vec3(.7,.5,.25);
+  vec3 csunlight = vec3(1,0,0);
+//  vec3 cshadow = vec3(0.13,0.16,0.20);
+//  vec3 cshadow = -vec3(0.2);
+  vec3 cshadow = vec3(0,0,1);
+
+  vec3 t1pos = cray.origin + (res.x)*cray.direction;
+  vec3 Norm1 = vec3(
+    ((metaBall_func(t1pos + vec3(h,0,0))) - (metaBall_func(t1pos - vec3(h,0,0)))),
+    ((metaBall_func(t1pos + vec3(0,h,0))) - (metaBall_func(t1pos - vec3(0,h,0)))),
+    ((metaBall_func(t1pos + vec3(0,0,h))) - (metaBall_func(t1pos - vec3(0,0,h))))
+  );
+  Norm1 /= 2*h;
+  Norm1 = normalize(Norm1);
 
   float weight = weighting(res.y-res.x); //Just say the density is the length
   color = kbackground(weight)*cbackground;
   color += klight(weight)*csunlight;
   color += kshadow(weight)*cshadow;
+
+  float p = dot(Norm1,vec3(0,1,0));
+//  color -= p*vec3(0.5);
 
 
   #undef kbackground
