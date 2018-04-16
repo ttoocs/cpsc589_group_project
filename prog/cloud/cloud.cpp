@@ -300,6 +300,14 @@ cloud::cloud(){
 }
 */
 
+void cloud::remarch(){
+  Tris t;
+//  process_cloud_paper(t,1);
+  //TODO
+  tris = t;
+}
+
+
 Tris cloud::getAllTris(){
   Tris t;
   for(auto it = allClouds.begin(); it != allClouds.end(); it++){

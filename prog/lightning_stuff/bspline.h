@@ -44,7 +44,7 @@ class BSpline{
 	
 		void deletePoint(vec3 pos);
 		
-		void movePoint(vec3 pos);
+		void movePoint(vec3 pos,bool moveZ=false);
 		
 		void incOrder();
 		

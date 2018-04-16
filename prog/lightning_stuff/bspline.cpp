@@ -3,6 +3,8 @@
 //#include "include/glm/glm.hpp"
 //#include <vector>
 
+#include <iostream>
+
 using namespace std;
 using namespace glm;
 
@@ -210,7 +212,7 @@ using namespace glm;
 			}
 		}
 		
-		void BSpline::movePoint(vec3 pos)
+		void BSpline::movePoint(vec3 pos, bool moveZ)
 		{
 			vec3 click_pos = pos;
 			vec3 point_vec;
@@ -243,9 +245,13 @@ using namespace glm;
 
 			if (closest_point_index != -1)
 			{
-				control_points[closest_point_index] = pos.x;
-				control_points[closest_point_index + 1] = pos.y;
-				control_points[closest_point_index + 2] = pos.z;
+        if(! moveZ){
+  				control_points[closest_point_index] = pos.x;
+  				control_points[closest_point_index + 1] = pos.y;
+        }else{
+  				control_points[closest_point_index + 2] = pos.z*0.1 + control_points[closest_point_index]+2;
+//          std::cout << control_points[closest_point_index]+2 << std::endl;
+        }
 			}
 		}
 		

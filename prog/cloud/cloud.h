@@ -31,4 +31,6 @@ class cloud{
   
   static MBS getAllMBs();
 
+  void remarch();
+
 };

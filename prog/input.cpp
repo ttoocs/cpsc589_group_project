@@ -47,14 +47,14 @@ void printVec(vec2 v)
   std::cout <<"aVec: (x,y,z) = (" << v.x << ", " << v.y << ")\n";
 }
 
-void bsplineHelp();
-void cloudHelp();
 
 void setup(GLFWwindow * window){
 	glfwSetKeyCallback(window, KeyCallback);
 	glfwSetCursorPosCallback(window, mousePosCallback);
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
   glfwSetWindowSizeCallback(window, resizeCallback);
+
+  glfwSetScrollCallback(window, scrollcallback);
 
   cloudHelp();
   bsplineHelp();
@@ -192,12 +192,14 @@ void CloudCallback(GLFWwindow* window, int key, int scancode, int action, int mo
 	if (key ==GLFW_KEY_Y && action == GLFW_PRESS)
 	{
     thres+= 0.2;
-    std::cout << thres << std::endl;
+    std::cout << "Metaball Threshold: " <<  thres << std::endl;
+    aCloud.remarch();
 	}
 	if (key ==GLFW_KEY_H && action == GLFW_PRESS)
 	{
     thres-= 0.2;
-    std::cout << thres << std::endl;
+    std::cout << "Metaball Threshold: " <<  thres << std::endl;
+    aCloud.remarch();
 	}
 	if (key ==GLFW_KEY_W)
 	{
@@ -473,6 +475,26 @@ void mousePosCallback(GLFWwindow* window, double xpos, double ypos)
 
       }
 }
+
+void scrollcallback(GLFWwindow* window, double xoffset, double yoffset){
+  if(MODE == MODE_BSPLINE){
+  			double xpos, ypos;
+  			glfwGetCursorPos(window, &xpos, &ypos);
+
+  			int winWidth, winHeight;
+  			glfwGetWindowSize(window, &winWidth, &winHeight);
+  
+  			xpos = (xpos - (winWidth / 2)) / (winWidth / 2);
+  			ypos = (ypos - (winHeight / 2)) / (-1 * winHeight / 2);
+
+//        std::cout << yoffset << std::endl;
+        spline.movePoint(vec3(xpos, ypos, yoffset),true);
+        spline.loadControlPoints();
+        spline.loadBSpline();
+        loadSpline();  
+  }
+}
+
 void resizeCallback(GLFWwindow* window, int width, int height)
 {
   
