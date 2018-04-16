@@ -330,38 +330,50 @@ float applyNewton(ray r, float t, int maxIterIn=10){
         return t;
      
 }
-vec2 linearSearch(ray r, float minT){
+vec4 linearSearch(ray r, float minT){
   float maxT=10;
   float dt = 0.01;
   float t=minT;
 
-  vec2 ret =vec2(-1,-1);
+  vec4 ret =vec4(-1,-1,0,-1);
 
   float s_init = f(t); //Now always checks for sign change.
   bool positive= (s_init >=0 );
 
+  bool internal = false;
+  int denCnt = 0;
 
   while( t < maxT  ){
-    if( (positive && (f(t) < 0)) || ((!positive && (f(t) >= 0))))
+    float s = f(t);
+    if(internal){
+      ret.z += s; //Increase the density by total densitys
+      denCnt ++;
+    }
+    if( (positive && (s < 0)) || ((!positive && (s >= 0))))
     {
       if(ret.x == -1){
         ret.x = t;
         positive = !positive;
+        internal = true;
       }else{
         ret.y = t;
-        return ret;
+        break;
       }
     }
       t+= dt;
   }
+
+  if(denCnt > 0)
+    ret.z /= float(denCnt);
+
   return ret;
 }
 
-vec2 ray_intersect_metaBalls(ray r, float minT=0){
+vec4 ray_intersect_metaBalls(ray r, float minT=0){
 
   float t=minT;
 
-  vec2 ret = vec2(-1,-1);
+  vec4 ret = vec4(-1,-1,0,-1);
 
 //  #define SPHERE_SEARCH //Uses the sphere collision alg/
   #define LINEAR_SEARCH //Iterates
@@ -381,6 +393,9 @@ vec2 ray_intersect_metaBalls(ray r, float minT=0){
       }
       if( tn.y > minT && (tn.x < t || t == minT)){
         ret.y = tn.y;
+      }
+      if( (tn.y > 0 ) && ( tn.z > 0 ) && !isinf(tn.x) && !isinf(tn.y)){
+        ret.z += mbGetRad(i); //Do something for density.
       }
     }
 
@@ -411,7 +426,7 @@ vec2 ray_intersect_metaBalls(ray r, float minT=0){
 
 vec4 test_objects_intersect(ray r){ //Tests _ALL_ objects
 
-  return vec4(ray_intersect_metaBalls(r),-1,-1);
+  return ray_intersect_metaBalls(r);
 }
 
 
@@ -476,8 +491,8 @@ float otogentic_weight(float t, float p0=0, float p1=1, float r0=0, float r1=0){
   return ret4;
 }
 
-vec4 ontogenetic(ray cray, vec2 res){
-  vec3 color;
+vec4 ontogenetic(ray cray, vec3 res){
+  vec3 color = vec3(0);
 
   float k = 2;
   #define weighting(X)  1-exp(-k*X)
@@ -507,7 +522,7 @@ vec4 ontogenetic(ray cray, vec2 res){
   Norm1 /= 2*h;
   Norm1 = normalize(Norm1);
 
-  float weight = weighting(res.y-res.x); //Just say the density is the length
+  float weight = weighting(abs(res.z)); //Just say the density is the length
   color = kbackground(weight)*cbackground;
   color += klight(weight)*csunlight;
   color += kshadow(weight)*cshadow;
@@ -540,7 +555,7 @@ vec4 rtrace(ray cray){
   }
 
 //  c = simple_colors(cray, vec2(res.x,res.y));  
-  c= ontogenetic(cray,vec2(res.x,res.y));
+  c= ontogenetic(cray,vec3(res.x,res.y,res.z));
   return c;
   
   // #define FANCEY
