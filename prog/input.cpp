@@ -283,18 +283,28 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
   if (key == GLFW_KEY_1 && action == GLFW_PRESS){
     std::cout << "Switching to Cloud Mode." << std::endl;
     MODE=MODE_CLOUD;
-    //TODO
   }
   if (key == GLFW_KEY_2 && action == GLFW_PRESS){
-    std::cout << "Switching to Raytrace Mode." << std::endl;
     MODE=MODE_RAY;
-    //TODO
+    std::cout << "Switching to Cloud raytrace Mode." << std::endl;
+    pass1 = 1;
   }
   if (key == GLFW_KEY_3 && action == GLFW_PRESS){
     MODE=MODE_BSPLINE;
     std::cout << "Switching to BSpline edit Mode." << std::endl;
-    //TODO
   }
+  if (key == GLFW_KEY_4 && action == GLFW_PRESS){
+    MODE=MODE_RAY;
+    std::cout << "Switching to Lightening raytrace Mode." << std::endl;
+    pass1 = 2;
+  }
+  if (key == GLFW_KEY_5 && action == GLFW_PRESS){
+    MODE=MODE_RAY;
+    std::cout << "Switching to Cloud + Lightening raytrace Mode." << std::endl;
+    pass1 = 3;
+  }
+
+
 
   if (MODE == MODE_CLOUD || MODE == MODE_RAY){
     CloudCallback( window,  key, scancode, action, mods);

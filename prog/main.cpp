@@ -65,8 +65,8 @@ std::vector<float> radiuss;
 
 //Input-passings
 float thres=1;
-float pass1=0; //MISC
-float pass2=0; //MISC
+int pass1=1; //MISC
+int pass2=0; //MISC
 
 
 //Lightening/Bspline
@@ -293,7 +293,7 @@ void Update_GPU_data(){
   int i1 = d.size() + 1;
 
   std::cout << "Rendering " << i1 - 1 << " metaballs" << std::endl; 
-  vec4 inf = vec4(i1,thres,pass1,pass2);
+  vec4 inf = vec4(i1,thres,0.0,0.0);
 
   //UNHAPPY
 
