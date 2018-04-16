@@ -106,7 +106,7 @@ void initalize_GL(){
 
     //Ray-vertex-shaders
 		glstuffRay.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSource(VERTEXPATHRAY));
-		glstuffBspline.vertexShader = glstuffRay.vertexShader;
+		glstuffBspline.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSource(VERTEXPATHRAY));
     
     //Normal-vertex-shaders
 		glstuffCloud.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSource(VERTEXPATH));
@@ -114,7 +114,7 @@ void initalize_GL(){
 
     //non-bspline fragment
     glstuffRay.fragShader = CompileShader(GL_FRAGMENT_SHADER,LoadSourceM(fs));
-    glstuffCloud.fragShader = glstuffRay.fragShader;
+    glstuffCloud.fragShader = CompileShader(GL_FRAGMENT_SHADER,LoadSourceM(fs));
     
     //bspline-fragment-shaders 
     glstuffBspline.fragShader = CompileShader(GL_FRAGMENT_SHADER,LoadSource(FRAGMENTBSPLINE));
@@ -148,7 +148,7 @@ void initalize_GL(){
 		glGenBuffers(1, &glstuffRay.vertexbuffer);
 
 		glBindBuffer(GL_ARRAY_BUFFER,glstuffRay.vertexbuffer);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);	//Points
+//		glVertexAttribPointer(, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);	//Points -UNHAPPY
 
       //bspline
 		glUseProgram(glstuffBspline.prog);
@@ -156,7 +156,7 @@ void initalize_GL(){
 		glGenBuffers(1, &glstuffBspline.vertexbuffer);
 
 		glBindBuffer(GL_ARRAY_BUFFER,glstuffBspline.vertexbuffer);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);	//Points
+//		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);	//Points -UNHAPPY
 
 
     //CLOUDS
@@ -200,6 +200,7 @@ void initalize_GL(){
 void Update_Perspective(){
 
   //'CLOUD' PERSPECTIVE:
+  if(MODE == MODE_CLOUD){
   glUniformMatrix4fv(glGetUniformLocation(glstuffCloud.prog, "perspectiveMatrix"),
             1,
             false,
@@ -215,6 +216,7 @@ void Update_Perspective(){
             1,
             false,
             &winRatio[0][0]);
+  }
 
   //Todo: Get raytracing perspective.  
 
@@ -234,6 +236,7 @@ void Update_GPU_data(){
 	storage.push_back(vec3(-1.0, -1.0, 0.0));
 	storage.push_back(vec3(-1.0, 1.0, 0.0));
 
+  glUseProgram(glstuffRay.prog);
 	glBindVertexArray(glstuffRay.vertexarray);
 
   //Get MBs
@@ -243,6 +246,8 @@ void Update_GPU_data(){
   float thres = 1;
   vec4 inf = vec4(i1,thres,0,0);
 
+  //UNHAPPY
+
   //allocate space
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, glstuffRay.MB_SSBO);
   glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(vec4)*i1, NULL, GL_DYNAMIC_COPY);
@@ -250,8 +255,11 @@ void Update_GPU_data(){
   glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(vec4), sizeof(vec4)*d.size(), d.data());
   glBufferSubData(GL_SHADER_STORAGE_BUFFER,0,sizeof(vec4),&inf); //Send info data..
 
+  
 	glBindBuffer(GL_ARRAY_BUFFER, glstuffRay.vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, storage.size() * sizeof(vec3), storage.data(), GL_STREAM_DRAW);
+
+  //END UNHAPPY
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
 	glEnableVertexAttribArray(0);
