@@ -363,6 +363,7 @@ void Render(){
   	glUseProgram(glstuffCloud.prog);
    	glBindVertexArray(glstuffCloud.vertexarray);
    	glUseProgram(glstuffCloud.prog);
+    glUniform1i(glGetUniformLocation(glstuffRay.prog, "RayTrace"),false);
 
   	glDrawElements(
     	GL_TRIANGLES,   //What shape we're drawing  - GL_TRIANGLES, GL_LINES, GL_POINTS, GL_QUADS, GL_TRIANGLE_STRIP
