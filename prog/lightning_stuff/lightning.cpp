@@ -180,8 +180,8 @@ void lightning::trace_lightning(vector<vec3> targets, vector<Segment> *storage, 
 void lightning::loadPoints(BSpline spline)
 {
   if(lightning::segmentBuffer == 0){
-    std::cout << "Note: Lightening SSBO buffer is 0.. Attempting to auto-generate it." << std::endl;
-    std::cout << "May not work, assumes VAO is already bounded. If blank this is why." << std::endl;    
+  //  std::cout << "Note: Lightening SSBO buffer is 0.. Attempting to auto-generate it." << std::endl;
+  //  std::cout << "May not work, assumes VAO is already bounded. If blank this is why." << std::endl;    
 //	  glBindVertexArray(VAO);
   	glGenBuffers(1, &lightning::segmentBuffer);
   	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,lightning::segmentBuffer);
@@ -194,7 +194,9 @@ void lightning::loadPoints(BSpline spline)
 	spline.addPoint(vec3(1.0, 0.0, 0.0));
 	spline.loadBSpline();
 	*/
-	cout << spline.bspline_vecs.size() << endl;
+	
+  //cout << spline.bspline_vecs.size() << endl;
+
 	/*
 	vector<vec3> lightning_targets;
 	lightning_targets = spline.bspline_vecs;
@@ -211,8 +213,10 @@ void lightning::loadPoints(BSpline spline)
 		lightning::trace_lightning(lightning_targets[i], lightning_targets[i + 1], &lightning_segs, 2.0);
 	}
 	*/
-	cout << lightning_segs.size() << endl;
-	cout << vPrint(lightning_segs[0].p0) << endl;
+
+//	cout << lightning_segs.size() << endl;
+//	cout << vPrint(lightning_segs[0].p0) << endl;
+
 	float temp[((lightning_segs.size() * 2 * 4) + 4)];
 	for (int i = 0; i < lightning_segs.size(); i++)
 	{

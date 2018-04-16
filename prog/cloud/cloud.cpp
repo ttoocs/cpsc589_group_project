@@ -201,7 +201,7 @@ void cloud::process_cloud_paper(Tris& t, int rounds)
 	indices->clear();
 	norms->clear();
 	MetaBall::March(points,indices,norms, &balls, NULL, NULL, F_GRAN);
-	cout <<"Done processing a cloud\n";
+//	cout <<"Done processing a cloud\n";
   
   t = mergeTris(t,toTris(points,norms,indices));
 
@@ -288,7 +288,7 @@ cloud::cloud(float(*f)(vec3, vec3, float) , vec3 * pos, int initBalls, int round
 
   process_cloud_paper(tris, rounds);
   
-  std::cout << "New cloud made." << std::endl;
+//  std::cout << "New cloud made." << std::endl;
   }
   allClouds.push_back(this);
 }

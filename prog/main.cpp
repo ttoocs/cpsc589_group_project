@@ -292,7 +292,7 @@ void Update_GPU_data(){
   MBS d = cloud::getAllMBs();
   int i1 = d.size() + 1;
 
-  std::cout << "Rendering " << i1 - 1 << " metaballs" << std::endl; 
+//  std::cout << "Rendering " << i1 - 1 << " metaballs" << std::endl; 
   vec4 inf = vec4(i1,thres,0.0,0.0);
 
 
@@ -345,7 +345,7 @@ void Render(){
      //Tell shaders to enable raytrace.
     glUniform3i(glGetUniformLocation(glstuffRay.prog, "RayTrace"),1,pass1,pass2);
  
-    std::cout << pass1 << std::endl; 
+//    std::cout << pass1 << std::endl; 
 
   }
   else if (MODE == MODE_CLOUD){
@@ -422,12 +422,12 @@ int main(int argc, char * argv[]){
 	spline.loadBSpline();
 	loadSpline();
 
-
+/*
   for(float i=-4; i <= 4; i+=.5){
     float r = WyvillMetaBall(vec3(0,0,0), vec3(0,i,0), 1);
     std::cout << i << ", " << r << std::endl;
   }
- 
+ */
   for(int i=0; i < 1; i++){
     vec3 t = vec3(0,0,-2);
     new cloud(NULL,&t,1,1,1.0f,1,3);

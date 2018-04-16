@@ -14,7 +14,7 @@
 #include <vector>
 #include <string>
 
-#define lcase(X)	case(X): std::cout << #X << std::endl; break;
+// #define lcase(X)	case(X): std::cout << #X << std::endl; break;
 
 
 // reports GLFW errors

@@ -47,6 +47,7 @@ void printVec(vec2 v)
   std::cout <<"aVec: (x,y,z) = (" << v.x << ", " << v.y << ")\n";
 }
 
+void bsplineHelp();
 void cloudHelp();
 
 void setup(GLFWwindow * window){
@@ -56,10 +57,12 @@ void setup(GLFWwindow * window){
   glfwSetWindowSizeCallback(window, resizeCallback);
 
   cloudHelp();
+  bsplineHelp();
 }
 
 
 void cloudHelp(){
+  std::cout << "\t Cloud Mode: " << std::endl;
   std::cout << "[w/a/s/d/f/r]\t- Move camera about" << std::endl;
   std::cout << "[u]\t\t- Undo cloud add operation" << std::endl;
   std::cout << "[j]\t\t- Run cloud processing" << std::endl;
@@ -69,6 +72,17 @@ void cloudHelp(){
   std::cout << "RightClick\t- Place meta-ball at camera position" << std::endl;
   std::cout << "LeftClick\t- Drag to rotate camera." << std::endl;
   std::cout << "[y/h]\t\t- Increase/decrease thresholds of clouds." << std::endl;
+}
+
+
+void bsplineHelp(){
+  std::cout << "\t Edit Mode: " << std::endl;
+  std::cout << "[t/r]\t\t- Increase/Decrease bspline order" << std::endl;
+  std::cout << "[g/f]\t\t- Decrease bspline order" << std::endl;
+  std::cout << "RightClick\t- Remove control point under mouse cursor" << std::endl;
+  std::cout << "LeftClick\t- Move control points" << std::endl;
+  std::cout << "MiddleClick\t- Add control points" << std::endl;
+
 }
 
 

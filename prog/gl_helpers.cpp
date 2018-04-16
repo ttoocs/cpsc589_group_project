@@ -12,7 +12,6 @@
 
 #define lcase(X)	case(X): std::cout << #X << std::endl; break;
 
-
 // reports GLFW errors
 void ErrorCallback(int error, const char* description)
  {
@@ -69,7 +68,7 @@ void check_compile(GLuint vertexShader){
 
 GLFWwindow * glfw_init(int X, int Y, char const * Title){  //Initalizes and returns a GLFW window.
 
-  glfwSetErrorCallback(ErrorCallback);
+  // glfwSetErrorCallback(ErrorCallback);
 
 	glfwInit();
 
@@ -85,7 +84,7 @@ GLFWwindow * glfw_init(int X, int Y, char const * Title){  //Initalizes and retu
 	glfwMakeContextCurrent(window); //Sets up a OpenGL context
 
   //Requires OpenGL > 4.3
-  glDebugMessageCallback(GL_error_callback, NULL);
+//  glDebugMessageCallback(GL_error_callback, NULL);
 	glEnable(GL_DEBUG_OUTPUT);								//DEBUG :D
 	glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
@@ -116,10 +115,10 @@ std::string LoadSourceM(std::vector<std::string> &filenames)
               std::istreambuf_iterator<char>(),
               back_inserter(source));
           input.close();
-          std::cout << "loaded shader source from file: "  << filename << std::endl;
+//          std::cout << "loaded shader source from file: "  << filename << std::endl;
       }
       else {
-          std::cout << "ERROR: Could not load shader source from file "  << filename << std::endl;
+//          std::cout << "ERROR: Could not load shader source from file "  << filename << std::endl;
       }
     }
 //	std::cout << "RAW READ: " << source << " : END READ" << std::endl;
