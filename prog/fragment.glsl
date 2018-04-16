@@ -20,7 +20,11 @@ vec4 main_c();
   uniform mat4 modelviewMatrix = IDENTITY4;
   uniform mat4 windowRatio = IDENTITY4;
 
-uniform bool RayTrace = false;
+
+uniform ivec3 RayTrace = ivec3(0,1,1);
+
+#define pass1 RayTrace.y
+#define pass2 RayTrace.z
 
 // first output is mapped to the framebuffer's colour index by default
 out vec4 FragmentColour;
@@ -37,7 +41,7 @@ vec3 proj(vec3 v0, vec3 v1)
 
 void main(void)
 {
-  if(RayTrace == false){
+  if(RayTrace.x == 0){
 
 	vec4 colour;
 	vec2 coord = FragUV;

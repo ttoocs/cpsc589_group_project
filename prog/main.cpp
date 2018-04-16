@@ -295,7 +295,6 @@ void Update_GPU_data(){
   std::cout << "Rendering " << i1 - 1 << " metaballs" << std::endl; 
   vec4 inf = vec4(i1,thres,0.0,0.0);
 
-  //UNHAPPY
 
   //allocate space
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, glstuffRay.MB_SSBO);
@@ -308,7 +307,6 @@ void Update_GPU_data(){
 	glBindBuffer(GL_ARRAY_BUFFER, glstuffRay.vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, storage.size() * sizeof(vec3), storage.data(), GL_STREAM_DRAW);
 
-  //END UNHAPPY
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -343,7 +341,7 @@ void Render(){
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
      //Tell shaders to enable raytrace.
-    glUniform1i(glGetUniformLocation(glstuffRay.prog, "RayTrace"),true);
+    glUniform3i(glGetUniformLocation(glstuffRay.prog, "RayTrace"),1,pass1,pass2);
 
   }
   else if (MODE == MODE_CLOUD){
@@ -363,7 +361,7 @@ void Render(){
   	glUseProgram(glstuffCloud.prog);
    	glBindVertexArray(glstuffCloud.vertexarray);
    	glUseProgram(glstuffCloud.prog);
-    glUniform1i(glGetUniformLocation(glstuffRay.prog, "RayTrace"),false);
+    glUniform3i(glGetUniformLocation(glstuffRay.prog, "RayTrace"),0,pass1,pass2);
 
   	glDrawElements(
     	GL_TRIANGLES,   //What shape we're drawing  - GL_TRIANGLES, GL_LINES, GL_POINTS, GL_QUADS, GL_TRIANGLE_STRIP
