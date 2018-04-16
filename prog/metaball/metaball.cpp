@@ -105,7 +105,7 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
       }
 //      std::cout << "lb: " << sVec(lb) << std::endl;
     }
-      std::cout << "lb: " << sVec(lb) << std::endl;
+//      std::cout << "lb: " << sVec(lb) << std::endl;
 //    lb *= 10;
 //    lb = vec3(-10,-10,-10);
     lbound = &lb;
@@ -139,7 +139,7 @@ void MetaBall::March(std::vector<vec3> * verts, std::vector<GLuint> * idx, std::
     //ub = vec3(10,10,10); 
     ubound = &ub;
     }
-      std::cout << "ub: " << sVec(ub) << std::endl;
+//      std::cout << "ub: " << sVec(ub) << std::endl;
   }
    
   //Setup accumMetaBallFuncs pnter,

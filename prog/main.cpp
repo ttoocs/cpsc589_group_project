@@ -44,21 +44,27 @@
 
 #define torad(X)	((float)(X*PI/180.f))
 
-//#define RAYTRACE_CLOUDS
-
 Camera activeCamera;
-cloud aCloud;
 
 //START: Window Mgmt
-Tris renderTris;
 mat4 winRatio = mat4(1.f);
 mat4 perspectiveMatrix = glm::perspective(glm::radians(45.f), 1.f, 0.1f, 400.f);
 int WIDTH = 512;
 int HEIGHT = 512;
+int MODE = 0;
+
+#define MODE_CLOUD   0
+#define MODE_BSPLINE 1
+#define MODE_RAY     2
+
+
+//Cloud editing?
+cloud aCloud;
+Tris renderTris;
 int havePoints = 0;
 std::vector<vec3> positions;
 std::vector<float> radiuss;
-//END: Window Mgmt
+
 
 struct GLSTUFF{
 	GLuint prog;
@@ -73,128 +79,149 @@ struct GLSTUFF{
   GLuint MB_SSBO;
   GLuint L_SSBO;
 };
-GLSTUFF glstuff;
+GLSTUFF glstuffRay;
+GLSTUFF glstuffCloud;
+GLSTUFF glstuffBspline;
 
 
 void initalize_GL(){
+    //Intalizes... all the GLStuff.. sorry.
+    
 		glEnable(GL_DEPTH_TEST); 		//Turn on depth testing
 		glDepthFunc(GL_LEQUAL); 			//Configure depth testing
 
-		#ifdef WIREFRAME
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		#endif
-
 		//OpenGL programs
-		glstuff.prog = glCreateProgram();
-    std::vector<std::string> vs;
+		glstuffRay.prog = glCreateProgram();
+		glstuffCloud.prog = glCreateProgram();
+		glstuffBspline.prog = glCreateProgram();
+
+    //Setup loading things
     std::vector<std::string> fs;
-    vs.push_back(VERTEXPATH);
     
     fs.push_back(FRAGMENTPATH);
     fs.push_back(FRAGMENTPATH1);
     fs.push_back(FRAGMENTPATH2);
     fs.push_back(FRAGMENTPATH3);
-    #ifdef RAYTRACE_CLOUDS
-		glstuff.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSource(VERTEXPATHRAY));
-    #else
-		glstuff.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSource(VERTEXPATH));
-    #endif
-//		glstuff.fragShader = CompileShader(GL_FRAGMENT_SHADER,LoadSource(FRAGMENTPATH));
-//    glstuff.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSourceM(vs));
-    glstuff.fragShader = CompileShader(GL_FRAGMENT_SHADER,LoadSourceM(fs));
-  
-    //Attaching to prog
-		glAttachShader(glstuff.prog, glstuff.vertexShader);
-		glAttachShader(glstuff.prog, glstuff.fragShader);
 
-			//Attrib things here
+
+    //Ray-vertex-shaders
+		glstuffRay.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSource(VERTEXPATHRAY));
+		glstuffBspline.vertexShader = glstuffRay.vertexShader;
+    
+    //Normal-vertex-shaders
+		glstuffCloud.vertexShader = CompileShader(GL_VERTEX_SHADER,LoadSource(VERTEXPATH));
+
+
+    //non-bspline fragment
+    glstuffRay.fragShader = CompileShader(GL_FRAGMENT_SHADER,LoadSourceM(fs));
+    glstuffCloud.fragShader = glstuffRay.fragShader;
+    
+    //bspline-fragment-shaders 
+    glstuffBspline.fragShader = CompileShader(GL_FRAGMENT_SHADER,LoadSource(FRAGMENTBSPLINE));
+
+
+    //Attaching to prog
+		glAttachShader(glstuffRay.prog, glstuffRay.vertexShader);
+		glAttachShader(glstuffRay.prog, glstuffRay.fragShader);
+    //Attaching to prog
+		glAttachShader(glstuffCloud.prog, glstuffCloud.vertexShader);
+		glAttachShader(glstuffCloud.prog, glstuffCloud.fragShader);
+    //Attaching to prog
+		glAttachShader(glstuffBspline.prog, glstuffBspline.vertexShader);
+		glAttachShader(glstuffBspline.prog, glstuffBspline.fragShader);
+
+			//Attrib things here 
 
       //Linking/compiling
-		glLinkProgram(glstuff.prog);	//Link to full program.
-		check_gllink(glstuff.prog);
+		glLinkProgram(glstuffRay.prog);
+		check_gllink(glstuffRay.prog);
+		glLinkProgram(glstuffBspline.prog);
+		check_gllink(glstuffBspline.prog);
+		glLinkProgram(glstuffCloud.prog);
+		check_gllink(glstuffCloud.prog);
 
 		//Vertex stuffs
 
-		glUseProgram(glstuff.prog);
-		glGenVertexArrays(1, &glstuff.vertexarray);
-		glGenBuffers(1, &glstuff.vertexbuffer);
+      //ray
+		glUseProgram(glstuffRay.prog);
+		glGenVertexArrays(1, &glstuffRay.vertexarray);
+		glGenBuffers(1, &glstuffRay.vertexbuffer);
 
-		glGenBuffers(1, &glstuff.normalbuffer);
-//		glGenBuffers(1, &glstuff.uvsbuffer);
-		glGenBuffers(1, &glstuff.indiciesbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER,glstuffRay.vertexbuffer);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);	//Points
 
-		glBindVertexArray(glstuff.vertexarray);
-		glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);
+      //bspline
+		glUseProgram(glstuffBspline.prog);
+		glGenVertexArrays(1, &glstuffBspline.vertexarray);
+		glGenBuffers(1, &glstuffBspline.vertexbuffer);
+
+		glBindBuffer(GL_ARRAY_BUFFER,glstuffBspline.vertexbuffer);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);	//Points
+
+
+    //CLOUDS
+		glUseProgram(glstuffCloud.prog);
+		glGenVertexArrays(1, &glstuffCloud.vertexarray);
+		glGenBuffers(1, &glstuffCloud.vertexbuffer);
+
+		glGenBuffers(1, &glstuffCloud.normalbuffer);
+		glGenBuffers(1, &glstuffCloud.indiciesbuffer);
+
+		glBindVertexArray(glstuffCloud.vertexarray);
+		glBindBuffer(GL_ARRAY_BUFFER,glstuffCloud.vertexbuffer);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);	//Points
 		glEnableVertexAttribArray(0);
 
-		glBindVertexArray(glstuff.vertexarray);
-		glBindBuffer(GL_ARRAY_BUFFER,glstuff.normalbuffer);
+		glBindVertexArray(glstuffCloud.vertexarray);
+		glBindBuffer(GL_ARRAY_BUFFER,glstuffCloud.normalbuffer);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0); //Normals
 		glEnableVertexAttribArray(1);
-//
-//		glBindVertexArray(glstuff.vertexarray);
-//		glBindBuffer(GL_ARRAY_BUFFER,glstuff.uvsbuffer);
-//		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vec2), 0); //UVS
-//		glEnableVertexAttribArray(2);
-//
-		glBindVertexArray(glstuff.vertexarray);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuff.indiciesbuffer);	//Indices
+		
+    glBindVertexArray(glstuffCloud.vertexarray);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuffCloud.indiciesbuffer);	//Indices
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 
 
     //MB -ssbo
-    glBindVertexArray(glstuff.vertexarray);
-    glGenBuffers(1, &glstuff.MB_SSBO);
-  	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,glstuff.MB_SSBO);
+    glBindVertexArray(glstuffRay.vertexarray);
+    glGenBuffers(1, &glstuffRay.MB_SSBO);
+  	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,glstuffRay.MB_SSBO);
 
-    //Lightening -ssbo
-    glBindVertexArray(glstuff.vertexarray);
-    glGenBuffers(1, &glstuff.L_SSBO);
-  	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,glstuff.L_SSBO);
+    //Lightning -ssbo
+    glBindVertexArray(glstuffRay.vertexarray);
+    glGenBuffers(1, &glstuffRay.L_SSBO);
+  	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,glstuffRay.L_SSBO);
 
-//  glBindVertexArray(glstuff.vertexarray);
-//  lightning::loadPoints();
     
-
-		//Texture stuff
-/*
-		glGenTextures(1,&glstuff.texture);
-		glBindTexture(GL_TEXTURE_2D, glstuff.texture);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT ); //GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT ); //GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);	//Sets paramiters of the texture.
-//  */
-
 }
 
 void Update_Perspective(){
-  glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "perspectiveMatrix"),
+
+  //'CLOUD' PERSPECTIVE:
+  glUniformMatrix4fv(glGetUniformLocation(glstuffCloud.prog, "perspectiveMatrix"),
             1,
             false,
             &perspectiveMatrix[0][0]);
   
   glm::mat4 camMatrix = activeCamera.view();
-  glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "cameraMatrix"),
+  glUniformMatrix4fv(glGetUniformLocation(glstuffCloud.prog, "cameraMatrix"),
             1,
             false,
             &camMatrix[0][0]);
 
-  glUniformMatrix4fv(glGetUniformLocation(glstuff.prog, "windowRatio"),
+  glUniformMatrix4fv(glGetUniformLocation(glstuffCloud.prog, "windowRatio"),
             1,
             false,
             &winRatio[0][0]);
-  
 
+  //Todo: Get raytracing perspective.  
+
+  //BSpline has no perspective.
 }
 
-  #ifdef RAYTRACE_CLOUDS
 
-bool first = true;
 void Update_GPU_data(){
 
   std::vector<vec3> storage;
@@ -207,9 +234,8 @@ void Update_GPU_data(){
 	storage.push_back(vec3(-1.0, -1.0, 0.0));
 	storage.push_back(vec3(-1.0, 1.0, 0.0));
 
-	glBindVertexArray(glstuff.vertexarray);
+	glBindVertexArray(glstuffRay.vertexarray);
 
- 
   //Get MBs
   MBS d = cloud::getAllMBs();
   int i1 = d.size() + 1;
@@ -218,98 +244,87 @@ void Update_GPU_data(){
   vec4 inf = vec4(i1,thres,0,0);
 
   //allocate space
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, glstuff.MB_SSBO);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, glstuffRay.MB_SSBO);
   glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(vec4)*i1, NULL, GL_DYNAMIC_COPY);
   //Send Most data
   glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(vec4), sizeof(vec4)*d.size(), d.data());
   glBufferSubData(GL_SHADER_STORAGE_BUFFER,0,sizeof(vec4),&inf); //Send info data..
 
-  //TODO: Lightening
-
-	if(first){
-	first = false;
-	}
-	glBindBuffer(GL_ARRAY_BUFFER, glstuff.vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, glstuffRay.vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, storage.size() * sizeof(vec3), storage.data(), GL_STREAM_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
 	glEnableVertexAttribArray(0);
 }
 
-  #else
 
 void Update_GPU_data(Tris t){
   //Calc verts/etc
-  glBindBuffer(GL_ARRAY_BUFFER,glstuff.vertexbuffer);
+	glBindVertexArray(glstuffCloud.vertexarray);
+
+  glBindBuffer(GL_ARRAY_BUFFER,glstuffCloud.vertexbuffer);
   glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*t.verts->size(),t.verts->data(),GL_DYNAMIC_DRAW);
 
-  glBindBuffer(GL_ARRAY_BUFFER,glstuff.normalbuffer);
+  glBindBuffer(GL_ARRAY_BUFFER,glstuffCloud.normalbuffer);
   glBufferData(GL_ARRAY_BUFFER,sizeof(vec3)*t.norms->size(),t.norms->data(),GL_DYNAMIC_DRAW);
 
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuff.indiciesbuffer);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,glstuffCloud.indiciesbuffer);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*t.idx->size(),t.idx->data(),GL_DYNAMIC_DRAW);
 
 }
-  #endif
 
 
 
 void Render(){
-  #ifdef RAYTRACE_CLOUDS
 
-  Update_GPU_data();
-  Update_Perspective();	//updates perspective uniform, as it's never changed.
+  if(MODE == MODE_RAY){
+    Update_GPU_data();
+    Update_Perspective();	//updates perspective uniform, as it's never changed.
 
-	glUseProgram(glstuff.prog);
- 	glBindVertexArray(glstuff.vertexarray);
-  glDrawArrays(GL_TRIANGLES, 0, 6);
+  	glUseProgram(glstuffRay.prog);
+   	glBindVertexArray(glstuffRay.vertexarray);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 
+     //Tell shaders to enable raytrace.
+    glUniform1i(glGetUniformLocation(glstuffRay.prog, "RayTrace"),true);
 
-   //Tell shaders to enable raytrace.
-  glUniform1i(glGetUniformLocation(glstuff.prog, "RayTrace"),true);
+  }
+  else if (MODE == MODE_CLOUD){
+  	glClearColor(40/255.0,56/255.0,81/255.0,0);
 
-  #else
-
-	glClearColor(40/255.0,56/255.0,81/255.0,0);
-  //rgb(40, 56, 81)
-
-  Tris t = cloud::getAllTris();
-  Update_Perspective();	//updates perspective uniform, as it's never changed.
-  if(t.verts != NULL && t.norms != NULL && t.idx != NULL){
-    Update_GPU_data(t);
-  }else{
-  
+    Tris t = cloud::getAllTris();
+    Update_Perspective();	//updates perspective uniform, as it's never changed.
+    if(t.verts != NULL && t.norms != NULL && t.idx != NULL){
+      Update_GPU_data(t);
+    }else{
       std::cout << "Not updating data, some of it is null." << std::endl;
       return;
-  }
+    }
   
-	glClear(GL_COLOR_BUFFER_BIT);
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glUseProgram(glstuff.prog);
- 	glBindVertexArray(glstuff.vertexarray);
- 	glUseProgram(glstuff.prog);
+  	glClear(GL_COLOR_BUFFER_BIT);
+  	glClear(GL_DEPTH_BUFFER_BIT);
+  	glUseProgram(glstuffCloud.prog);
+   	glBindVertexArray(glstuffCloud.vertexarray);
+   	glUseProgram(glstuffCloud.prog);
 
-	glDrawElements(
-  	GL_TRIANGLES,   //What shape we're drawing  - GL_TRIANGLES, GL_LINES, GL_POINTS, GL_QUADS, GL_TRIANGLE_STRIP
-		t.idx->size(),    //How many indices
-		GL_UNSIGNED_INT,  //Type
-		0
-	);
+  	glDrawElements(
+    	GL_TRIANGLES,   //What shape we're drawing  - GL_TRIANGLES, GL_LINES, GL_POINTS, GL_QUADS, GL_TRIANGLE_STRIP
+  		t.idx->size(),    //How many indices
+  		GL_UNSIGNED_INT,  //Type
+  		0
+  	);
+  }else if (MODE == MODE_BSPLINE){
+    //BSPLINE STUFF TODO.
 
-	return;
+  }
 
-  #endif
 
 }
 
-void printVec(vec3 v)
-{
-  std::cout <<"aVec: (x,y,z) = (" << v.x << ", " << v.y << ", " << v.z << ")\n";
-}
 
 int main(int argc, char * argv[]){
 
-	GLFWwindow * window = glfw_init(WIDTH,HEIGHT,"Scott Saunders - Template");	//Init window.
+	GLFWwindow * window = glfw_init(WIDTH,HEIGHT,"CPSC-589 - Cloud Modeling");	//Init window.
 
 	glfwMakeContextCurrent(window); //Sets up a OpenGL context
 
@@ -317,8 +332,9 @@ int main(int argc, char * argv[]){
 
 	initalize_GL();
 
-    vec3 t = vec3(0,0,0);
+  //Cloud editing stuff. 
  /*
+  vec3 t = vec3(0,0,0);
   for(int i=0; i < 1; i++){
 //cloud::cloud(float(*f)(vec3, vec3, float) , vec3 * pos, int initBalls, int rounds, int rad, bool skip)
 //    new cloud(NULL,&t,6,10,1.0f,8.0f,0); //wings
@@ -342,9 +358,9 @@ int main(int argc, char * argv[]){
 		Render();
     glfwSwapBuffers(window);
     
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    //std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-		glfwPollEvents();
+		glfwWaitEvents();
 
 	}
 	glfwTerminate();	//Kill the glfw interface

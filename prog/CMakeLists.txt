@@ -34,6 +34,8 @@ get_filename_component(fragmentPath2 fragment2.glsl REALPATH)
 get_filename_component(fragmentPath3 fragment3.glsl REALPATH)
 get_filename_component(vertexPath vertex.glsl REALPATH)
 get_filename_component(vertexPath2 vertex_raytrace.glsl REALPATH)
+get_filename_component(fragBspli lightning_stuff/fragment_shader.glsl REALPATH)
+
 
 ##add #DEFINES for them.
 add_definitions (-DFRAGMENTPATH="${fragmentPath}")
@@ -42,7 +44,7 @@ add_definitions (-DFRAGMENTPATH2="${fragmentPath2}")
 add_definitions (-DFRAGMENTPATH3="${fragmentPath3}")
 add_definitions (-DVERTEXPATH="${vertexPath}")
 add_definitions (-DVERTEXPATHRAY="${vertexPath2}")
-
+add_definitions (-DFRAGMENTBSPLINE="${fragBspli}")
 
 # Use PkgConfig to find glew...
 #find_package( glew REQUIRED )

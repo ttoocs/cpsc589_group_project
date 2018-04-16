@@ -43,7 +43,7 @@ extern float uni_distribution(float min, float max, unsigned seed);
 extern  void trace_lightning(std::vector<glm::vec3> targets, std::vector<Segment> *storage, float max_h);
 
 //extern void loadPoints();
-void loadPoints(BSpline spline);
+extern void loadPoints(BSpline spline);
 
 
 
