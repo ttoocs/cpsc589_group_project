@@ -47,12 +47,17 @@
 //#define RAYTRACE_CLOUDS
 
 Camera activeCamera;
+cloud aCloud;
 
 //START: Window Mgmt
+Tris renderTris;
 mat4 winRatio = mat4(1.f);
 mat4 perspectiveMatrix = glm::perspective(glm::radians(45.f), 1.f, 0.1f, 400.f);
 int WIDTH = 512;
 int HEIGHT = 512;
+int havePoints = 0;
+std::vector<vec3> positions;
+std::vector<float> radiuss;
 //END: Window Mgmt
 
 struct GLSTUFF{
@@ -70,8 +75,6 @@ struct GLSTUFF{
 };
 GLSTUFF glstuff;
 
-
-Tris renderTris;
 
 void initalize_GL(){
 		glEnable(GL_DEPTH_TEST); 		//Turn on depth testing
@@ -271,13 +274,13 @@ void Render(){
   //rgb(40, 56, 81)
 
   Tris t = cloud::getAllTris();
-
   Update_Perspective();	//updates perspective uniform, as it's never changed.
   if(t.verts != NULL && t.norms != NULL && t.idx != NULL){
     Update_GPU_data(t);
   }else{
-    std::cout << "Not updating data, some of it is null." << std::endl;
-    return;
+  
+      std::cout << "Not updating data, some of it is null." << std::endl;
+      return;
   }
   
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -314,22 +317,28 @@ int main(int argc, char * argv[]){
 
 	initalize_GL();
 
- 
-  for(int i=0; i < 1; i++){
     vec3 t = vec3(0,0,0);
+ /*
+  for(int i=0; i < 1; i++){
 //cloud::cloud(float(*f)(vec3, vec3, float) , vec3 * pos, int initBalls, int rounds, int rad, bool skip)
 //    new cloud(NULL,&t,6,10,1.0f,8.0f,0); //wings
 //    new cloud(NULL,&t,5,10,1.0f,15.0f,0); //frog
 //    new cloud(NULL,&t,5,10,1.0f,40.0f,0); //scattered
-      new cloud(NULL,&t,16,10,1.0f,16.0f,1); //circular
+//    new cloud(NULL,&t,16,10,1.0f,16.0f,1); //circular
+ //     new cloud(NULL,&t,1,1,1.0f,1.0f,1);
   }
+*/
+
+  positions.push_back(vec3(0,0,0));
+  radiuss.push_back(1.0f);
+  aCloud = *(new cloud(positions,radiuss));
+  //aCloud.process_placed_metaballs();
 
 
 	while(!glfwWindowShouldClose(window))
 	{ //Main loop.
 
     glfwGetFramebufferSize(window, &WIDTH, &HEIGHT);
-
 		Render();
     glfwSwapBuffers(window);
     

@@ -20,17 +20,102 @@
 //In all the directions.  False if you only want them growing up.
 #define HEIGHT_ANGLE PI/2.5f
 #define HEIGHT_ANGLE_DOWN PI/2.5f
-#define TT_GROW true
-#define U_GROW false
-#define D_GROW true
+bool TT_GROW =true;
+bool U_GROW =false;
+bool D_GROW =true;
 //END: In here FALSE means ON
 
-float AvgNew = 3;
+float AvgNew = 10;
 float AvgPer = 0.5;
 
 std::vector<cloud*> cloud::allClouds;
 
 using namespace std;
+void cloud::process_cloud_paper_pos_rad(Tris& t, int rounds,std::vector<vec3> *positions,std::vector<float> *rads,bool down,bool up)
+{
+	U_GROW = up;
+	D_GROW = down;
+	vec3 p0 = vec3(0,0,0);
+	vec3 p1 = vec3(0,0,0);
+	vec3 p2 = vec3(0,0,0);
+  vec3 test_norm = vec3(0,0,0);
+  float test_angle = 0.0f;
+  float test_angle_down = 0.0f;
+  int num_of_new_balls = 0;
+  double prob_to_get_ball = 0.0f;
+	
+	float r0 = 0.0f;
+	float r1 = 0.0f;
+	float radius = ((float)rand())/((float)INT_MAX);
+	
+  vector<vec3>* points = new vector<vec3>;
+  vector<vec3>* norms = new vector<vec3>;
+  vector<GLuint>* indices = new vector<GLuint>;
+
+	int a=0;
+	for(int j = 0; j < rounds; j++)
+	{
+		points->clear();
+		indices->clear();
+		norms->clear();
+		//March getting points/indexs/norms, on balls, unknown bounding boxes, granularity =Q_GRAN (half-res of new default)
+		MetaBall::March(points,indices,norms, &balls, NULL, NULL, Q_GRAN);
+		for(int i = 0; i < indices->size()/3; i++)
+		{
+      test_norm = ((*norms)[(*indices)[i*3]]+(*norms)[(*indices)[i*3+1]]+(*norms)[(*indices)[i*3+2]])/3.0f;
+
+      test_angle = acos(dot(normalize(test_norm),vec3(0,-1,0)));
+      test_angle_down = acos(dot(normalize(test_norm),vec3(0,1,0)));
+
+      if((A_GROW)||(U_GROW)||(test_angle > HEIGHT_ANGLE))
+       {
+        if((A_GROW)||(D_GROW)||(test_angle_down > HEIGHT_ANGLE_DOWN))
+         {
+            float rng = (((float)rand())/((float)INT_MAX));
+            prob_to_get_ball =((float)(indices->size()/3));
+            if(!U_GROW)
+            {
+              prob_to_get_ball *= (fabs(PI-HEIGHT_ANGLE)/PI);
+            }
+            if(!D_GROW)
+            {
+              prob_to_get_ball *= (fabs(PI-HEIGHT_ANGLE_DOWN)/PI);
+            }
+            
+            if(rng < (AvgNew)/prob_to_get_ball)
+            {
+              
+
+              //START: Random position inside square for new metaball
+              p0 = (*points)[(*indices)[i*3]];
+              p1 = (*points)[(*indices)[i*3+1]];
+              p2 = (*points)[(*indices)[i*3+2]];
+              
+              r0 = ((float)rand())/((float)INT_MAX);
+              r1 = (1.0f-r0)*((float)rand())/((float)INT_MAX);
+              
+              
+              p0 = (1.0f-r1-r0)*p2 + r1*p1 + r0*p0;
+              
+              //END: Random position inside square for new metaball
+              //Random size:
+              float rad = 1.0 + ((float)rand())/((float)INT_MAX)*pow(0.5,j+1);
+              positions->push_back(p0);
+              rads->push_back(rad);
+              balls.push_back((new MetaBall(p0,rad,balls[0]->m_surfaceFunction)));
+              num_of_new_balls++;
+          //		std::cout << a++ << std::endl;
+              }
+          }
+        }
+        else
+        {
+          
+        }
+		}
+   // std::cout << "cloud round done" << std::endl;
+	}
+}
 void cloud::process_cloud_paper(Tris& t, int rounds)
 {
 	vec3 p0 = vec3(0,0,0);
@@ -120,6 +205,35 @@ void cloud::process_cloud_paper(Tris& t, int rounds)
   
   t = mergeTris(t,toTris(points,norms,indices));
 
+}
+void cloud::process_placed_metaballs()
+{
+	
+	//vector<vec3>* points = new vector<vec3>;
+	//vector<vec3>* norms = new vector<vec3>;
+	//vector<GLuint>* indices = new vector<GLuint>;
+/*
+	tris.verts->clear();
+	tris.idx->clear();
+	tris.norms->clear();
+*/
+
+//	MetaBall::March(points,indices,norms, &balls, NULL, NULL, F_GRAN);
+
+//	tris = mergeTris(tris,toTris(points,norms,indices));
+
+	process_cloud_paper(tris, 1);
+}
+
+cloud::cloud(std::vector<vec3>  pos,vector<float> rad)
+{
+	allClouds.clear();
+	for(int i = 0; i < pos.size();i++)
+	{
+		balls.push_back(new MetaBall(pos[i], rad[i]));
+	}
+	process_cloud_paper(tris, 0);
+	allClouds.push_back(this);
 }
 
 

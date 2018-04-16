@@ -5,6 +5,8 @@
 #include <math.h>
 #include "input.h"
 #include "camera.h"
+#include "metaball/metaball.h"
+#include "cloud/cloud.h"
 #define TRNL 3.f
 bool firstMouse = true;
 float lastX = 0;
@@ -16,9 +18,19 @@ bool right = false;
 #include <iostream>
 
 extern Camera activeCamera;
-extern int nextRound;
+extern cloud aCloud;
+extern Tris renderTris;
+extern int havePoints;
 extern mat4 winRatio;
-
+extern GLFWwindow * window;
+extern std::vector<vec3> positions;
+extern std::vector<float> radiuss;
+    std::vector<vec3> spare = positions;
+    std::vector<float> spare2 = radiuss;
+int meshMode = GL_LINE;
+float radius = 1.0f;
+bool up = true;
+bool down = true;
 
 namespace input{
 
@@ -63,28 +75,84 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	if (key ==GLFW_KEY_R)
 	{
 		activeCamera.cameraPos += activeCamera.cameraUp * activeCamera.cameraSpeed;
-	}/*
-	else if (key == GLFW_KEY_R)
-	{
-		activeCamera.translate(TRNL*(activeCamera.up)/10.f);
 	}
-	else if (key == GLFW_KEY_F)
+	if (key ==GLFW_KEY_U && action == GLFW_PRESS)
 	{
-		activeCamera.translate(-TRNL*(activeCamera.up)/10.f);
+		if(positions.size() >1)
+    {
+      positions.pop_back();
+      radiuss.pop_back();
+      aCloud = *(new cloud(positions,radiuss));
+    }
 	}
-	else if (key == GLFW_KEY_Z)
+	if (key ==GLFW_KEY_J && action == GLFW_PRESS)
 	{
-		nextRound =1;
+		aCloud.process_cloud_paper_pos_rad(aCloud.tris, 1,&spare,&spare2,up,down);
+    aCloud = *(new cloud(spare,spare2));
 	}
-  * */
+	if (key ==GLFW_KEY_I && action == GLFW_PRESS)
+	{
+		up = !up;
+    if(!up)
+    {
+      std::cout << "Does not grow up.\n";
+    }
+    else
+    {
+      std::cout << "Grows up.\n";
+    }
+	}
+	if (key ==GLFW_KEY_K && action == GLFW_PRESS)
+	{
+		down = !down;
+    if(!down)
+    {
+      std::cout << "Does not grow down.\n";
+    }
+    else
+    {
+      std::cout << "Grows down.\n";
+    }
+	}
+	if (key ==GLFW_KEY_T && action == GLFW_PRESS)
+	{
+		radius += 0.1;
+    std::cout << "Radius size: " << radius << std::endl;
+	}
+	if (key ==GLFW_KEY_G && action == GLFW_PRESS)
+	{
+    radius -=0.1f;
+    if(radius <= 0.1f)
+      radius = 0.1f;
+    std::cout << "Radius size: " << radius << std::endl;
+	}
+  if((key == GLFW_KEY_M)&&(action == GLFW_PRESS))
+  {
+    if(meshMode == GL_LINE)
+    {
+			glPolygonMode(GL_FRONT_AND_BACK, meshMode);
+      meshMode = GL_FILL;
+    }
+    else
+    {
+			glPolygonMode(GL_FRONT_AND_BACK, meshMode);
+      meshMode = GL_LINE;
+    }
+  }
 }
 
 bool mousePressed;
 void mouseButtonCallback(GLFWwindow* window, int key, int action, int mods)
 {
   
-  if( ((action == GLFW_PRESS) || (action == GLFW_RELEASE))&& key == GLFW_MOUSE_BUTTON_RIGHT )
-    right = !right;
+  if( ((action == GLFW_PRESS))&& key == GLFW_MOUSE_BUTTON_RIGHT )
+  {
+      positions.push_back(activeCamera.cameraPos+3.0f*(activeCamera.cameraFront));
+      radiuss.push_back(radius);
+      spare = positions;
+      spare2 = radiuss;
+      aCloud = *(new cloud(positions,radiuss));
+  }
   else if( ((action == GLFW_PRESS) || (action == GLFW_RELEASE))&& key == GLFW_MOUSE_BUTTON_LEFT )
     left = !left;
   

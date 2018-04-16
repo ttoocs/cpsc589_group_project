@@ -11,6 +11,13 @@
 #include "../marching_cube/reMarch.h"
 #include <vector>
 
+
+float WyvillMetaBall(vec3 mbpos,vec3 tpos, float radius);
+float fanceyMB(vec3 mbpos,vec3 tpos, float radius);
+float sphereMB(vec3 mbpos, vec3 tpos, float radius);
+
+float inclass(vec3 mbpos, vec3 tpos, float radius);
+
 class MetaBall
 {
 public:
@@ -22,7 +29,7 @@ public:
 	
 //  virtual float function(vec3 v) = 0;
 //  virtual float function(double x, double y, double z) {return function(vec3(x,y,z));}
-  MetaBall(vec3 newPos, double radius, float(*f)(vec3, vec3, float)); //Mbpos, TestPos, Rad
+  MetaBall(vec3 newPos, double radius, float(*f)(vec3, vec3, float)=WyvillMetaBall); //Mbpos, TestPos, Rad
 	
   float valueAt(vec3 loc);
 
@@ -37,11 +44,5 @@ public:
   static void setAccumData(std::vector<MetaBall*> * mbs=NULL);
 };
 
-
-float WyvillMetaBall(vec3 mbpos,vec3 tpos, float radius);
-float fanceyMB(vec3 mbpos,vec3 tpos, float radius);
-float sphereMB(vec3 mbpos, vec3 tpos, float radius);
-
-float inclass(vec3 mbpos, vec3 tpos, float radius);
 
 // void loadPoints();

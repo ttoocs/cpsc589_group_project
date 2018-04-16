@@ -185,14 +185,14 @@ int main(int argc, char * argv[]){
 
 
 	speed =0.01;
-
+/*
   //metaballs.push_back(new MetaBall(vec3(0,0,-5), 1, fanceyMB));
   metaballs.push_back(new MetaBall(vec3(0,0,-5), 3, fanceyMB));
   metaballs.push_back(new MetaBall(vec3(-3,0,-5), 1, fanceyMB));
   metaballs.push_back(new MetaBall(vec3(3,0,-5), 1, fanceyMB));
   metaballs.push_back(new MetaBall(vec3(0,3,-5), 1, fanceyMB));
   metaballs.push_back(new MetaBall(vec3(0,-3,-5), 1, fanceyMB));
-
+*/
   Update_Perspective();	//updates perspective uniform, as it's never changed.
   Update_GPU_data();
 
