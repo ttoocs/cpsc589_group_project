@@ -162,7 +162,7 @@ vec4 main_l()
 //  mat4 t = modelviewMatrix*cameraMatrix;
 
 	Ray r;
-	r.origin = vec3(-0.3, -1.0, -2.0);
+	r.origin = vec3(0.0, 0.0, 1.65);
 	r.dir = directionVector;
 
   //Transform ray for camera controls
