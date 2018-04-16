@@ -192,6 +192,10 @@ void initalize_GL(){
 
 		glBindBuffer(GL_ARRAY_BUFFER,glstuffBspline.vertexbuffer);
 //		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);	//Points -UNHAPPY
+		
+    glGenVertexArrays(1, &glstuffBspline.vertexarray2);
+		glGenBuffers(1, &glstuffBspline.vertexbuffer2);
+		glBindBuffer(GL_ARRAY_BUFFER,glstuffBspline.vertexbuffer2);
 
 
     //CLOUDS
@@ -367,8 +371,23 @@ void Render(){
   		0
   	);
   }else if (MODE == MODE_BSPLINE){
+  	glClearColor(0,0,0,0);
+  	glClear(GL_COLOR_BUFFER_BIT);
+  	glClear(GL_DEPTH_BUFFER_BIT);
     //BSPLINE STUFF TODO.
+    //
 
+    spline.loadBSpline();
+    loadSpline();
+
+		glUseProgram(glstuffBspline.prog);
+	
+		glBindVertexArray(glstuffBspline.vertexarray);
+		glDrawArrays(GL_LINES, 0, num_control);
+
+	
+		glBindVertexArray(glstuffBspline.vertexarray2);
+		glDrawArrays(GL_LINE_STRIP, 0, num_spline);
   }
 
 
@@ -384,6 +403,18 @@ int main(int argc, char * argv[]){
   input::setup(window);
 
 	initalize_GL();
+
+
+  //Bspline
+  spline = BSpline();
+  spline.addPoint(vec3(-1.0, 0.0, 0.0));
+  spline.addPoint(vec3(0.0, 1.0, 0.0));
+  spline.addPoint(vec3(1.0, 0.0, 0.0));
+
+	spline.loadControlPoints();
+	spline.loadBSpline();
+	loadSpline();
+
 
   for(float i=-4; i <= 4; i+=.5){
     float r = WyvillMetaBall(vec3(0,0,0), vec3(0,i,0), 1);

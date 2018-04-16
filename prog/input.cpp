@@ -301,7 +301,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
   }else if (MODE == MODE_RAY){
     RayCallback(window,  key, scancode, action, mods);
   }else if (MODE == MODE_BSPLINE){
-//    BezierCallback(window,  key, scancode, action, mods);
+    BsplineCallBack(window,  key, scancode, action, mods);
   }
 
 
@@ -325,8 +325,73 @@ void mouseButtonCallback(GLFWwindow* window, int key, int action, int mods)
   }
   else if( ((action == GLFW_PRESS) || (action == GLFW_RELEASE))&& key == GLFW_MOUSE_BUTTON_LEFT )
     Left = !Left;
-  
   }
+
+	if (MODE == MODE_BSPLINE)
+	{
+		if (key == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS)
+		{
+			double xpos, ypos;
+			glfwGetCursorPos(window, &xpos, &ypos);
+
+			int winWidth, winHeight;
+			glfwGetWindowSize(window, &winWidth, &winHeight);
+
+			xpos = ( xpos - ( winWidth / 2 ) ) / (winWidth / 2);
+			ypos = ( ypos - ( winHeight / 2 ) ) / ( -1 * winHeight / 2 );
+
+			spline.addPoint(vec3(xpos, ypos, 0.0));
+			spline.loadControlPoints();
+			spline.loadBSpline();
+			loadSpline();
+		}
+
+		else if (key == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+		{
+			double xpos, ypos;
+			glfwGetCursorPos(window, &xpos, &ypos);
+
+			int winWidth, winHeight;
+			glfwGetWindowSize(window, &winWidth, &winHeight);
+
+			xpos = (xpos - (winWidth / 2)) / (winWidth / 2);
+			ypos = (ypos - (winHeight / 2)) / (-1 * winHeight / 2);
+
+			spline.deletePoint(vec3(xpos, ypos, 0.0));
+			spline.loadControlPoints();
+			spline.loadBSpline();
+			loadSpline();
+		}
+
+		else if (key == GLFW_MOUSE_BUTTON_LEFT)
+		{
+			if (action == GLFW_PRESS)
+				Left = true;
+
+			else if (action == GLFW_RELEASE)
+				Left = false;
+
+      if(Left){
+  			double xpos, ypos;
+  			glfwGetCursorPos(window, &xpos, &ypos);
+
+  			int winWidth, winHeight;
+  			glfwGetWindowSize(window, &winWidth, &winHeight);
+  
+  			xpos = (xpos - (winWidth / 2)) / (winWidth / 2);
+  			ypos = (ypos - (winHeight / 2)) / (-1 * winHeight / 2);
+
+        spline.movePoint(vec3(xpos, ypos, 0.0));
+        spline.loadControlPoints();
+        spline.loadBSpline();
+        loadSpline();  
+
+      }
+		}
+	}
+  
+
+
 }
 
 
