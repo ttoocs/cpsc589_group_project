@@ -24,8 +24,8 @@ layout(std430, binding = 1) buffer allMB{
 
 ////////////////////////////////// END INPUT ///////////////////////////////
 
-//#define mbGetType(X) int(mb[int(X)].info.x)
-#define mbGetType(X) 3
+#define mbGetType(X) int(mb[int(X)].info.x)
+//#define mbGetType(X) 3
 #define mbGetPos(X) vec3(mb[int(X)].pos.x,mb[int(X)].pos.y,mb[int(X)].pos.z)
 #define mbGetRad(X) mb[(X)].info.y
 #define numMB int(mbInfo.x)
@@ -575,7 +575,7 @@ vec4 rtrace(ray cray){
 //  c = simple_colors(cray, vec2(res.x,res.y)); 
 
     c= ontogenetic(cray,vec3(res.x,res.y,res.z));
-  return c;
+//  return c;
 
 vec3 t1pos = cray.origin + (res.x)*cray.direction;
 vec3 t2pos = cray.origin + (res.y)*cray.direction;
@@ -692,6 +692,8 @@ vec4 main_c(){
 	//newray.origin = vec3(0.5,0,15);	
 
   mat4 t = cameraMatrix*modelviewMatrix;
+
+  t = inverse(t);
 
 	//TRANSFORMATIONS
   vec4 ot = t*vec4(newray.origin,1);
