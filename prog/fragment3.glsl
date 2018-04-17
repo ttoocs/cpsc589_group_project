@@ -24,8 +24,8 @@ layout(std430, binding = 1) buffer allMB{
 
 ////////////////////////////////// END INPUT ///////////////////////////////
 
-#define mbGetType(X) int(mb[int(X)].info.x)
-//#define mbGetType(X) 3
+//#define mbGetType(X) int(mb[int(X)].info.x)
+#define mbGetType(X) 3
 #define mbGetPos(X) vec3(mb[int(X)].pos.x,mb[int(X)].pos.y,mb[int(X)].pos.z)
 #define mbGetRad(X) mb[(X)].info.y
 #define numMB int(mbInfo.x)
@@ -498,7 +498,7 @@ float otogentic_weight(float t, float p0=0, float p1=1, float r0=0, float r1=0){
 vec4 ontogenetic(ray cray, vec3 res){
   vec3 color = vec3(0);
 
-  float k = 0.1;
+  float k = 0.01;
   #define weighting(X)  1-exp(-k*X)
  
   //DESMOS:
@@ -512,7 +512,7 @@ vec4 ontogenetic(ray cray, vec3 res){
 
   vec3 cbackground = vec3(40,56,81)/256;
 //    vec3 cbackground = vec3(0,0.8,0);
-  vec3 csunlight = vec3(0.2);
+  vec3 csunlight = vec3(0.8);
 //  vec3 csunlight = vec3(.7,.5,.25);
 //  vec3 csunlight = vec3(0.8,0,0);
 //  vec3 cshadow = vec3(0.13,0.16,0.20);
@@ -533,10 +533,11 @@ vec4 ontogenetic(ray cray, vec3 res){
 //  if(weight > 0 && weight < 1){
 
   color =  kbackground(weight) * cbackground;
-  
-  vec4 c = simple_colors(cray,vec2(res.x,res.y)) * (length(cbackground) - length(color));
- // color += klight(weight)*csunlight;
-//  color += kshadow(weight)*cshadow;
+
+  vec4 c = vec4(0,0,0,0);  
+//  vec4 c = simple_colors(cray,vec2(res.x,res.y)) * (length(cbackground) - length(color));
+  color += klight(weight)*csunlight;
+  color += kshadow(weight)*cshadow;
 
 //  }else
 //    color = cshadow+csunlight;
@@ -575,7 +576,7 @@ vec4 rtrace(ray cray){
 //  c = simple_colors(cray, vec2(res.x,res.y)); 
 
     c= ontogenetic(cray,vec3(res.x,res.y,res.z));
-//  return c;
+  return c;
 
 vec3 t1pos = cray.origin + (res.x)*cray.direction;
 vec3 t2pos = cray.origin + (res.y)*cray.direction;

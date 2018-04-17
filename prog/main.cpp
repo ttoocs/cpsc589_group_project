@@ -44,7 +44,7 @@
 
 #define torad(X)	((float)(X*PI/180.f))
 
-// #define RAYTRACE_CLOUDS
+#define RAYTRACE_CLOUDS
 
 Camera activeCamera;
 
