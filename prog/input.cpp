@@ -58,6 +58,8 @@ void setup(GLFWwindow * window){
 
   cloudHelp();
   bsplineHelp();
+
+  std::cout << "[1/2/3/4/5/6]\t- Change scene/mode." << std::endl;
 }
 
 
