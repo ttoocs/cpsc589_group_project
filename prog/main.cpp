@@ -291,15 +291,14 @@ void Update_GPU_data(){
 
   //Get MBs
   MBS d = cloud::getAllMBs();
-  int i1 = d.size() + 1;
-
-//  std::cout << "Rendering " << i1 - 1 << " metaballs" << std::endl; 
+  int i1 = d.size();
+  std::cout << "Rendering " << i1  << " metaballs" << std::endl; 
   vec4 inf = vec4(i1,thres,0.0,42);
 
 
   //allocate space
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, glstuffRay.MB_SSBO);
-  glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(vec4)*i1, NULL, GL_DYNAMIC_COPY);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(vec4)*(i1+1), NULL, GL_DYNAMIC_COPY);
   //Send Most data
   glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(vec4), sizeof(vec4)*d.size(), d.data());
   glBufferSubData(GL_SHADER_STORAGE_BUFFER,0,sizeof(vec4),&inf); //Send info data..
