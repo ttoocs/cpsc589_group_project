@@ -222,16 +222,17 @@ void initalize_GL(){
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 
-
     //MB -ssbo
     glBindVertexArray(glstuffRay.vertexarray);
     glGenBuffers(1, &glstuffRay.MB_SSBO);
-  	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,glstuffRay.MB_SSBO);
-
+  	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,glstuffRay.MB_SSBO);
+    
     //Lightning -ssbo
     glBindVertexArray(glstuffRay.vertexarray);
     glGenBuffers(1, &glstuffRay.L_SSBO);
-  	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,glstuffRay.L_SSBO);
+  	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,glstuffRay.L_SSBO);
+
+    lightning::segmentBuffer = glstuffRay.L_SSBO; //Tell lightening we got it.
 
     
 }
@@ -293,7 +294,7 @@ void Update_GPU_data(){
   int i1 = d.size() + 1;
 
 //  std::cout << "Rendering " << i1 - 1 << " metaballs" << std::endl; 
-  vec4 inf = vec4(i1,thres,0.0,0.0);
+  vec4 inf = vec4(i1,thres,0.0,42);
 
 
   //allocate space

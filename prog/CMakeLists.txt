@@ -57,6 +57,7 @@ set(
 
 add_definitions(
     -std=c++11
+    -DLIGHTNING_SUBORDINATE
     )
 
 #Handles includes (via directories)

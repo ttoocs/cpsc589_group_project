@@ -14,8 +14,7 @@ using namespace glm;
 Plane plane;
 
 float lightning::meter = 0.002;
-GLuint lightning::segmentBuffer =0;
-
+GLuint lightning::segmentBuffer = -1;
 
 float lightning::random_50_50()
 {
@@ -182,9 +181,9 @@ void lightning::loadPoints(BSpline spline)
   if(spline.bspline_vecs.size() < 3)
     return;
 
-  if(lightning::segmentBuffer == 0){
-  //  std::cout << "Note: Lightening SSBO buffer is 0.. Attempting to auto-generate it." << std::endl;
-  //  std::cout << "May not work, assumes VAO is already bounded. If blank this is why." << std::endl;    
+  if(lightning::segmentBuffer == -1){
+    std::cout << "Note: Lightening SSBO buffer is -1.. Attempting to auto-generate it." << std::endl;
+    std::cout << "May not work, assumes VAO is already bounded. If blank this is why." << std::endl;   
 //	  glBindVertexArray(VAO);
   	glGenBuffers(1, &lightning::segmentBuffer);
   	glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,lightning::segmentBuffer);

@@ -50,7 +50,11 @@ struct Ray
 
 uniform vec3 cameraPosition;
 
+#ifdef LIGHT_SUBSHADER
+layout(std140, binding = 1) buffer ffs{
+#else
 layout(std140, binding = 0) buffer ffs{
+#endif
   vec4 NumSegsVec;   //See define below for actual useage
   Segment[] Segs;
 };
