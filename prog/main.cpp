@@ -298,9 +298,9 @@ void Update_GPU_data(){
 
   //allocate space
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, glstuffRay.MB_SSBO);
-  glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(vec4)*(i1+1), NULL, GL_DYNAMIC_COPY);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(vec4)*((i1*2)+1), NULL, GL_DYNAMIC_COPY);
   //Send Most data
-  glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(vec4), sizeof(vec4)*d.size(), d.data());
+  glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(vec4), sizeof(vec4)*2*d.size(), d.data());
   glBufferSubData(GL_SHADER_STORAGE_BUFFER,0,sizeof(vec4),&inf); //Send info data..
 
   
